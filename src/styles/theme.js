@@ -26,6 +26,8 @@ export const THEME_CSS = `
   --k-border-strong: #33334A;
   --k-muted-fill: rgba(255,255,255,0.06);
   --k-muted-fill-2: rgba(255,255,255,0.10);
+  --k-control-border: rgba(255,255,255,0.14);
+  --k-divider: rgba(255,255,255,0.12);
   --k-backdrop: rgba(0,0,0,0.75);
   --k-modal-backdrop: rgba(0,0,0,0.75);
   --k-header-gradient: linear-gradient(180deg, #1A0A2E 0%, #0D0D1A 100%);
@@ -49,6 +51,8 @@ export const THEME_CSS = `
   --k-border-strong: #D7CCE6;
   --k-muted-fill: rgba(70,50,95,0.06);
   --k-muted-fill-2: rgba(70,50,95,0.10);
+  --k-control-border: rgba(70,50,95,0.24);
+  --k-divider: rgba(40,32,52,0.24);
   --k-backdrop: rgba(24,18,35,0.38);
   --k-modal-backdrop: rgba(24,18,35,0.42);
   --k-header-gradient: linear-gradient(180deg, #F3EAFE 0%, #F7F4FB 100%);

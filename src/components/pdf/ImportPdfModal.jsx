@@ -27,20 +27,20 @@ const totalFromParties = parties.reduce((s, p) => s + (parseInt(p.rangs) || 0), 
 const total = configRangs ? (parties.length > 0 ? totalFromParties : parseInt(totalRangs) || 0) : 0;
 const canCreate = name.trim() && pdfData && !loading;
 return (
-<div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "flex-end", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
-<div onClick={e => e.stopPropagation()} style={{ background: "#1A1A2E", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430, maxHeight: "90vh", overflowY: "auto", border: "1px solid #0891B244" }}>
-<div style={{ width: 36, height: 4, background: "#333", borderRadius: 2, margin: "0 auto 20px" }} />
-<h3 style={{ color: "#F1F0EE", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center" }}>Importer un patron PDF</h3>
+<div data-kaleido-modal-backdrop="true" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 300, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
+<div data-kaleido-modal-card="true" onClick={e => e.stopPropagation()} style={{ background: "var(--k-surface)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430, maxHeight: "90vh", overflowY: "auto", border: "1px solid #0891B244" }}>
+<div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 20px" }} />
+<h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center" }}>Importer un patron PDF</h3>
 {/* Nom */}
 <div style={{ marginBottom: 14 }}>
 <label style={{ color: "#22D3EE", fontSize: 11, fontFamily: "monospace", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Nom du projet</label>
 <input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Tuque Noël, Écharpe hiver..."
-style={{ width: "100%", background: "#13131F", border: "1px solid #0891B244", borderRadius: 10, padding: "12px 14px", color: "#F1F0EE", fontSize: 16, outline: "none", boxSizing: "border-box" }} />
+style={{ width: "100%", background: "var(--k-field)", border: "1px solid #0891B244", borderRadius: 10, padding: "12px 14px", color: "var(--k-text)", fontSize: 16, outline: "none", boxSizing: "border-box" }} />
 </div>
 {/* Upload PDF */}
 <div style={{ marginBottom: 20 }}>
 <label style={{ color: "#22D3EE", fontSize: 11, fontFamily: "monospace", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Fichier PDF</label>
-<label style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: pdfData ? "rgba(8,145,178,0.15)" : "#13131F", border: `1px dashed ${pdfData ? "#22D3EE" : "#0891B244"}`, borderRadius: 10, cursor: "pointer" }}>
+<label style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: pdfData ? "rgba(8,145,178,0.15)" : "var(--k-field)", border: `1px dashed ${pdfData ? "#22D3EE" : "#0891B244"}`, borderRadius: 10, cursor: "pointer" }}>
 <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>{loading ? <Icon name="settings" size={18} color="#22D3EE" style={{ opacity: 0.9 }} /> : pdfData ? <Icon name="checkCircle" size={18} color="#22D3EE" /> : <Icon name="file" size={18} color="#6B6A7A" />}</span>
 <div>
 <div style={{ color: pdfData ? "#22D3EE" : "#6B6A7A", fontSize: 14, fontWeight: pdfData ? 600 : 400 }}>
@@ -53,20 +53,20 @@ style={{ width: "100%", background: "#13131F", border: "1px solid #0891B244", bo
 </div>
 {/* Toggle configurer rangs */}
 <div style={{ marginBottom: configRangs ? 16 : 24 }}>
-<button onClick={() => setConfigRangs(r => !r)} style={{ width: "100%", padding: "12px 16px", borderRadius: 12, background: configRangs ? "rgba(8,145,178,0.15)" : "#13131F", border: `1px solid ${configRangs ? "#22D3EE44" : "#ffffff11"}`, color: configRangs ? "#22D3EE" : "#6B6A7A", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, fontFamily: "'DM Sans', sans-serif" }}>
+<button onClick={() => setConfigRangs(r => !r)} style={{ width: "100%", padding: "12px 16px", borderRadius: 12, background: configRangs ? "rgba(8,145,178,0.15)" : "var(--k-field)", border: `1px solid ${configRangs ? "#22D3EE44" : "var(--k-border)"}`, color: configRangs ? "#22D3EE" : "var(--k-muted-2)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, fontFamily: "'DM Sans', sans-serif" }}>
 <span>{configRangs ? <Icon name="checkCircle" size={16} color="#22D3EE" /> : <Icon name="square" size={16} color="#6B6A7A" />}</span>
 <span>Configurer les rangs et parties <span style={{ color: "#6B6A7A", fontSize: 12 }}>(optionnel)</span></span>
 </button>
 </div>
 {/* Section rangs optionnelle */}
 {configRangs && (
-<div style={{ marginBottom: 24, padding: 16, background: "#13131F", borderRadius: 14, border: "1px solid #0891B233" }}>
+<div style={{ marginBottom: 24, padding: 16, background: "var(--k-field)", borderRadius: 14, border: "1px solid #0891B233" }}>
 {/* Total rangs (seulement si pas de parties) */}
 {parties.length === 0 && (
 <div style={{ marginBottom: 14 }}>
 <label style={{ color: "#22D3EE", fontSize: 11, fontFamily: "monospace", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Nombre total de rangs</label>
 <input value={totalRangs} onChange={e => setTotalRangs(e.target.value)} placeholder="Ex: 120" type="number"
-style={{ width: "100%", background: "#1A1A2E", border: "1px solid #0891B244", borderRadius: 10, padding: "11px 14px", color: "#F1F0EE", fontSize: 16, outline: "none", boxSizing: "border-box" }} />
+style={{ width: "100%", background: "var(--k-surface)", border: "1px solid #0891B244", borderRadius: 10, padding: "11px 14px", color: "var(--k-text)", fontSize: 16, outline: "none", boxSizing: "border-box" }} />
 </div>
 )}
 {/* Parties */}

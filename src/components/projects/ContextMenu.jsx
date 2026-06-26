@@ -7,31 +7,32 @@ const [showColors, setShowColors] = useState(false);
 if (!project) return null;
 const color = KALEIDOSCOPE_COLORS[project.colorIdx % KALEIDOSCOPE_COLORS.length];
 const isCompleted = project?.status === "termine";
+const menuIconColor = "var(--k-text-soft)";
 const actions = isCompleted ? [
-{ icon: <Icon name="edit" size={21} color="#E2E0DC" />, label: "Renommer", action: onRename },
+{ icon: <Icon name="edit" size={21} color="currentColor" />, label: "Renommer", action: onRename },
 onRestore ? { icon: <Icon name="undo" size={21} color="#86EFAC" />, label: "Ramener en cours", action: onRestore } : null,
 ].filter(Boolean) : [
-{ icon: <Icon name="edit" size={21} color="#E2E0DC" />, label: "Renommer", action: onRename },
-onEditClient ? { icon: <Icon name="projects" size={21} color="#E2E0DC" />, label: "Modifier la fiche client", action: onEditClient } : null,
-{ icon: <Icon name="image" size={21} color="#E2E0DC" />, label: "Changer la photo", action: onChangePhoto },
+{ icon: <Icon name="edit" size={21} color="currentColor" />, label: "Renommer", action: onRename },
+onEditClient ? { icon: <Icon name="projects" size={21} color="currentColor" />, label: "Modifier la fiche client", action: onEditClient } : null,
+{ icon: <Icon name="image" size={21} color="currentColor" />, label: "Changer la photo", action: onChangePhoto },
 onComplete && !isCompleted ? { icon: <Icon name="checkBadge" size={21} color="#86EFAC" />, label: "Termine", action: onComplete } : null,
 ].filter(Boolean);
 return (
 <>
 <div onClick={e => { e.stopPropagation(); onClose(); }} style={{ position: "fixed", inset: 0, zIndex: 100 }} />
-<div style={{ position: "fixed", top: Math.max(90, Math.min(position.y, window.innerHeight - (onEditClient ? 430 : 260))), left: Math.min(position.x - 10, window.innerWidth - 200), zIndex: 101, background: "#1A1A2E", border: `1px solid ${color.light}44`, borderRadius: 16, padding: "8px 0", minWidth: 200, maxHeight: "min(72vh, 420px)", overflowY: "auto", WebkitOverflowScrolling: "touch", boxShadow: "0 8px 40px rgba(0,0,0,0.6)" }}>
+<div style={{ position: "fixed", top: Math.max(90, Math.min(position.y, window.innerHeight - (onEditClient ? 430 : 260))), left: Math.min(position.x - 10, window.innerWidth - 200), zIndex: 101, background: "var(--k-surface)", border: `1px solid ${color.light}44`, borderRadius: 16, padding: "8px 0", minWidth: 200, maxHeight: "min(72vh, 420px)", overflowY: "auto", WebkitOverflowScrolling: "touch", boxShadow: "0 8px 40px rgba(0,0,0,0.24)" }}>
 <div style={{ padding: "8px 16px 6px", borderBottom: `1px solid ${color.light}22`, marginBottom: 4 }}>
 <div style={{ color: color.light, fontSize: 11, fontFamily: "monospace", textTransform: "uppercase" }}>{project.name}</div>
 </div>
 {actions.map(item => (
-<button key={item.label} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "12px 16px", background: "none", border: "none", cursor: "pointer", color: "#E2E0DC", fontSize: 14, fontFamily: "'DM Sans', sans-serif", textAlign: "left" }}>
+<button key={item.label} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "12px 16px", background: "none", border: "none", cursor: "pointer", color: menuIconColor, fontSize: 14, fontFamily: "'DM Sans', sans-serif", textAlign: "left" }}>
 <span>{item.icon}</span><span>{item.label}</span>
 </button>
 ))}
 {!isCompleted && (
 <>
 {/* Couleur de la bulle */}
-<button onClick={() => setShowColors(s => !s)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "12px 16px", background: "none", border: "none", cursor: "pointer", color: "#E2E0DC", fontSize: 14, fontFamily: "'DM Sans', sans-serif", textAlign: "left" }}>
+<button onClick={() => setShowColors(s => !s)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "12px 16px", background: "none", border: "none", cursor: "pointer", color: menuIconColor, fontSize: 14, fontFamily: "'DM Sans', sans-serif", textAlign: "left" }}>
 <div style={{ width: 18, height: 18, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, flexShrink: 0 }} />
 <span>Couleur de la bulle</span>
 </button>

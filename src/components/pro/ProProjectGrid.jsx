@@ -7,9 +7,9 @@ const isProjectCompleted = (project) => (
 function SectionTitle({ children }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", maxWidth: 376, margin: "18px auto 8px" }}>
-      <div style={{ height: 1, flex: 1, background: "rgba(255,255,255,0.08)" }} />
-      <div style={{ color: "#77758A", fontSize: 11, fontFamily: "monospace", fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", whiteSpace: "nowrap" }}>{children}</div>
-      <div style={{ height: 1, flex: 1, background: "rgba(255,255,255,0.08)" }} />
+      <div style={{ height: 1, flex: 1, background: "var(--k-divider)" }} />
+      <div style={{ color: "var(--k-muted-3)", fontSize: 11, fontFamily: "monospace", fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", whiteSpace: "nowrap" }}>{children}</div>
+      <div style={{ height: 1, flex: 1, background: "var(--k-divider)" }} />
     </div>
   );
 }
@@ -53,7 +53,7 @@ export default function ProProjectGrid({ projects, unreadProjectIds, onProjectOp
   return (
     <div style={{ padding: "18px 16px 116px" }}>
       {projects.length === 0 ? (
-        <div style={{ textAlign: "center", color: "#6B6A7A", padding: "40px 0", fontSize: 14 }}>
+        <div style={{ textAlign: "center", color: "var(--k-muted-2)", padding: "40px 0", fontSize: 14 }}>
           Aucun projet trouvé
         </div>
       ) : (

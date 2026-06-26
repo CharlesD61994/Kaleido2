@@ -83,7 +83,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
 
   return (
     <div style={{ background: "var(--k-bg)", color: "var(--k-text)", height: "100vh", fontFamily: "'DM Sans', sans-serif", maxWidth: 430, margin: "0 auto", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap'); ${GLOBAL_MOTION_CSS} ::-webkit-scrollbar { width: 0; height: 0; } .partiesStrip { scrollbar-width: none; -ms-overflow-style: none; } .partiesStrip::-webkit-scrollbar { width: 0; height: 0; display: none; } * { -webkit-tap-highlight-color: transparent; } input, textarea, select { font-size: 16px !important; } @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} } .kgbg { background: linear-gradient(-45deg, #0D0D1A, #1A0A2E, #0D0D1A, #1E1E32); background-size: 400% 400%; animation: gradientShift 18s linear infinite; } @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg);opacity:0.1} 50%{transform:translateY(-20px) rotate(180deg);opacity:0.3} }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap'); ${GLOBAL_MOTION_CSS} ::-webkit-scrollbar { width: 0; height: 0; } .partiesStrip { scrollbar-width: none; -ms-overflow-style: none; } .partiesStrip::-webkit-scrollbar { width: 0; height: 0; display: none; } * { -webkit-tap-highlight-color: transparent; } input, textarea, select { font-size: 16px !important; } @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} } .kgbg { background: var(--k-bg); } @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg);opacity:0.1} 50%{transform:translateY(-20px) rotate(180deg);opacity:0.3} }`}</style>
       <div className="kgbg" style={{ position: "absolute", inset: 0 }} />
       {Array.from({ length: 6 }).map((_, index) => (
         <div key={index} style={{ position: "absolute", top: `${20 + index * 15}%`, left: `${10 + index * 12}%`, width: 20, height: 20, borderRadius: "50%", background: `${currentPartieColor.light}22`, animation: `float ${3 + index * 0.5}s ease-in-out infinite`, animationDelay: `${index * 0.3}s` }} />
@@ -145,7 +145,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
             const isActive = currentPartie?.id === partie.id;
             return (
               <button key={partie.id} type="button" onClick={() => goToPartie(partie.id)}
-                style={{ background: isActive ? `linear-gradient(135deg, ${col.bg}, ${col.light})` : "#1E1E32", border: "none", borderRadius: 16, padding: "5px 15px", color: isActive ? "#fff" : col.light, fontSize: 11, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: "pointer", transform: isActive ? "scale(1.035)" : "scale(1)", textTransform: "uppercase", letterSpacing: 0.4, boxShadow: isActive ? `0 4px 12px ${col.bg}44` : "none", minWidth: 68, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap", flexShrink: 0 }}>
+                style={{ background: isActive ? `linear-gradient(135deg, ${col.bg}, ${col.light})` : "var(--k-surface-2)", border: isActive ? "1px solid transparent" : "1px solid var(--k-control-border)", borderRadius: 16, padding: "5px 15px", color: isActive ? "#fff" : col.light, fontSize: 11, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: "pointer", transform: isActive ? "scale(1.035)" : "scale(1)", textTransform: "uppercase", letterSpacing: 0.4, boxShadow: isActive ? `0 4px 12px ${col.bg}44` : "none", minWidth: 68, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap", flexShrink: 0 }}>
                 {partie.nom}
               </button>
             );
@@ -154,11 +154,11 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
       </div>
 
       <div style={{ position: "relative", zIndex: 10, padding: "0 8px 12px", flexShrink: 0 }}>
-        <div style={{ background: "rgba(30,30,50,0.9)", backdropFilter: "blur(20px)", border: `2px solid ${currentPartieColor.light}44`, borderRadius: 20, padding: "16px 20px", textAlign: "center", boxShadow: `0 8px 32px ${currentPartieColor.bg}33` }}>
+        <div style={{ background: "var(--k-surface)", backdropFilter: "blur(20px)", border: `2px solid ${currentPartieColor.light}44`, borderRadius: 20, padding: "16px 20px", textAlign: "center", boxShadow: `0 8px 32px ${currentPartieColor.bg}22` }}>
           <div style={{ background: `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, borderRadius: 12, padding: "10px 16px", display: "inline-block", marginBottom: 12, boxShadow: `0 4px 16px ${currentPartieColor.bg}66` }}>
             <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif" }}>{currentRang?.isNote ? "Note" : `Rang ${Math.max(1, currentPartieRangIndex + 1)}`}</span>
           </div>
-          <div style={{ color: "#F1F0EE", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, padding: "0 8px", marginBottom: 10 }}>
+          <div style={{ color: "var(--k-text)", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, padding: "0 8px", marginBottom: 10 }}>
             <InstructionHighlighter
               text={currentRang?.instruction}
               selectedIndex={instructionHighlights?.[currentRang?.id]}
@@ -176,13 +176,13 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
 
       {upcomingItems.length > 0 && (
         <div style={{ position: "relative", zIndex: 10, padding: "2px 8px 10px", flex: 1, minHeight: 0, overflow: "hidden" }}>
-          <div style={{ color: "#7F7A91", fontSize: 11, fontWeight: 800, fontFamily: "'DM Sans', sans-serif", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8, paddingLeft: 2 }}>Prochains rangs</div>
+          <div style={{ color: "var(--k-muted-3)", fontSize: 11, fontWeight: 800, fontFamily: "'DM Sans', sans-serif", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8, paddingLeft: 2 }}>Prochains rangs</div>
           <div style={{ display: "grid", gap: 6, height: "calc(100% - 24px)", alignContent: "start", overflow: "hidden" }}>
             {upcomingItems.map((item, index) => {
               if (item.type === "partie") {
                 const col = KALEIDOSCOPE_COLORS[item.partie.colorIdx % KALEIDOSCOPE_COLORS.length];
                 return (
-                  <div key={`${item.id}-${currentIndex}`} style={{ background: "rgba(13,13,26,0.62)", border: `1px solid ${col.light}10`, borderRadius: 10, padding: "6px 10px", color: `${col.light}99`, fontSize: 10, fontFamily: "'DM Sans', sans-serif", fontWeight: 800, letterSpacing: 0.45, textTransform: "uppercase" }}>
+                  <div key={`${item.id}-${currentIndex}`} style={{ background: "var(--k-muted-fill)", border: `1px solid ${col.light}22`, borderRadius: 10, padding: "6px 10px", color: col.light, fontSize: 10, fontFamily: "'DM Sans', sans-serif", fontWeight: 800, letterSpacing: 0.45, textTransform: "uppercase" }}>
                     {item.partie.nom}
                   </div>
                 );
@@ -194,8 +194,8 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
                 <div
                   key={`${rang.globalId}-${currentIndex}`}
                   style={{
-                    background: `linear-gradient(180deg, rgba(12,12,24,${0.94 - visualIndex * 0.03}), rgba(7,7,15,${0.98 - visualIndex * 0.025}))`,
-                    border: "1px solid #ffffff08",
+                    background: "var(--k-surface)",
+                    border: "1px solid var(--k-border)",
                     borderRadius: 14,
                     padding: "10px 14px",
                     opacity: Math.max(0.52, 0.82 - visualIndex * 0.06),
@@ -204,8 +204,8 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
                     transition: "transform 240ms ease, opacity 240ms ease",
                   }}
                 >
-                  <div style={{ color: "#746D80", fontSize: 11, fontFamily: "monospace", fontWeight: 800, marginBottom: 5 }}>{getPreviewLabel(rang)}</div>
-                  <div style={{ color: "#81798D", fontSize: 12, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: visualIndex === 0 ? 2 : 1, WebkitBoxOrient: "vertical" }}>
+                  <div style={{ color: "var(--k-muted-3)", fontSize: 11, fontFamily: "monospace", fontWeight: 800, marginBottom: 5 }}>{getPreviewLabel(rang)}</div>
+                  <div style={{ color: "var(--k-muted-2)", fontSize: 12, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: visualIndex === 0 ? 2 : 1, WebkitBoxOrient: "vertical" }}>
                     {rang.instruction}
                   </div>
                 </div>

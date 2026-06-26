@@ -22,7 +22,7 @@ export default function WorkProjectHeader({
       onClick={onBack}
       style={{
         background: "var(--k-surface-2)",
-        border: "none",
+        border: "1px solid var(--k-control-border)",
         borderRadius: 10,
         width: 36,
         height: 36,
@@ -49,7 +49,7 @@ export default function WorkProjectHeader({
         position: "relative",
         zIndex: 26,
         background: unreadClientMessageCount > 0 ? "rgba(244,63,94,0.18)" : "var(--k-surface-2)",
-        border: unreadClientMessageCount > 0 ? "1px solid rgba(244,63,94,0.58)" : "1px solid rgba(167,139,250,0.16)",
+        border: unreadClientMessageCount > 0 ? "1px solid rgba(244,63,94,0.58)" : "1px solid var(--k-control-border)",
         borderRadius: 10,
         width: 36,
         height: 36,

@@ -16,21 +16,21 @@ export default function HomeHeader({
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 22, background: "linear-gradient(135deg, #A78BFA, #F472B6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Kaleido</span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={navigateToLibrary} aria-label="Ouvrir la bibliothèque de patrons" style={{ background: "var(--k-surface-2)", border: "none", borderRadius: 10, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", cursor: "pointer" }}>
+          <button onClick={navigateToLibrary} aria-label="Ouvrir la bibliothèque de patrons" style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 10, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", cursor: "pointer" }}>
             <Icon name="library" size={24} stroke={2.2} color="#A78BFA" />
           </button>
-          <button onClick={() => setShowSettingsModal(true)} aria-label="Paramètres" style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA" }}>
+          <button onClick={() => setShowSettingsModal(true)} aria-label="Paramètres" style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 10, width: 40, height: 40, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA" }}>
             <Icon name="settings" size={24} stroke={2.1} color="#A78BFA" />
           </button>
         </div>
       </div>
 
-      <div style={{ display: "flex", background: "var(--k-surface-2)", borderRadius: 14, padding: 4, marginBottom: 10 }}>
+      <div style={{ display: "flex", background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 14, padding: 4, marginBottom: 10 }}>
         {["personal", "pro"].map((currentMode) => (
           <button
             key={currentMode}
             onClick={() => setMode(currentMode)}
-            style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: "none", background: mode === currentMode ? "linear-gradient(135deg, #7C3AED, #DB2777)" : "none", color: mode === currentMode ? "#fff" : "#6B6A7A", fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 220ms cubic-bezier(0.22, 1, 0.36, 1)" }}
+            style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: mode === currentMode ? "1px solid transparent" : "1px solid var(--k-control-border)", background: mode === currentMode ? "linear-gradient(135deg, #7C3AED, #DB2777)" : "var(--k-muted-fill)", color: mode === currentMode ? "#fff" : "var(--k-muted-2)", fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 220ms cubic-bezier(0.22, 1, 0.36, 1)" }}
           >
             {currentMode === "personal" ? "Personnel" : "Professionnel"}
           </button>
