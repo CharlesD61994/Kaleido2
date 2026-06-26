@@ -42,7 +42,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
   return (
     <span style={{ display: "block" }}>
       {lines.map((parts, lineIndex) => (
-        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "1.2em" }}>
+        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "0.65em" }}>
           {parts.map((part, partIndex) => {
             segmentIndex += 1;
             const currentIndex = segmentIndex;
@@ -50,12 +50,19 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
             return (
               <span key={`${part.body}-${lineIndex}-${partIndex}`} style={{ display: "inline", whiteSpace: "normal", overflowWrap: "break-word", wordBreak: "normal" }}>
                 {part.leading ? <span style={{ whiteSpace: "pre" }}>{part.leading}</span> : null}
-                <button
-                  type="button"
+                <span
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelect(currentIndex)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelect(currentIndex);
+                    }
+                  }}
                   style={{
                     display: "inline",
-                    border: "none",
+                    border: 0,
                     borderRadius: 0,
                     padding: 0,
                     margin: 0,
@@ -69,6 +76,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                     cursor: "pointer",
                     boxShadow: "none",
                     textDecoration: "none",
+                    verticalAlign: "baseline",
                   }}
                 >
                   <span
@@ -83,7 +91,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                     {part.body}
                   </span>
                   {part.separator}
-                </button>
+                </span>
                 {part.trailing ? <span style={{ whiteSpace: "pre" }}>{part.trailing}</span> : null}
               </span>
             );
