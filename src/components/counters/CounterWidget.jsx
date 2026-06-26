@@ -27,14 +27,14 @@ style={{ background: "rgba(30,30,50,0.8)", backdropFilter: "blur(10px)", border:
 ? <input value={tempName} onChange={e => setTempName(e.target.value)}
 onKeyDown={e => e.key === "Enter" && (onUpdate({ name: tempName }), setIsEditing(false))}
 onBlur={() => (onUpdate({ name: tempName }), setIsEditing(false))}
-onFocus={e => e.target.select()} autoFocus style={{ background: "rgba(0,0,0,0.5)", border: `1px solid ${col.light}44`, borderRadius: 6, padding: "4px 8px", color: "#F1F0EE", fontSize: 16, outline: "none", textAlign: "center", fontFamily: "'DM Sans', sans-serif", width: "100%", fontWeight: 600 }} />
+onFocus={e => e.target.select()} autoFocus style={{ background: "var(--k-field)", border: `1px solid ${col.light}44`, borderRadius: 6, padding: "4px 8px", color: "var(--k-text)", fontSize: 16, outline: "none", textAlign: "center", fontFamily: "'DM Sans', sans-serif", width: "100%", fontWeight: 600 }} />
 : <div onClick={e => { e.stopPropagation(); setIsEditing(true); }} style={{ color: col.light, fontSize: 13, textTransform: "uppercase", letterSpacing: 1, cursor: "pointer", fontWeight: 600 }}>{counter.name}</div>
 }
 </div>
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
 <button onClick={e => { e.stopPropagation(); if (!counter.syncWithGlobal) onUpdate({ value: counter.value <= 1 ? (counter.maxRepeats || 4) : counter.value - 1 }); }} disabled={counter.syncWithGlobal}
 style={{ background: counter.syncWithGlobal ? "#333" : col.bg, border: "none", borderRadius: "50%", width: 32, height: 32, color: "#fff", fontSize: 16, cursor: counter.syncWithGlobal ? "not-allowed" : "pointer", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
-<span style={{ color: "#F1F0EE", fontSize: 24, fontWeight: 700, fontFamily: "monospace", minWidth: 50, textAlign: "center" }}>{displayValue}</span>
+<span style={{ color: "var(--k-text)", fontSize: 24, fontWeight: 700, fontFamily: "monospace", minWidth: 50, textAlign: "center" }}>{displayValue}</span>
 <button onClick={e => { e.stopPropagation(); if (!counter.syncWithGlobal) onUpdate({ value: counter.value >= (counter.maxRepeats || 4) ? 1 : counter.value + 1 }); }} disabled={counter.syncWithGlobal}
 style={{ background: counter.syncWithGlobal ? "#333" : col.bg, border: "none", borderRadius: "50%", width: 32, height: 32, color: "#fff", fontSize: 16, cursor: counter.syncWithGlobal ? "not-allowed" : "pointer", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center" }} aria-label="Nouveau projet">+</button>
 </div>
@@ -50,7 +50,7 @@ onKeyDown={e => { if (e.key === "Enter") { onUpdate({ maxRepeats: Math.max(2, Ma
 onBlur={() => { onUpdate({ maxRepeats: Math.max(2, Math.min(20, parseInt(tempMax) || 4)) }); setIsEditingMax(false); setTempMax(""); }}
 onFocus={e => e.target.select()} autoFocus type="number" min="2" max="20"
 onClick={e => e.stopPropagation()}
-style={{ background: "#333", border: `1px solid ${col.light}44`, borderRadius: 6, padding: "4px 5px", color: "#F1F0EE", fontSize: 16, outline: "none", textAlign: "center", width: "100%", height: 28 }} />
+style={{ background: "var(--k-surface-2)", border: `1px solid ${col.light}44`, borderRadius: 6, padding: "4px 5px", color: "var(--k-text)", fontSize: 16, outline: "none", textAlign: "center", width: "100%", height: 28 }} />
 : <button onClick={e => doAction(e, () => { setTempMax(String(counter.maxRepeats || 4)); setIsEditingMax(true); })}
 style={{ background: "#7C3AED", border: "none", borderRadius: 6, padding: "4px 5px", color: "#fff", fontSize: 9, cursor: "pointer", fontWeight: 600, height: 28 }}>MAX {counter.maxRepeats || 4}</button>
 }
@@ -91,7 +91,7 @@ style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, paddingB
 <div style={{ color: currentPartieColor.light, fontSize: labelSize, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>Global</div>
 <div key={`progress-${currentCountIndex}-${totalRangs}`} style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 10px ${currentPartieColor.bg}33)`, transformOrigin: "center", animation: "kaleidoProgressCleanPulse 340ms cubic-bezier(0.25, 0.9, 0.35, 1)" }}>
 <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
-<circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="rgba(255,255,255,0.1)" strokeWidth={compact ? 3 : 4} fill="none" />
+<circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth={compact ? 3 : 4} fill="none" />
 <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="url(#kg)" strokeWidth={compact ? 3 : 4} fill="none"
 strokeDasharray={circleCirc} strokeDashoffset={circleCirc * (1 - Math.max(0, currentCountIndex + 1) / totalRangs)}
 strokeLinecap="round" style={{
@@ -106,11 +106,11 @@ strokeLinecap="round" style={{
 </linearGradient></defs>
 </svg>
 <div style={{ position: "absolute", top:0, left:0, right:0, bottom:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
-<div style={{ color: "#F1F0EE", fontSize: countSize, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{Math.max(0, currentCountIndex + 1)}</div>
+<div style={{ color: "var(--k-text)", fontSize: countSize, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{Math.max(0, currentCountIndex + 1)}</div>
 <div style={{ color: currentPartieColor.light, fontSize: compact ? 10 : 12, fontFamily: "monospace", marginTop: compact ? 1 : 3 }}>/ {totalRangs}</div>
 </div>
 </div>
-{!compact && <div style={{ color: "#6B6A7A", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
+{!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {/* Barre partie */}
 <div style={{ flex: 1, minWidth: 0, maxWidth: compact ? 230 : "none", position: "relative" }}>
@@ -121,19 +121,19 @@ strokeLinecap="round" style={{
 ) : null}
 <div style={{ transform: showInlineControls ? "translateY(9px)" : "translateY(0)" }}>
 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compact ? 4 : 6, gap: 8 }}>
-<div style={{ color: "#F1F0EE", fontSize: compact ? 15 : 15, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
+<div style={{ color: "var(--k-text)", fontSize: compact ? 15 : 15, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
 <div style={{ color: currentPartieColor.light, fontSize: compact ? 13 : 13, fontFamily: "monospace", fontWeight: 600 }}>{localRangNumber}/{currentPartieTotal}</div>
 </div>
 </div>
-<div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 12, height: barHeight, overflow: "hidden" }}>
+<div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: barHeight, overflow: "hidden" }}>
 <div style={{ background: `linear-gradient(90deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, width: `${localRangNumber / currentPartieTotal * 100}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${currentPartieColor.bg}44` }} />
 </div>
 {showInlineControls ? (
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 9 }}>
-<button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 34, height: 34, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}33` : "rgba(255,255,255,0.06)", border: `1.5px solid ${currentPartieColor.light}44`, color: canPrev ? currentPartieColor.light : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
-<span style={{ color: "#F1F0EE", fontSize: 28, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 34, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
-<button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 34, height: 34, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "rgba(255,255,255,0.06)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
+<button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 34, height: 34, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}33` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.light}44`, color: canPrev ? currentPartieColor.light : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
+<span style={{ color: "var(--k-text)", fontSize: 28, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 34, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
+<button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 34, height: 34, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
 </div>
 ) : null}
 </div>

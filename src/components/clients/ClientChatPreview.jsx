@@ -173,7 +173,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
       style={{
         borderRadius: expanded ? 0 : 18,
         background: expanded ? "rgba(13,13,26,0.32)" : "rgba(13,13,26,0.58)",
-        border: expanded ? "0" : "1px solid rgba(255,255,255,0.06)",
+        border: expanded ? "0" : "1px solid var(--k-border)",
         padding: expanded ? "14px 16px" : 12,
         minHeight: expanded ? 0 : 150,
         maxHeight: expanded ? "none" : 280,
@@ -184,7 +184,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
       }}
     >
       {loading ? (
-        <div style={{ color: "#A8A6B8", fontSize: 13 }}>Chargement des messages...</div>
+        <div style={{ color: "var(--k-muted)", fontSize: 13 }}>Chargement des messages...</div>
       ) : messages.length ? (
         <div style={{ display: "grid", gap: 10 }}>
           {messages.map((message) => {
@@ -195,8 +195,8 @@ export default function ClientChatPreview({ project, color, publicView = false }
                   style={{
                     maxWidth: expanded ? "86%" : "82%",
                     borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                    background: mine ? `linear-gradient(135deg, ${color.bg}, ${color.light})` : "rgba(255,255,255,0.08)",
-                    color: "#F1F0EE",
+                    background: mine ? `linear-gradient(135deg, ${color.bg}, ${color.light})` : "var(--k-muted-fill-2)",
+                    color: mine ? "#fff" : "var(--k-text)",
                     padding: "10px 12px",
                     fontSize: 13,
                     lineHeight: 1.38,
@@ -234,7 +234,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
                     </button>
                   ) : null}
                   {message.body ? <div>{message.body}</div> : null}
-                  <div style={{ color: mine ? "rgba(255,255,255,0.72)" : "#77758A", fontSize: 10, marginTop: 5 }}>
+                  <div style={{ color: mine ? "rgba(255,255,255,0.72)" : "var(--k-muted-3)", fontSize: 10, marginTop: 5 }}>
                     {formatMessageTime(message.created_at)}
                   </div>
                 </div>
@@ -243,7 +243,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
           })}
         </div>
       ) : (
-        <div style={{ color: "#A8A6B8", fontSize: 13, lineHeight: 1.45 }}>
+        <div style={{ color: "var(--k-muted)", fontSize: 13, lineHeight: 1.45 }}>
           Aucun message pour le moment.
         </div>
       )}
@@ -259,10 +259,10 @@ export default function ClientChatPreview({ project, color, publicView = false }
         rows={3}
         style={{
           width: "100%",
-          border: "1.5px solid rgba(255,255,255,0.10)",
+          border: "1.5px solid var(--k-border)",
           borderRadius: 16,
           background: "rgba(13,13,26,0.72)",
-          color: "#F1F0EE",
+          color: "var(--k-text)",
           padding: 13,
           resize: "vertical",
           minHeight: 86,
@@ -272,7 +272,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
       />
 
       {attachment?.url ? (
-        <div style={{ position: "relative", width: 92, height: 92, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 10px 24px rgba(0,0,0,0.24)" }}>
+        <div style={{ position: "relative", width: 92, height: 92, borderRadius: 16, overflow: "hidden", border: "1px solid var(--k-border)", boxShadow: "0 10px 24px rgba(0,0,0,0.18)" }}>
           <button
             type="button"
             onClick={() => setEnlargedImage(attachment.url)}
@@ -337,7 +337,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
   const renderChatContent = (expanded = false) => {
     if (!shareToken) {
       return (
-        <div style={{ borderRadius: 18, background: "rgba(13,13,26,0.68)", border: "1px dashed rgba(251,191,36,0.24)", padding: "20px 16px", color: "#A8A6B8", fontSize: 13, lineHeight: 1.45 }}>
+        <div style={{ borderRadius: 18, background: "var(--k-muted-fill)", border: "1px dashed rgba(251,191,36,0.24)", padding: "20px 16px", color: "var(--k-muted)", fontSize: 13, lineHeight: 1.45 }}>
           Publie d'abord le lien client pour activer les messages.
         </div>
       );
@@ -419,8 +419,8 @@ export default function ClientChatPreview({ project, color, publicView = false }
         position: "fixed",
         inset: 0,
         zIndex: 12000,
-        background: "#0D0D1A",
-        color: "#F1F0EE",
+        background: "var(--k-bg)",
+        color: "var(--k-text)",
         display: "grid",
         gridTemplateRows: "auto minmax(0, 1fr)",
         fontFamily: "'DM Sans', sans-serif",
@@ -433,13 +433,13 @@ export default function ClientChatPreview({ project, color, publicView = false }
           justifyContent: "space-between",
           gap: 12,
           padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 12px",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid var(--k-border)",
           background: `linear-gradient(135deg, ${color.bg}30, rgba(13,13,26,0.96))`,
         }}
       >
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.1 }}>Messages</div>
-          <div style={{ color: "#A8A6B8", fontSize: 12, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ color: "var(--k-muted)", fontSize: 12, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {project?.client || project?.name || "Conversation"}
           </div>
         </div>
@@ -451,7 +451,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
             height: 42,
             borderRadius: "50%",
             border: "1px solid rgba(255,255,255,0.14)",
-            background: "rgba(255,255,255,0.08)",
+            background: "var(--k-muted-fill-2)",
             color: "#fff",
             fontSize: 20,
             fontWeight: 900,
@@ -492,10 +492,10 @@ export default function ClientChatPreview({ project, color, publicView = false }
               onClick={() => setFullscreen(true)}
               disabled={!shareToken}
               style={{
-                border: `1px solid ${shareToken ? `${color.light}33` : "rgba(255,255,255,0.08)"}`,
+                border: `1px solid ${shareToken ? `${color.light}33` : "var(--k-border)"}`,
                 borderRadius: 999,
-                background: shareToken ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.03)",
-                color: shareToken ? "#F1F0EE" : "#77758A",
+                background: shareToken ? "var(--k-muted-fill-2)" : "var(--k-muted-fill)",
+                color: shareToken ? "var(--k-text)" : "var(--k-muted-3)",
                 padding: "6px 10px",
                 fontSize: 11,
                 fontWeight: 900,

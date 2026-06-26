@@ -166,7 +166,7 @@ export default function SettingsModals({
         <button onClick={syncCloud} disabled={syncingCloud} style={{ width: "100%", padding: "16px", borderRadius: 14, background: isSupabaseConfigured ? "linear-gradient(135deg, #0891B222, #22D3EE22)" : "#151526", border: `1px solid ${isSupabaseConfigured ? "#0891B244" : "#33334A"}`, cursor: syncingCloud ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 14, marginBottom: 12, opacity: syncingCloud ? 0.78 : 1 }}>
           <IconBadge name={isSupabaseConfigured ? "upload" : "alert"} tone={isSupabaseConfigured ? "blue" : "amber"} size={24} />
           <div style={{ textAlign: "left", flex: 1 }}>
-            <div style={{ color: "#F1F0EE", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>
+            <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>
               {syncingCloud ? "Synchronisation..." : "Synchroniser avec Supabase"}
             </div>
             <div style={{ color: isSupabaseConfigured ? "#22D3EE" : "#FBBF24", fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>
@@ -184,7 +184,7 @@ export default function SettingsModals({
           <button onClick={() => supabase?.auth.signOut()} style={{ width: "100%", padding: "16px", borderRadius: 14, background: "rgba(248,113,113,0.10)", border: "1px solid rgba(248,113,113,0.22)", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
             <IconBadge name="alert" tone="amber" size={24} />
             <div style={{ textAlign: "left", minWidth: 0 }}>
-              <div style={{ color: "#F1F0EE", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>Déconnexion</div>
+              <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>Déconnexion</div>
               <div style={{ color: "#FCA5A5", fontSize: 12, fontFamily: "'DM Sans', sans-serif", overflowWrap: "anywhere" }}>{auth.user.email}</div>
             </div>
           </button>
@@ -193,16 +193,16 @@ export default function SettingsModals({
         <button onClick={exportBackup} style={{ width: "100%", padding: "16px", borderRadius: 14, background: "linear-gradient(135deg, #7C3AED22, #A78BFA22)", border: "1px solid #7C3AED44", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
           <IconBadge name="download" tone="violet" size={24} />
           <div style={{ textAlign: "left" }}>
-            <div style={{ color: "#F1F0EE", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>Exporter mes données</div>
-            <div style={{ color: "#6B6A7A", fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>Télécharge un fichier <strong style={{ color: "#A78BFA" }}>.json</strong> avec tous tes projets et PDFs</div>
+            <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>Exporter mes données</div>
+            <div style={{ color: "var(--k-muted-2)", fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>Télécharge un fichier <strong style={{ color: "#A78BFA" }}>.json</strong> avec tous tes projets et PDFs</div>
           </div>
         </button>
 
         <label style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", padding: "16px", borderRadius: 14, background: "linear-gradient(135deg, #05966922, #34D39922)", border: "1px solid #05966944", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }}>
           <IconBadge name="upload" tone="green" size={24} />
           <div style={{ textAlign: "left" }}>
-            <div style={{ color: "#F1F0EE", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>Importer mes données</div>
-            <div style={{ color: "#6B6A7A", fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>Charge un fichier <strong style={{ color: "#34D399" }}>.json</strong> pour tout restaurer</div>
+            <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>Importer mes données</div>
+            <div style={{ color: "var(--k-muted-2)", fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>Charge un fichier <strong style={{ color: "#34D399" }}>.json</strong> pour tout restaurer</div>
           </div>
           <input type="file" accept=".json,application/json" style={{ display: "none" }} onChange={importBackup} />
         </label>

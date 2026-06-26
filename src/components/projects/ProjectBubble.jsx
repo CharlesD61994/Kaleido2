@@ -89,7 +89,7 @@ return (
       </div>
     </div>
     {onMenuOpen && <button onClick={(e) => { e.stopPropagation(); onMenuOpen(project, e); }}
-      style={{ position: "absolute", top: isLibrary ? -6 : -6, right: isLibrary ? -6 : -6, transform: "translate(12%, -20%)", width: 24, height: 24, borderRadius: "50%", background: isCompleted ? "linear-gradient(135deg, #403B4D, #242231)" : `linear-gradient(135deg, ${color.light}, ${color.bg})`, border: "2.5px solid #0D0D1A", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontStyle: "italic", fontWeight: 700, color: isCompleted ? "#9B95AA" : "#fff", boxShadow: isCompleted ? "0 4px 10px rgba(0,0,0,0.28)" : "0 6px 14px rgba(0,0,0,0.35)", animation: isCompleted ? "none" : "infoBob 2.6s ease-in-out infinite", transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease", zIndex: 10 }}
+      style={{ position: "absolute", top: isLibrary ? -6 : -6, right: isLibrary ? -6 : -6, transform: "translate(12%, -20%)", width: 24, height: 24, borderRadius: "50%", background: isCompleted ? "linear-gradient(135deg, #403B4D, #242231)" : `linear-gradient(135deg, ${color.light}, ${color.bg})`, border: "2.5px solid var(--k-bg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontStyle: "italic", fontWeight: 700, color: isCompleted ? "#9B95AA" : "#fff", boxShadow: isCompleted ? "0 4px 10px rgba(0,0,0,0.28)" : "0 6px 14px rgba(0,0,0,0.35)", animation: isCompleted ? "none" : "infoBob 2.6s ease-in-out infinite", transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease", zIndex: 10 }}
       onTouchStart={(e) => { e.stopPropagation(); e.currentTarget.style.transform = "translate(12%, -20%) scale(0.92)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(0,0,0,0.30)"; e.currentTarget.style.filter = "brightness(1.04)"; }}
       onTouchEnd={(e) => { e.currentTarget.style.transform = "translate(12%, -20%) scale(1)"; e.currentTarget.style.boxShadow = "0 6px 14px rgba(0,0,0,0.35)"; e.currentTarget.style.filter = "brightness(1)"; }}
       onTouchCancel={(e) => { e.currentTarget.style.transform = "translate(12%, -20%) scale(1)"; e.currentTarget.style.boxShadow = "0 6px 14px rgba(0,0,0,0.35)"; e.currentTarget.style.filter = "brightness(1)"; }}
@@ -107,7 +107,7 @@ return (
     onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.filter = "saturate(1.02)"; }}
     onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.filter = "saturate(1.02)"; }}
   >
-    <div style={{ color: isCompleted ? "#8F8A9D" : "#F1F0EE", fontSize: "clamp(10px, 2.8vw, 12px)", fontFamily: "'DM Sans', sans-serif", fontWeight: isLibrary ? 500 : 500, letterSpacing: isLibrary ? "-0.01em" : "normal", textShadow: isLibrary ? "0 1px 12px rgba(0,0,0,0.28)" : "none" }}>{project.name}</div>
+    <div style={{ color: isCompleted ? "#8F8A9D" : "var(--k-text)", fontSize: "clamp(10px, 2.8vw, 12px)", fontFamily: "'DM Sans', sans-serif", fontWeight: isLibrary ? 500 : 500, letterSpacing: isLibrary ? "-0.01em" : "normal", textShadow: isLibrary ? "0 1px 12px rgba(0,0,0,0.28)" : "none" }}>{project.name}</div>
     {mode === "pro" && project.client && <div style={{ color: color.light, fontSize: 10, marginTop: 1, fontFamily: "monospace" }}>{project.client}</div>}
   </div>
 </div>

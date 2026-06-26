@@ -38,7 +38,7 @@ export default function ClientModal({
         data-kaleido-modal-card="true"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#1A1A2E",
+          background: "var(--k-surface)",
           borderRadius: 22,
           padding: "26px 24px 24px",
           width: "100%",
@@ -48,11 +48,11 @@ export default function ClientModal({
           boxShadow: "0 22px 70px rgba(0,0,0,0.58), inset 0 1px 0 rgba(255,255,255,0.06)"
         }}
       >
-        <h3 style={{ color: "#F1F0EE", fontFamily: "'Syne', sans-serif", fontSize: 24, lineHeight: 1.08, fontWeight: 700, letterSpacing: "-0.02em", margin: "0 0 10px" }}>
+        <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 24, lineHeight: 1.08, fontWeight: 700, letterSpacing: "-0.02em", margin: "0 0 10px" }}>
           {mode === "edit" ? "Modifier la fiche client" : "Fiche client"}
         </h3>
 
-        <p style={{ color: "#A8A6B8", fontSize: 15, margin: "0 0 24px", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.42 }}>
+        <p style={{ color: "var(--k-muted)", fontSize: 15, margin: "0 0 24px", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.42 }}>
           {mode === "edit" ? "Mets à jour les informations du client associé à ce projet." : "Associe ce projet professionnel à un client."}
         </p>
 
@@ -72,8 +72,8 @@ export default function ClientModal({
             marginBottom: clientError ? 8 : 18,
             borderRadius: 15,
             border: clientError ? "1.5px solid #F87171" : "1.5px solid #3A3852",
-            background: "#0D0D1A",
-            color: "#F1F0EE",
+            background: "var(--k-field)",
+            color: "var(--k-text)",
             fontSize: 18,
             fontFamily: "'DM Sans', sans-serif",
             fontWeight: 650,
@@ -107,8 +107,8 @@ export default function ClientModal({
             marginBottom: clientEmailError ? 8 : 24,
             borderRadius: 15,
             border: clientEmailError ? "1.5px solid #F87171" : "1.5px solid #3A3852",
-            background: "#0D0D1A",
-            color: "#F1F0EE",
+            background: "var(--k-field)",
+            color: "var(--k-text)",
             fontSize: 18,
             fontFamily: "'DM Sans', sans-serif",
             fontWeight: 650,
@@ -124,7 +124,7 @@ export default function ClientModal({
         )}
 
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", flexWrap: "wrap" }}>
-          <button onClick={onCancel} style={{ padding: "13px 20px", minHeight: 50, borderRadius: 15, border: "1.5px solid #343148", background: "rgba(13,13,26,0.35)", color: "#A8A6B8", cursor: "pointer", fontSize: 16, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>
+          <button onClick={onCancel} style={{ padding: "13px 20px", minHeight: 50, borderRadius: 15, border: "1.5px solid var(--k-border-strong)", background: "var(--k-muted-fill)", color: "var(--k-muted)", cursor: "pointer", fontSize: 16, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>
             Annuler
           </button>
           <button

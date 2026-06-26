@@ -6,7 +6,7 @@ export default function ClientPageHeader({ project, color, onBack, publicView = 
           data-kaleido-back-button="true"
           onClick={onBack}
           style={{
-            background: "#1E1E32",
+            background: "var(--k-surface-2)",
             border: "none",
             borderRadius: 10,
             width: 36,
@@ -27,7 +27,7 @@ export default function ClientPageHeader({ project, color, onBack, publicView = 
       )}
 
       <div style={{ minWidth: 0, flex: 1 }}>
-        <h1 style={{ color: "#F1F0EE", margin: 0, fontSize: 24, lineHeight: 1.05, fontWeight: 800, fontFamily: "'Syne', sans-serif", letterSpacing: 0 }}>
+        <h1 style={{ color: "var(--k-text)", margin: 0, fontSize: 24, lineHeight: 1.05, fontWeight: 800, fontFamily: "'Syne', sans-serif", letterSpacing: 0 }}>
           {publicView ? "Suivi de projet" : "Fiche client"}
         </h1>
         <div

@@ -22,7 +22,7 @@ export default function ClientProgressCard({ color, progress, elapsedTimeLabel, 
         </div>
       }
     >
-      <div style={{ height: 9, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+      <div style={{ height: 9, borderRadius: 999, background: "var(--k-muted-fill-2)", overflow: "hidden" }}>
         <div
           style={{
             width: `${progress}%`,
@@ -35,13 +35,13 @@ export default function ClientProgressCard({ color, progress, elapsedTimeLabel, 
         />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 13 }}>
-        <div style={{ background: "rgba(13,13,26,0.54)", borderRadius: 14, padding: 12, border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ color: "#6B6A7A", fontSize: 11, marginBottom: 3 }}>Temps</div>
-          <div style={{ color: "#F1F0EE", fontSize: 13, fontWeight: 700 }}>{elapsedTimeLabel}</div>
+        <div style={{ background: "var(--k-muted-fill)", borderRadius: 14, padding: 12, border: "1px solid var(--k-border)" }}>
+          <div style={{ color: "var(--k-muted-2)", fontSize: 11, marginBottom: 3 }}>Temps</div>
+          <div style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 700 }}>{elapsedTimeLabel}</div>
         </div>
-        <div style={{ background: "rgba(13,13,26,0.54)", borderRadius: 14, padding: 12, border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ color: "#6B6A7A", fontSize: 11, marginBottom: 3 }}>Statut</div>
-          <div style={{ color: "#F1F0EE", fontSize: 13, fontWeight: 700 }}>{statusLabel}</div>
+        <div style={{ background: "var(--k-muted-fill)", borderRadius: 14, padding: 12, border: "1px solid var(--k-border)" }}>
+          <div style={{ color: "var(--k-muted-2)", fontSize: 11, marginBottom: 3 }}>Statut</div>
+          <div style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 700 }}>{statusLabel}</div>
         </div>
       </div>
     </ClientSectionCard>

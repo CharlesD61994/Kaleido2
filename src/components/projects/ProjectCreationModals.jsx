@@ -17,10 +17,10 @@ export default function ProjectCreationModals({
   return (
     <>
       {showNewMenu && (
-        <div onClick={onCloseNewMenu} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#1A1A2E", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430 }}>
-            <div style={{ width: 36, height: 4, background: "#333", borderRadius: 2, margin: "0 auto 24px" }} />
-            <h3 style={{ color: "#F1F0EE", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center" }}>Nouveau projet</h3>
+        <div data-kaleido-modal-backdrop="true" onClick={onCloseNewMenu} style={{ position: "fixed", inset: 0, zIndex: 200, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div data-kaleido-modal-card="true" onClick={(e) => e.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430 }}>
+            <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 24px" }} />
+            <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center" }}>Nouveau projet</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {patrons.length > 0 && (
                 <button
@@ -32,8 +32,8 @@ export default function ProjectCreationModals({
                 >
                   <IconBadge name="bookOpen" tone="green" size={24} />
                   <div>
-                    <div style={{ color: "#F1F0EE", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 4, display: "flex", alignItems: "center", gap: 10 }}>Choisir un patron</div>
-                    <div style={{ color: "#6B6A7A", fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>{patrons.length} patron{patrons.length > 1 ? "s" : ""} dans ta bibliothèque</div>
+                    <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 4, display: "flex", alignItems: "center", gap: 10 }}>Choisir un patron</div>
+                    <div style={{ color: "var(--k-muted-2)", fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>{patrons.length} patron{patrons.length > 1 ? "s" : ""} dans ta bibliothèque</div>
                   </div>
                 </button>
               )}
@@ -47,8 +47,8 @@ export default function ProjectCreationModals({
               >
                 <IconBadge name="library" tone="violet" size={24} />
                 <div>
-                  <div style={{ color: "#F1F0EE", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 4, display: "flex", alignItems: "center", gap: 10 }}>Aller à la bibliothèque</div>
-                  <div style={{ color: "#6B6A7A", fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>Crée ou importe un patron d'abord</div>
+                  <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 4, display: "flex", alignItems: "center", gap: 10 }}>Aller à la bibliothèque</div>
+                  <div style={{ color: "var(--k-muted-2)", fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>Crée ou importe un patron d'abord</div>
                 </div>
               </button>
             </div>
@@ -57,11 +57,11 @@ export default function ProjectCreationModals({
       )}
 
       {showSelectPatronModal && (
-        <div onClick={onCloseSelectPatron} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#1A1A2E", borderRadius: "24px 24px 0 0", padding: "20px 6px 40px", width: "100%", maxWidth: 430, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ width: 36, height: 4, background: "#333", borderRadius: 2, margin: "0 auto 16px" }} />
-            <h3 style={{ color: "#F1F0EE", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 4px", textAlign: "center" }}>Choisir un patron</h3>
-            <p style={{ color: "#6B6A7A", fontSize: 12, textAlign: "center", margin: "0 0 16px", fontFamily: "'DM Sans', sans-serif" }}>Appuie sur une bulle pour créer le projet</p>
+        <div data-kaleido-modal-backdrop="true" onClick={onCloseSelectPatron} style={{ position: "fixed", inset: 0, zIndex: 200, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div data-kaleido-modal-card="true" onClick={(e) => e.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "20px 6px 40px", width: "100%", maxWidth: 430, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+            <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 16px" }} />
+            <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 4px", textAlign: "center" }}>Choisir un patron</h3>
+            <p style={{ color: "var(--k-muted-2)", fontSize: 12, textAlign: "center", margin: "0 0 16px", fontFamily: "'DM Sans', sans-serif" }}>Appuie sur une bulle pour créer le projet</p>
             <div style={{ overflowY: "auto", flex: 1 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", rowGap: 4, columnGap: 0 }}>
                 {patrons.map((patron, idx) => (

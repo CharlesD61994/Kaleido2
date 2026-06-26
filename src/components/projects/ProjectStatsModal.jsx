@@ -34,8 +34,8 @@ const getProjectParts = (project = {}) => {
 
 function StatBox({ label, value, color }) {
   return (
-    <div style={{ background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "12px 10px" }}>
-      <div style={{ color: "#77758A", fontSize: 10, fontFamily: "monospace", fontWeight: 800, letterSpacing: 0.7, textTransform: "uppercase", marginBottom: 5 }}>{label}</div>
+    <div style={{ background: "var(--k-muted-fill)", border: "1px solid var(--k-border)", borderRadius: 14, padding: "12px 10px" }}>
+      <div style={{ color: "var(--k-muted-3)", fontSize: 10, fontFamily: "monospace", fontWeight: 800, letterSpacing: 0.7, textTransform: "uppercase", marginBottom: 5 }}>{label}</div>
       <div style={{ color, fontSize: 18, fontWeight: 800, fontFamily: "'DM Sans', sans-serif" }}>{value}</div>
     </div>
   );
@@ -61,44 +61,44 @@ export default function ProjectStatsModal({ project, onClose, onOpenClientPage }
             <Icon name="chart" size={25} color="#fff" stroke={2.2} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ color: "#F1F0EE", fontSize: 19, fontWeight: 800, lineHeight: 1.15, fontFamily: "'DM Sans', sans-serif" }}>{project.name || "Patron termine"}</div>
+            <div style={{ color: "var(--k-text)", fontSize: 19, fontWeight: 800, lineHeight: 1.15, fontFamily: "'DM Sans', sans-serif" }}>{project.name || "Patron terminé"}</div>
             <div style={{ color: "#8F8A9D", fontSize: 12, marginTop: 5, fontFamily: "monospace" }}>
               Termine le {formatDate(project.completedAt)}
             </div>
           </div>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.06)", color: "#E2E0DC", fontSize: 20, cursor: "pointer", lineHeight: 1 }}>x</button>
+          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text-soft)", fontSize: 20, cursor: "pointer", lineHeight: 1 }}>x</button>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
-          <StatBox label="Rangs" value={`${rowsDone}/${totalRows || rowsDone}`} color="#F1F0EE" />
+          <StatBox label="Rangs" value={`${rowsDone}/${totalRows || rowsDone}`} color="var(--k-text)" />
           <StatBox label="Temps total" value={formatTime(elapsedTime)} color={color.light} />
           <StatBox label="Moyenne" value={averageTime ? formatTime(averageTime) : "00:00:00"} color="#22D3EE" />
           <StatBox label="Type" value={project.projectType === "pdf" ? "PDF" : "Custom"} color="#C4B5FD" />
         </div>
 
-        <div style={{ color: "#F1F0EE", fontSize: 13, fontWeight: 800, margin: "4px 0 10px", fontFamily: "'DM Sans', sans-serif" }}>Temps par partie</div>
+        <div style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 800, margin: "4px 0 10px", fontFamily: "'DM Sans', sans-serif" }}>Temps par partie</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {parts.length > 0 ? parts.map((part) => {
             const time = Number(partTimes[String(part.id)]) || 0;
             return (
-              <div key={part.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "10px 12px" }}>
+              <div key={part.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "var(--k-muted-fill)", border: "1px solid var(--k-border)", borderRadius: 12, padding: "10px 12px" }}>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ color: "#E2E0DC", fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{part.name}</div>
+                  <div style={{ color: "var(--k-text-soft)", fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{part.name}</div>
                   <div style={{ color: "#77758A", fontSize: 11, marginTop: 2 }}>{part.rows} rangs</div>
                 </div>
                 <div style={{ color: color.light, fontSize: 13, fontWeight: 800, fontFamily: "monospace", flexShrink: 0 }}>{formatTime(time)}</div>
               </div>
             );
           }) : (
-            <div style={{ color: "#77758A", fontSize: 13, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: 12 }}>
-              Aucun detail par partie pour ce projet.
+            <div style={{ color: "var(--k-muted-3)", fontSize: 13, background: "var(--k-muted-fill)", border: "1px solid var(--k-border)", borderRadius: 12, padding: 12 }}>
+              Aucun détail par partie pour ce projet.
             </div>
           )}
         </div>
 
         {canOpenClientPage ? (
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 14 }}>
-            <button onClick={() => onOpenClientPage(project)} style={{ minHeight: 44, padding: "11px 16px", borderRadius: 13, border: `1px solid ${color.light}55`, background: `${color.bg}44`, color: "#F1F0EE", cursor: "pointer", fontWeight: 800 }}>
+            <button onClick={() => onOpenClientPage(project)} style={{ minHeight: 44, padding: "11px 16px", borderRadius: 13, border: `1px solid ${color.light}55`, background: `${color.bg}44`, color: "var(--k-text)", cursor: "pointer", fontWeight: 800 }}>
               Fiche client
             </button>
           </div>

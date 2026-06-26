@@ -14,13 +14,13 @@ function PdfPartiePickerModal({ currentPartieIdx, onClose, onSelect, pdfParties 
 
   return (
     <div data-kaleido-modal-backdrop="true" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(0,0,0,0.78)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ width: "100%", maxWidth: 360, maxHeight: "78vh", overflowY: "auto", background: "#1A1A2E", border: "1px solid rgba(167,139,250,0.24)", borderRadius: 22, padding: 20, boxShadow: "0 18px 60px rgba(0,0,0,0.55)" }}>
+      <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ width: "100%", maxWidth: 360, maxHeight: "78vh", overflowY: "auto", background: "var(--k-surface)", border: "1px solid rgba(167,139,250,0.24)", borderRadius: 22, padding: 20, boxShadow: "0 18px 60px rgba(0,0,0,0.30)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
           <div>
-            <div style={{ color: "#F1F0EE", fontSize: 18, fontWeight: 800, fontFamily: "'Syne', sans-serif" }}>Choisir une partie</div>
+            <div style={{ color: "var(--k-text)", fontSize: 18, fontWeight: 800, fontFamily: "'Syne', sans-serif" }}>Choisir une partie</div>
             <div style={{ color: "#77758A", fontSize: 12, marginTop: 3 }}>Le compteur ira au premier rang choisi.</div>
           </div>
-          <button type="button" onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.06)", color: "#E2E0DC", fontSize: 20, cursor: "pointer", lineHeight: 1 }}>x</button>
+          <button type="button" onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text-soft)", fontSize: 20, cursor: "pointer", lineHeight: 1 }}>x</button>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -40,15 +40,15 @@ function PdfPartiePickerModal({ currentPartieIdx, onClose, onSelect, pdfParties 
                   minHeight: 54,
                   padding: "10px 12px",
                   borderRadius: 14,
-                  border: isActive ? `1.5px solid ${color.light}` : "1px solid rgba(255,255,255,0.08)",
-                  background: isActive ? `${color.bg}28` : "rgba(255,255,255,0.035)",
+                  border: isActive ? `1.5px solid ${color.light}` : "1px solid var(--k-border)",
+                  background: isActive ? `${color.bg}28` : "var(--k-muted-fill)",
                   cursor: "pointer",
                   textAlign: "left",
                 }}
               >
                 <span style={{ width: 14, height: 14, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, boxShadow: `0 0 12px ${color.bg}66`, flexShrink: 0 }} />
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: "block", color: "#F1F0EE", fontSize: 14, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{partie.nom || `Partie ${index + 1}`}</span>
+                  <span style={{ display: "block", color: "var(--k-text)", fontSize: 14, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{partie.nom || `Partie ${index + 1}`}</span>
                   <span style={{ display: "block", color: "#77758A", fontSize: 11, marginTop: 2 }}>{partie.totalRangs || 0} rangs</span>
                 </span>
                 {isActive ? <span style={{ color: color.light, fontSize: 11, fontWeight: 900, fontFamily: "monospace" }}>ACTIF</span> : null}
@@ -177,7 +177,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
           </div>
         ) : (
           pages.map((src, index) => (
-            <div key={index} style={{ borderBottom: "2px solid #1A1A2E" }}>
+            <div key={index} style={{ borderBottom: "2px solid var(--k-surface)" }}>
               <img src={src} alt={`Page ${index + 1}`} style={{ width: "100%", display: "block" }} />
             </div>
           ))

@@ -1,9 +1,9 @@
 export default function ClientInfoRow({ label, value }) {
   return (
-    <div style={{ padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+    <div style={{ padding: "12px 0", borderBottom: "1px solid var(--k-border)" }}>
       <div
         style={{
-          color: "#6B6A7A",
+          color: "var(--k-muted-2)",
           fontSize: 11,
           fontFamily: "monospace",
           textTransform: "uppercase",
@@ -15,7 +15,7 @@ export default function ClientInfoRow({ label, value }) {
       </div>
       <div
         style={{
-          color: value ? "#F1F0EE" : "#77758A",
+          color: value ? "var(--k-text)" : "var(--k-muted-3)",
           fontSize: 15,
           fontFamily: "'DM Sans', sans-serif",
           fontWeight: 600,

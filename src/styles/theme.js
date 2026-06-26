@@ -24,6 +24,8 @@ export const THEME_CSS = `
   --k-muted-3: #77758A;
   --k-border: rgba(255,255,255,0.08);
   --k-border-strong: #33334A;
+  --k-muted-fill: rgba(255,255,255,0.06);
+  --k-muted-fill-2: rgba(255,255,255,0.10);
   --k-backdrop: rgba(0,0,0,0.75);
   --k-modal-backdrop: rgba(0,0,0,0.75);
   --k-header-gradient: linear-gradient(180deg, #1A0A2E 0%, #0D0D1A 100%);
@@ -45,6 +47,8 @@ export const THEME_CSS = `
   --k-muted-3: #7C7288;
   --k-border: rgba(70,50,95,0.14);
   --k-border-strong: #D7CCE6;
+  --k-muted-fill: rgba(70,50,95,0.06);
+  --k-muted-fill-2: rgba(70,50,95,0.10);
   --k-backdrop: rgba(24,18,35,0.38);
   --k-modal-backdrop: rgba(24,18,35,0.42);
   --k-header-gradient: linear-gradient(180deg, #F3EAFE 0%, #F7F4FB 100%);
@@ -54,5 +58,15 @@ export const THEME_CSS = `
 
 body {
   background: var(--k-bg);
+}
+
+[data-kaleido-theme="light"] [data-kaleido-modal-backdrop] {
+  background: var(--k-modal-backdrop) !important;
+}
+
+[data-kaleido-theme="light"] [data-kaleido-modal-card] {
+  background: var(--k-surface) !important;
+  color: var(--k-text) !important;
+  box-shadow: 0 22px 70px rgba(41,28,58,0.20) !important;
 }
 `;

@@ -20,7 +20,7 @@ return (
 onTouchMove={e => setSwipeCurrentX(e.touches[0].clientX)}
 onTouchEnd={() => { const d = swipeStartX - swipeCurrentX; if (d > 50) setIsSwipedOpen(true); else if (d < -50) setIsSwipedOpen(false); }}
 onClick={() => { if (isSwipedOpen) setIsSwipedOpen(false); }}
-style={{ background: "#1A1A2E", border: "1px dashed #D9770644", borderRadius: 12, padding: 12, marginBottom: 8, position: "relative", overflow: "hidden" }}>
+style={{ background: "var(--k-surface)", border: "1px dashed #D9770644", borderRadius: 12, padding: 12, marginBottom: 8, position: "relative", overflow: "hidden" }}>
 <div style={{ display: "flex", alignItems: "flex-start", gap: 12, transform: isSwipedOpen ? "translateX(-80px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 <div style={{ background: "#D9770622", borderRadius: 8, padding: "8px 10px", flexShrink: 0 }}>
 <Icon name="note" size={16} color="#FCD34D" />
@@ -29,7 +29,7 @@ style={{ background: "#1A1A2E", border: "1px dashed #D9770644", borderRadius: 12
 {isEditing ? (
 <div>
 <textarea value={tempInstruction} onChange={e => setTempInstruction(e.target.value)} onFocus={e => e.target.select()} rows={3} autoFocus
-style={{ width: "100%", background: "#0D0D1A", border: "1px solid #D9770644", borderRadius: 8, padding: 12, color: "#F1F0EE", fontSize: 16, outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 8 }} />
+style={{ width: "100%", background: "var(--k-field)", border: "1px solid #D9770644", borderRadius: 8, padding: 12, color: "var(--k-text)", fontSize: 16, outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 8 }} />
 <div style={{ display: "flex", gap: 8 }}>
 <button onClick={handleSave} style={{ background: "#D97706", border: "none", borderRadius: 8, padding: "8px 16px", color: "#fff", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Sauvegarder</button>
 <button onClick={handleCancel} style={{ background: "#666", border: "none", borderRadius: 8, padding: "8px 16px", color: "#fff", fontSize: 13, cursor: "pointer" }}>Annuler</button>
@@ -60,7 +60,7 @@ return (
 onTouchMove={e => { if (!isEditing) setSwipeCurrentX(e.touches[0].clientX); }}
 onTouchEnd={() => { if (!isEditing) { const d = swipeStartX - swipeCurrentX; if (d > 50) setIsSwipedOpen(true); else if (d < -50) setIsSwipedOpen(false); } }}
 onClick={() => { if (isSwipedOpen && !isEditing) setIsSwipedOpen(false); }}
-style={{ background: "#13131F", border: isSwipedOpen ? "1px solid #7C3AED44" : "1px solid #ffffff0A", borderRadius: 12, padding: 12, marginBottom: 8, position: "relative", overflow: "hidden" }}>
+style={{ background: "var(--k-field)", border: isSwipedOpen ? "1px solid #7C3AED44" : "1px solid var(--k-border)", borderRadius: 12, padding: 12, marginBottom: 8, position: "relative", overflow: "hidden" }}>
 <div style={{ display: "flex", alignItems: "flex-start", gap: 12, transform: isSwipedOpen ? "translateX(-76px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 <div style={{ background: "#7C3AED22", borderRadius: 8, padding: "8px 12px", minWidth: 40, textAlign: "center", flexShrink: 0 }}>
 <span style={{ color: "#A78BFA", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>{rangIndex + 1}</span>
@@ -69,17 +69,17 @@ style={{ background: "#13131F", border: isSwipedOpen ? "1px solid #7C3AED44" : "
 {isEditing ? (
 <div style={{ width: "100%" }}>
 <textarea value={tempInstruction} onChange={e => setTempInstruction(e.target.value)} onFocus={e => e.target.select()} placeholder="Instruction du rang..." rows={3} autoFocus
-style={{ width: "100%", background: "#0D0D1A", border: "1px solid #A78BFA44", borderRadius: 8, padding: "12px", color: "#F1F0EE", fontSize: 16, fontFamily: "'DM Sans', sans-serif", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
+style={{ width: "100%", background: "var(--k-field)", border: "1px solid #A78BFA44", borderRadius: 8, padding: "12px", color: "var(--k-text)", fontSize: 16, fontFamily: "'DM Sans', sans-serif", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
 <input value={tempMailles} onChange={e => setTempMailles(e.target.value)} placeholder="Nb mailles" type="number"
-style={{ background: "#0D0D1A", border: "1px solid #A78BFA44", borderRadius: 8, padding: "10px 12px", color: "#F1F0EE", fontSize: 16, width: 100, outline: "none" }} />
+style={{ background: "var(--k-field)", border: "1px solid #A78BFA44", borderRadius: 8, padding: "10px 12px", color: "var(--k-text)", fontSize: 16, width: 100, outline: "none" }} />
 <button onClick={handleSave} style={{ background: "#059669", border: "none", borderRadius: 8, padding: "8px 16px", color: "#fff", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Sauvegarder</button>
 <button onClick={handleCancel} style={{ background: "#666", border: "none", borderRadius: 8, padding: "8px 16px", color: "#fff", fontSize: 13, cursor: "pointer" }}>Annuler</button>
 </div>
 </div>
 ) : (
 <div style={{ width: "100%", cursor: "pointer" }} onClick={handleEditClick}>
-<div style={{ color: "#F1F0EE", fontSize: 14, lineHeight: 1.5, marginBottom: 6, wordWrap: "break-word" }}>{rang.instruction}</div>
+<div style={{ color: "var(--k-text)", fontSize: 14, lineHeight: 1.5, marginBottom: 6, wordWrap: "break-word" }}>{rang.instruction}</div>
 {rang.mailles && <div style={{ color: "#A78BFA", fontSize: 12, fontFamily: "monospace", marginBottom: 4 }}>{rang.mailles} mailles</div>}
 <div style={{ color: "#666", fontSize: 11, fontStyle: "italic" }}>Swipe ← pour actions • Clic pour modifier</div>
 </div>

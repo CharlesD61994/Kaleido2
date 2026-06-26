@@ -41,7 +41,7 @@ export default function ProBubbleMenuButton({ color, project, onMenuOpen }) {
         height: 24,
         borderRadius: "50%",
         background: isCompleted ? "linear-gradient(135deg, #403B4D, #242231)" : `linear-gradient(135deg, ${color.light}, ${color.bg})`,
-        border: "2.5px solid #0D0D1A",
+        border: "2.5px solid var(--k-bg)",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",

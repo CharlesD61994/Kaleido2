@@ -142,16 +142,16 @@ export default function PhotoCropModal({ onClose, onConfirm, existingImage }) {
   return (
     <div data-kaleido-modal-backdrop="true" style={{ position: "fixed", inset: 0, zIndex: 300, background: "#000", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
       {!imgSrc ? (
-        <div data-kaleido-modal-card="true" style={{ textAlign: "center", padding: 32, background: "#1A1A2E", borderRadius: 18, width: "calc(100% - 40px)", maxWidth: 340 }}>
+        <div data-kaleido-modal-card="true" style={{ textAlign: "center", padding: 32, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, width: "calc(100% - 40px)", maxWidth: 340 }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><IconBadge name="camera" tone="pink" size={28} badgeSize={64} /></div>
-          <h3 style={{ color: "#F1F0EE", fontSize: 20, fontFamily: "'Syne', sans-serif", margin: "0 0 8px" }}>Ajouter une photo</h3>
-          <p style={{ color: "#6B6A7A", fontSize: 14, margin: "0 0 28px" }}>Choisis une photo depuis ta galerie</p>
+          <h3 style={{ color: "var(--k-text)", fontSize: 20, fontFamily: "'Syne', sans-serif", margin: "0 0 8px" }}>Ajouter une photo</h3>
+          <p style={{ color: "var(--k-muted-2)", fontSize: 14, margin: "0 0 28px" }}>Choisis une photo depuis ta galerie</p>
           <label style={{ background: "linear-gradient(135deg, #7C3AED, #EC4899)", borderRadius: 16, padding: "14px 32px", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "inline-block" }}>
             Choisir une photo
             <input type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
           </label>
           <div style={{ marginTop: 20 }}>
-            <button onClick={onClose} style={{ background: "#1E1E32", border: "1px solid #555", borderRadius: 12, padding: "10px 24px", color: "#F1F0EE", fontSize: 14, cursor: "pointer" }}>Annuler</button>
+            <button onClick={onClose} style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-border-strong)", borderRadius: 12, padding: "10px 24px", color: "var(--k-text)", fontSize: 14, cursor: "pointer" }}>Annuler</button>
           </div>
         </div>
       ) : (
@@ -190,7 +190,7 @@ export default function PhotoCropModal({ onClose, onConfirm, existingImage }) {
             />
           </div>
           <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 14, marginTop: 36 }}>
-            <button onClick={onClose} style={{ padding: "14px 30px", borderRadius: 14, border: "2px solid #555", background: "#2A2A3E", color: "#F1F0EE", fontSize: 16, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>Annuler</button>
+            <button onClick={onClose} style={{ padding: "14px 30px", borderRadius: 14, border: "2px solid var(--k-border-strong)", background: "var(--k-surface-2)", color: "var(--k-text)", fontSize: 16, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>Annuler</button>
             <button onClick={handleConfirm} style={{ padding: "14px 30px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #7C3AED, #EC4899)", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Confirmer ✓</button>
           </div>
           <div style={{ position: "relative", zIndex: 2, marginTop: 16 }}>
