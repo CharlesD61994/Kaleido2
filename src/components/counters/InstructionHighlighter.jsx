@@ -42,7 +42,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
   return (
     <span style={{ display: "block" }}>
       {lines.map((parts, lineIndex) => (
-        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "0.8em" }}>
+        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "0.35em" }}>
           {parts.map((part, partIndex) => {
             segmentIndex += 1;
             const currentIndex = segmentIndex;
@@ -50,12 +50,10 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
             return (
               <span key={`${part.body}-${lineIndex}-${partIndex}`} style={{ display: "inline", whiteSpace: "normal", overflowWrap: "break-word", wordBreak: "normal" }}>
                 {part.leading ? <span style={{ whiteSpace: "pre" }}>{part.leading}</span> : null}
-                <button
-                  type="button"
+                <span
                   onClick={() => onSelect(currentIndex)}
                   style={{
                     display: "inline",
-                    border: "none",
                     borderRadius: 0,
                     padding: 0,
                     margin: 0,
@@ -69,21 +67,22 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                     cursor: "pointer",
                     boxShadow: "none",
                     textDecoration: "none",
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
                   <span
                     style={{
-                      borderRadius: 8,
-                      padding: "0 2px",
+                      borderRadius: 7,
+                      padding: "0 3px 1px",
                       background: selected ? `linear-gradient(135deg, ${accent.bg}, ${accent.light})` : "transparent",
                       color: selected ? "#fff" : "var(--k-text)",
-                      boxShadow: selected ? `0 0 0 2px ${accent.bg}55, 0 0 18px ${accent.bg}55` : "none",
+                      boxShadow: selected ? `0 0 0 1px ${accent.bg}55` : "none",
                     }}
                   >
                     {part.body}
                   </span>
                   {part.separator}
-                </button>
+                </span>
                 {part.trailing ? <span style={{ whiteSpace: "pre" }}>{part.trailing}</span> : null}
               </span>
             );
