@@ -86,7 +86,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap'); ${GLOBAL_MOTION_CSS} ::-webkit-scrollbar { width: 0; height: 0; } .partiesStrip { scrollbar-width: none; -ms-overflow-style: none; } .partiesStrip::-webkit-scrollbar { width: 0; height: 0; display: none; } * { -webkit-tap-highlight-color: transparent; } input, textarea, select { font-size: 16px !important; } @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} } .kgbg { background: var(--k-bg); } @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg);opacity:0.1} 50%{transform:translateY(-20px) rotate(180deg);opacity:0.3} }`}</style>
       <div className="kgbg" style={{ position: "absolute", inset: 0 }} />
       {Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} style={{ position: "absolute", top: `${20 + index * 15}%`, left: `${10 + index * 12}%`, width: 20, height: 20, borderRadius: "50%", background: `${currentPartieColor.light}22`, animation: `float ${3 + index * 0.5}s ease-in-out infinite`, animationDelay: `${index * 0.3}s` }} />
+        <div key={index} style={{ position: "absolute", top: `${20 + index * 15}%`, left: `${10 + index * 12}%`, width: 20, height: 20, borderRadius: "50%", background: `${currentPartieColor.bg}22`, animation: `float ${3 + index * 0.5}s ease-in-out infinite`, animationDelay: `${index * 0.3}s` }} />
       ))}
 
       <div style={{ position: "relative", zIndex: 10, padding: "44px 8px 0 6px", background: "color-mix(in srgb, var(--k-bg) 95%, transparent)", backdropFilter: "blur(10px)", flexShrink: 0 }}>
@@ -167,8 +167,8 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
             />
           </div>
           {currentRang?.mailles && (
-            <div style={{ background: `${currentPartieColor.bg}22`, borderRadius: 10, padding: "8px 16px", display: "inline-block", border: `1px solid ${currentPartieColor.light}44` }}>
-              <span style={{ color: currentPartieColor.light, fontSize: 14, fontFamily: "monospace", fontWeight: 600 }}>{currentRang.mailles} mailles</span>
+            <div style={{ background: `${currentPartieColor.bg}22`, borderRadius: 10, padding: "8px 16px", display: "inline-block", border: `1px solid ${currentPartieColor.bg}44` }}>
+              <span style={{ color: currentPartieColor.bg, fontSize: 14, fontFamily: "monospace", fontWeight: 800 }}>{currentRang.mailles} mailles</span>
             </div>
           )}
         </div>
@@ -182,7 +182,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
               if (item.type === "partie") {
                 const col = KALEIDOSCOPE_COLORS[item.partie.colorIdx % KALEIDOSCOPE_COLORS.length];
                 return (
-                  <div key={`${item.id}-${currentIndex}`} style={{ background: "var(--k-muted-fill)", border: `1px solid ${col.light}22`, borderRadius: 10, padding: "6px 10px", color: col.light, fontSize: 10, fontFamily: "'DM Sans', sans-serif", fontWeight: 800, letterSpacing: 0.45, textTransform: "uppercase" }}>
+                  <div key={`${item.id}-${currentIndex}`} style={{ background: `${col.bg}12`, border: `1px solid ${col.bg}2F`, borderRadius: 10, padding: "6px 10px", color: col.bg, fontSize: 10, fontFamily: "'DM Sans', sans-serif", fontWeight: 800, letterSpacing: 0.45, textTransform: "uppercase" }}>
                     {item.partie.nom}
                   </div>
                 );

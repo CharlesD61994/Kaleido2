@@ -20,7 +20,7 @@ const doAction = (e, fn) => { e.stopPropagation(); fn(); };
 return (
 <div onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
 onClick={e => { if (isSwipedOpen && !isEditing && !isEditingMax) { e.stopPropagation(); setIsSwipedOpen(false); } }}
-style={{ background: "rgba(30,30,50,0.8)", backdropFilter: "blur(10px)", border: `1px solid ${col.light}44`, borderRadius: 12, padding: 12, textAlign: "center", position: "relative", overflow: "hidden" }}>
+style={{ background: "linear-gradient(180deg, var(--k-surface), var(--k-surface-2))", backdropFilter: "blur(10px)", border: `1px solid ${col.bg}44`, borderRadius: 12, padding: 12, textAlign: "center", position: "relative", overflow: "hidden", boxShadow: `0 8px 28px ${col.bg}18` }}>
 <div style={{ transform: isSwipedOpen ? "translateX(-95px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 <div style={{ marginBottom: 8 }}>
 {isEditing
@@ -28,7 +28,7 @@ style={{ background: "rgba(30,30,50,0.8)", backdropFilter: "blur(10px)", border:
 onKeyDown={e => e.key === "Enter" && (onUpdate({ name: tempName }), setIsEditing(false))}
 onBlur={() => (onUpdate({ name: tempName }), setIsEditing(false))}
 onFocus={e => e.target.select()} autoFocus style={{ background: "var(--k-field)", border: `1px solid ${col.light}44`, borderRadius: 6, padding: "4px 8px", color: "var(--k-text)", fontSize: 16, outline: "none", textAlign: "center", fontFamily: "'DM Sans', sans-serif", width: "100%", fontWeight: 600 }} />
-: <div onClick={e => { e.stopPropagation(); setIsEditing(true); }} style={{ color: col.light, fontSize: 13, textTransform: "uppercase", letterSpacing: 1, cursor: "pointer", fontWeight: 600 }}>{counter.name}</div>
+: <div onClick={e => { e.stopPropagation(); setIsEditing(true); }} style={{ color: col.bg, fontSize: 13, textTransform: "uppercase", letterSpacing: 1, cursor: "pointer", fontWeight: 800 }}>{counter.name}</div>
 }
 </div>
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
@@ -88,7 +88,7 @@ style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, paddingB
 <div style={{ display: "flex", alignItems: "center", gap: compact ? 8 : 16, flex: 1, minWidth: 0, padding: compact && showInlineControls ? "18px 0 7px" : 0, transform: swiped ? `translateX(${compact ? "-84px" : "-110px"})` : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 {/* Cercle */}
 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
-<div style={{ color: currentPartieColor.light, fontSize: labelSize, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>Global</div>
+<div style={{ color: currentPartieColor.bg, fontSize: labelSize, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
 <div key={`progress-${currentCountIndex}-${totalRangs}`} style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 10px ${currentPartieColor.bg}33)`, transformOrigin: "center", animation: "kaleidoProgressCleanPulse 340ms cubic-bezier(0.25, 0.9, 0.35, 1)" }}>
 <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
 <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth={compact ? 3 : 4} fill="none" />
@@ -107,7 +107,7 @@ strokeLinecap="round" style={{
 </svg>
 <div style={{ position: "absolute", top:0, left:0, right:0, bottom:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
 <div style={{ color: "var(--k-text)", fontSize: countSize, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{Math.max(0, currentCountIndex + 1)}</div>
-<div style={{ color: currentPartieColor.light, fontSize: compact ? 10 : 12, fontFamily: "monospace", marginTop: compact ? 1 : 3 }}>/ {totalRangs}</div>
+<div style={{ color: currentPartieColor.bg, fontSize: compact ? 10 : 12, fontFamily: "monospace", marginTop: compact ? 1 : 3, fontWeight: 800 }}>/ {totalRangs}</div>
 </div>
 </div>
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
@@ -121,9 +121,9 @@ strokeLinecap="round" style={{
 ) : null}
 <div style={{ transform: showInlineControls ? "translateY(9px)" : "translateY(0)" }}>
 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compact ? 4 : 6, gap: 8 }}>
-<div style={{ color: "var(--k-text)", fontSize: compact ? 15 : 15, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
+<div style={{ color: currentPartieColor.bg, fontSize: compact ? 15 : 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-<div style={{ color: currentPartieColor.light, fontSize: compact ? 13 : 13, fontFamily: "monospace", fontWeight: 600 }}>{localRangNumber}/{currentPartieTotal}</div>
+<div style={{ color: currentPartieColor.bg, fontSize: compact ? 13 : 13, fontFamily: "monospace", fontWeight: 800 }}>{localRangNumber}/{currentPartieTotal}</div>
 </div>
 </div>
 <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: barHeight, overflow: "hidden" }}>
@@ -131,7 +131,7 @@ strokeLinecap="round" style={{
 </div>
 {showInlineControls ? (
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 9 }}>
-<button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 34, height: 34, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}33` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.light}44`, color: canPrev ? currentPartieColor.light : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
+<button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 34, height: 34, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
 <span style={{ color: "var(--k-text)", fontSize: 28, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 34, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
 <button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 34, height: 34, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
 </div>
