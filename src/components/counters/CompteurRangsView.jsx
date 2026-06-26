@@ -158,7 +158,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
           <div style={{ background: `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, borderRadius: 12, padding: "10px 17px", display: "inline-block", marginBottom: 12, boxShadow: `0 5px 18px ${currentPartieColor.bg}70`, border: "1px solid rgba(255,255,255,0.20)" }}>
             <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif" }}>{currentRang?.isNote ? "Note" : `Rang ${Math.max(1, currentPartieRangIndex + 1)}`}</span>
           </div>
-          <div style={{ color: "var(--k-text)", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.28, padding: "3px 8px 4px", marginBottom: 10, whiteSpace: "normal", overflowWrap: "normal", wordBreak: "normal", maxHeight: 210, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
+          <div style={{ color: "var(--k-text)", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.38, padding: "3px 8px 4px", marginBottom: 10, whiteSpace: "normal", overflowWrap: "normal", wordBreak: "normal", maxHeight: 210, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
             <InstructionHighlighter
               text={currentRang?.instruction}
               selectedIndex={instructionHighlights?.[currentRang?.id]}
