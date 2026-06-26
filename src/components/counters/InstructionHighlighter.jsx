@@ -42,7 +42,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
   return (
     <span style={{ display: "block" }}>
       {lines.map((parts, lineIndex) => (
-        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "1.2em" }}>
+        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "0.8em" }}>
           {parts.map((part, partIndex) => {
             segmentIndex += 1;
             const currentIndex = segmentIndex;
