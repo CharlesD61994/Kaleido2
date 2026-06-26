@@ -47,7 +47,7 @@ export default function PdfCounterCard({
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0, transform: swiped ? "translateX(-84px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
-            <div style={{ color: color.light, fontSize: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>Global</div>
+            <div style={{ color: color.bg, fontSize: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
             <div style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 12px ${color.bg}3F)` }}>
               <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
                 <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth="3" fill="none" />
@@ -66,7 +66,7 @@ export default function PdfCounterCard({
               </svg>
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ color: "var(--k-text)", fontSize: 28, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
-                <span style={{ color: color.light, fontSize: 10, fontFamily: "monospace", marginTop: 1 }}>/ {total > 0 ? total : "-"}</span>
+                <span style={{ color: color.bg, fontSize: 10, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
               </div>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function PdfCounterCard({
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, transform: swiped ? "translateX(-100px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, width: 80, flexShrink: 0 }}>
-          <div style={{ color: color.light, fontSize: 14, fontFamily: "'DM Sans', sans-serif", letterSpacing: 0.3, textAlign: "center", lineHeight: 1.2, fontWeight: 700 }}>Global</div>
+          <div style={{ color: color.bg, fontSize: 14, fontFamily: "'DM Sans', sans-serif", letterSpacing: 0.3, textAlign: "center", lineHeight: 1.2, fontWeight: 800 }}>Global</div>
           <div key={`pdf-progress-${rang}-${total}`} style={{ position: "relative", width: 64, height: 64, filter: `drop-shadow(0 0 10px ${color.bg}30)`, transformOrigin: "center", animation: "kaleidoProgressCleanPulse 320ms cubic-bezier(0.25, 0.9, 0.35, 1)" }}>
             <svg width="64" height="64" style={{ transform: "rotate(-90deg)" }}>
               <circle cx="32" cy="32" r="27" stroke="var(--k-muted-fill-2)" strokeWidth="3.5" fill="none" />
@@ -152,7 +152,7 @@ export default function PdfCounterCard({
             </svg>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
               <span style={{ color: "var(--k-text)", fontSize: 19, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
-              <span style={{ color: color.light, fontSize: 11, fontFamily: "monospace", marginTop: 1 }}>/ {total > 0 ? total : "-"}</span>
+              <span style={{ color: color.bg, fontSize: 11, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
             </div>
           </div>
           {total > 0 && <span style={{ color: "var(--k-muted-2)", fontSize: 9, fontFamily: "monospace" }}>{pct}%</span>}
@@ -168,11 +168,11 @@ export default function PdfCounterCard({
                     event.stopPropagation();
                     if (typeof onOpenPartiePicker === "function") onOpenPartiePicker();
                   }}
-                  style={{ background: "none", border: "none", padding: 0, color: color.light, fontSize: 14, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, cursor: "pointer", textAlign: "left" }}
+                  style={{ background: "none", border: "none", padding: 0, color: color.bg, fontSize: 14, fontFamily: "'DM Sans', sans-serif", fontWeight: 800, cursor: "pointer", textAlign: "left" }}
                 >
                   {currentPartie.nom}
                 </button>
-                <span style={{ color: color.light, fontSize: 14, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>{rangDansPartie}/{totalPartieCourante}</span>
+                <span style={{ color: color.bg, fontSize: 14, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>{rangDansPartie}/{totalPartieCourante}</span>
               </div>
               <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 6, height: 4, overflow: "hidden", marginTop: 2, marginBottom: 16 }}>
                 <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${partProgress}%`, height: "100%", transition: "width 260ms cubic-bezier(0.22, 1, 0.36, 1)" }} />
@@ -181,7 +181,7 @@ export default function PdfCounterCard({
           ) : total > 0 ? (
             <>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ color: color.light, fontSize: 14, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>Progression</span>
+                <span style={{ color: color.bg, fontSize: 14, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Progression</span>
                 <span style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{rang}/{total}</span>
               </div>
               <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 6, height: 4, overflow: "hidden", marginTop: 2, marginBottom: 16 }}>
