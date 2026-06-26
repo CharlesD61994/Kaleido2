@@ -28,6 +28,8 @@ export const THEME_CSS = `
   --k-muted-fill-2: rgba(255,255,255,0.10);
   --k-control-border: transparent;
   --k-divider: rgba(255,255,255,0.12);
+  --k-segment-bg: #1E1E32;
+  --k-segment-border: transparent;
   --k-segment-idle-bg: transparent;
   --k-segment-idle-color: #6B6A7A;
   --k-backdrop: rgba(0,0,0,0.75);
@@ -55,8 +57,10 @@ export const THEME_CSS = `
   --k-muted-fill-2: rgba(70,50,95,0.10);
   --k-control-border: rgba(70,50,95,0.24);
   --k-divider: rgba(40,32,52,0.24);
-  --k-segment-idle-bg: rgba(124,58,237,0.07);
-  --k-segment-idle-color: #5F536D;
+  --k-segment-bg: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(219,39,119,0.10));
+  --k-segment-border: transparent;
+  --k-segment-idle-bg: transparent;
+  --k-segment-idle-color: #5A496C;
   --k-backdrop: rgba(24,18,35,0.38);
   --k-modal-backdrop: rgba(24,18,35,0.42);
   --k-header-gradient: linear-gradient(180deg, #F3EAFE 0%, #F7F4FB 100%);
