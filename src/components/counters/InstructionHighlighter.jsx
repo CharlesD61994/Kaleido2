@@ -28,6 +28,10 @@ const splitInstructionSegments = (text = "") => {
   return parts;
 };
 
+const protectInstructionUnits = (value = "") => (
+  String(value).replace(/\b(\d+)\s+([A-Za-zÀ-ÿ][\wÀ-ÿ.]*)/g, "$1\u00A0$2")
+);
+
 export default function InstructionHighlighter({ text, selectedIndex, onSelect, color }) {
   const accent = color || { bg: "#7C3AED", light: "#A78BFA" };
   const lines = String(text || "").split(/\r?\n/).map((line) => splitInstructionSegments(line));
@@ -76,10 +80,10 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                       padding: "0 3px 1px",
                       background: selected ? `linear-gradient(135deg, ${accent.bg}, ${accent.light})` : "transparent",
                       color: selected ? "#fff" : "var(--k-text)",
-                      boxShadow: selected ? `0 0 0 1px ${accent.bg}55` : "none",
+                      boxShadow: "none",
                     }}
                   >
-                    {part.body}
+                    {protectInstructionUnits(part.body)}
                   </span>
                   {part.separator}
                 </span>
