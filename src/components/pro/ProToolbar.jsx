@@ -10,15 +10,15 @@ export default function ProToolbar({ search, activeFilter, onSearchChange, onFil
           display: "flex",
           alignItems: "center",
           gap: 10,
-          background: "#1A1A2E",
+          background: "var(--k-surface)",
           borderRadius: 14,
           padding: "12px 14px",
           marginBottom: 8,
-          border: "1px solid rgba(255,255,255,0.12)",
+          border: "1px solid var(--k-border)",
         }}
       >
-        <span style={{ color: "#6B6A7A", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon name="search" size={16} color="#6B6A7A" />
+        <span style={{ color: "var(--k-muted-2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon name="search" size={16} color="var(--k-muted-2)" />
         </span>
         <input
           value={search}
@@ -28,7 +28,7 @@ export default function ProToolbar({ search, activeFilter, onSearchChange, onFil
             background: "none",
             border: "none",
             outline: "none",
-            color: "#F1F0EE",
+            color: "var(--k-text)",
             flex: 1,
             fontFamily: "'DM Sans', sans-serif",
             fontSize: 15,
@@ -44,9 +44,9 @@ export default function ProToolbar({ search, activeFilter, onSearchChange, onFil
             style={{
               padding: "5px 12px",
               borderRadius: 9999,
-              border: `1px solid ${activeFilter === filter ? "#A78BFA" : "#333"}`,
+              border: `1px solid ${activeFilter === filter ? "#A78BFA" : "var(--k-border-strong)"}`,
               background: activeFilter === filter ? "#7C3AED33" : "none",
-              color: activeFilter === filter ? "#A78BFA" : "#6B6A7A",
+              color: activeFilter === filter ? "#A78BFA" : "var(--k-muted-2)",
               fontSize: 11,
               cursor: "pointer",
               whiteSpace: "nowrap",

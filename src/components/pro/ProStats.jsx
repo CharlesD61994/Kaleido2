@@ -14,7 +14,7 @@ export default function ProStats({ projectCount, totalRangs, completedCount }) {
           key={stat.label}
           style={{
             flex: 1,
-            background: "#111128",
+            background: "var(--k-card)",
             borderRadius: 14,
             padding: "12px 8px",
             textAlign: "center",
@@ -25,8 +25,8 @@ export default function ProStats({ projectCount, totalRangs, completedCount }) {
           <div style={{ height: 28, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 }}>
             {stat.icon}
           </div>
-          <div style={{ color: "#F1F0EE", fontWeight: 700, fontSize: 20 }}>{stat.value}</div>
-          <div style={{ color: "#6B6A7A", fontSize: 10, marginTop: 2, fontFamily: "monospace", letterSpacing: 0.5 }}>
+          <div style={{ color: "var(--k-text)", fontWeight: 700, fontSize: 20 }}>{stat.value}</div>
+          <div style={{ color: "var(--k-muted-2)", fontSize: 10, marginTop: 2, fontFamily: "monospace", letterSpacing: 0.5 }}>
             {stat.label}
           </div>
         </div>

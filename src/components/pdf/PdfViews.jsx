@@ -107,7 +107,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
   };
 
   return (
-    <div style={{ background: "#0D0D1A", height: "100vh", fontFamily: "'DM Sans', sans-serif", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ background: "var(--k-bg)", color: "var(--k-text)", height: "100vh", fontFamily: "'DM Sans', sans-serif", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
         ::-webkit-scrollbar{width:0} * { -webkit-tap-highlight-color: transparent; }
@@ -151,7 +151,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
       </div>
 
       {counters.length > 0 && (
-        <div style={{ padding: "0px 16px 12px", background: "#0D0D1A", flexShrink: 0 }}>
+        <div style={{ padding: "0px 16px 12px", background: "var(--k-bg)", flexShrink: 0 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {counters.map((counter) => (
               <div key={counter.id} style={{ flex: "1 1 calc(50% - 4px)", minWidth: 140 }}>

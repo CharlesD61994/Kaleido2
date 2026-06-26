@@ -11,6 +11,7 @@ export default function HomeSettingsDialogs({
   setCurrentView,
   setDatabase,
   setShowSettingsModal,
+  updateSettings,
   showSettingsModal,
 }) {
   return (
@@ -19,6 +20,7 @@ export default function HomeSettingsDialogs({
       showSettingsModal={showSettingsModal}
       onCloseSettings={() => setShowSettingsModal(false)}
       database={database}
+      onChangeThemeMode={(themeMode) => updateSettings({ themeMode })}
       onRestoreDatabase={(restoredDb) => {
         setDatabase(restoredDb);
         setCurrentProject(null);

@@ -82,14 +82,14 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
   });
 
   return (
-    <div style={{ background: "#0D0D1A", height: "100vh", fontFamily: "'DM Sans', sans-serif", maxWidth: 430, margin: "0 auto", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div style={{ background: "var(--k-bg)", color: "var(--k-text)", height: "100vh", fontFamily: "'DM Sans', sans-serif", maxWidth: 430, margin: "0 auto", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap'); ${GLOBAL_MOTION_CSS} ::-webkit-scrollbar { width: 0; height: 0; } .partiesStrip { scrollbar-width: none; -ms-overflow-style: none; } .partiesStrip::-webkit-scrollbar { width: 0; height: 0; display: none; } * { -webkit-tap-highlight-color: transparent; } input, textarea, select { font-size: 16px !important; } @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} } .kgbg { background: linear-gradient(-45deg, #0D0D1A, #1A0A2E, #0D0D1A, #1E1E32); background-size: 400% 400%; animation: gradientShift 18s linear infinite; } @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg);opacity:0.1} 50%{transform:translateY(-20px) rotate(180deg);opacity:0.3} }`}</style>
       <div className="kgbg" style={{ position: "absolute", inset: 0 }} />
       {Array.from({ length: 6 }).map((_, index) => (
         <div key={index} style={{ position: "absolute", top: `${20 + index * 15}%`, left: `${10 + index * 12}%`, width: 20, height: 20, borderRadius: "50%", background: `${currentPartieColor.light}22`, animation: `float ${3 + index * 0.5}s ease-in-out infinite`, animationDelay: `${index * 0.3}s` }} />
       ))}
 
-      <div style={{ position: "relative", zIndex: 10, padding: "44px 8px 0 6px", background: "rgba(13,13,26,0.95)", backdropFilter: "blur(10px)", flexShrink: 0 }}>
+      <div style={{ position: "relative", zIndex: 10, padding: "44px 8px 0 6px", background: "color-mix(in srgb, var(--k-bg) 95%, transparent)", backdropFilter: "blur(10px)", flexShrink: 0 }}>
         <WorkProjectHeader
           timeText={formatTime(elapsedTime)}
           isTimerRunning={isTimerRunning}

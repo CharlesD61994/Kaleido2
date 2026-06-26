@@ -4,6 +4,7 @@ import LibraryScreen, { LibraryPreview } from "./LibraryScreen";
 import WorkScreens from "./WorkScreens";
 import { VIEWS } from "../../constants/views";
 import { GLOBAL_MOTION_CSS, getViewMotionStyle } from "../../styles/motion";
+import { THEME_CSS } from "../../styles/theme";
 import useClientMessageNotifications from "../../hooks/useClientMessageNotifications";
 
 export default function AppScreens({
@@ -27,6 +28,7 @@ export default function AppScreens({
     database,
     mode,
     projects,
+    themeMode,
     viewTransition,
   } = state;
 
@@ -89,8 +91,8 @@ export default function AppScreens({
   const viewWrapStyle = (trans) => getViewMotionStyle(trans);
 
   return (
-    <div data-kaleido-screen="true" style={{ ...viewWrapStyle(viewTransition), position: "relative", minHeight: "100vh", background: "#0D0D1A", overflowX: "hidden" }}>
-      <style>{GLOBAL_MOTION_CSS}</style>
+    <div data-kaleido-screen="true" data-kaleido-theme={themeMode} style={{ ...viewWrapStyle(viewTransition), position: "relative", minHeight: "100vh", background: "var(--k-bg)", color: "var(--k-text)", overflowX: "hidden" }}>
+      <style>{`${THEME_CSS}${GLOBAL_MOTION_CSS}`}</style>
 
       <HomeScreen
         creation={creation}

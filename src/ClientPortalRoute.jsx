@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { loadClientProjectByToken } from "./services/clientPortalStore";
+import { THEME_CSS } from "./styles/theme";
 
 const ClientPage = lazy(() => import("./ClientPage"));
 
@@ -8,8 +9,8 @@ function ClientPortalState({ title, message }) {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0D0D1A",
-        color: "#F1F0EE",
+        background: "var(--k-bg)",
+        color: "var(--k-text)",
         fontFamily: "'DM Sans', sans-serif",
         display: "flex",
         alignItems: "center",
@@ -17,14 +18,14 @@ function ClientPortalState({ title, message }) {
         padding: 22,
       }}
     >
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }`}</style>
+      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }`}</style>
       <div
         style={{
           width: "100%",
           maxWidth: 430,
           borderRadius: 22,
-          background: "linear-gradient(135deg, rgba(30,30,50,0.96), rgba(20,20,36,0.94))",
-          border: "1px solid rgba(255,255,255,0.09)",
+          background: "var(--k-panel-gradient)",
+          border: "1px solid var(--k-border)",
           padding: 22,
           boxShadow: "0 18px 52px rgba(0,0,0,0.34)",
         }}

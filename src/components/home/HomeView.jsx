@@ -58,13 +58,15 @@ export default function HomeView({
     setCurrentView,
     setDatabase,
     setMode,
+    updateSettings,
   } = setters;
 
   return (
     <div
       data-kaleido-screen="true"
       style={{
-        background: "#0D0D1A",
+        background: "var(--k-bg)",
+        color: "var(--k-text)",
         minHeight: "100vh",
         fontFamily: "'DM Sans', sans-serif",
       }}
@@ -105,6 +107,7 @@ export default function HomeView({
         setCurrentView={setCurrentView}
         setDatabase={setDatabase}
         setShowSettingsModal={setShowSettingsModal}
+        updateSettings={updateSettings}
         showSettingsModal={showSettingsModal}
       />
       <ProjectCreationDialogs

@@ -5,17 +5,20 @@ import { supabase } from "../../services/supabaseClient";
 import { loadImage, loadPdf, saveImage, savePdf } from "../../services/mediaStore";
 import Icon from "../icons/Icon";
 import IconBadge from "../ui/IconBadge";
+import { getThemeMode, THEME_MODES } from "../../styles/theme";
 
 export default function SettingsModals({
   auth,
   showSettingsModal,
   onCloseSettings,
   database,
+  onChangeThemeMode,
   onRestoreDatabase,
   onSyncCloud,
 }) {
   const [cloudStatus, setCloudStatus] = useState(null);
   const [syncingCloud, setSyncingCloud] = useState(false);
+  const themeMode = getThemeMode(database);
 
   if (!showSettingsModal) return null;
 
@@ -117,12 +120,48 @@ export default function SettingsModals({
   };
 
   return (
-    <div onClick={onCloseSettings} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={(event) => event.stopPropagation()} style={{ background: "#1A1A2E", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430 }}>
-        <div style={{ width: 36, height: 4, background: "#333", borderRadius: 2, margin: "0 auto 20px" }} />
-        <h2 style={{ color: "#F1F0EE", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+    <div onClick={onCloseSettings} style={{ position: "fixed", inset: 0, zIndex: 200, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(event) => event.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430 }}>
+        <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 20px" }} />
+        <h2 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
           <Icon name="settings" size={18} color="#A78BFA" />Paramètres
         </h2>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ color: "var(--k-muted)", fontSize: 12, fontWeight: 800, fontFamily: "'DM Sans', sans-serif", margin: "0 0 8px", letterSpacing: 0.5, textTransform: "uppercase" }}>
+            Thème
+          </div>
+          <div style={{ display: "flex", background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 14, padding: 4 }}>
+            {[
+              { mode: THEME_MODES.dark, label: "Dark" },
+              { mode: THEME_MODES.light, label: "Light" },
+            ].map((option) => {
+              const selected = themeMode === option.mode;
+              return (
+                <button
+                  key={option.mode}
+                  type="button"
+                  onClick={() => onChangeThemeMode?.(option.mode)}
+                  style={{
+                    flex: 1,
+                    minHeight: 42,
+                    border: "none",
+                    borderRadius: 11,
+                    background: selected ? "linear-gradient(135deg, #7C3AED, #DB2777)" : "transparent",
+                    color: selected ? "#fff" : "var(--k-muted)",
+                    cursor: "pointer",
+                    fontSize: 14,
+                    fontWeight: 800,
+                    fontFamily: "'DM Sans', sans-serif",
+                    transition: "all 180ms ease",
+                  }}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <button onClick={syncCloud} disabled={syncingCloud} style={{ width: "100%", padding: "16px", borderRadius: 14, background: isSupabaseConfigured ? "linear-gradient(135deg, #0891B222, #22D3EE22)" : "#151526", border: `1px solid ${isSupabaseConfigured ? "#0891B244" : "#33334A"}`, cursor: syncingCloud ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 14, marginBottom: 12, opacity: syncingCloud ? 0.78 : 1 }}>
           <IconBadge name={isSupabaseConfigured ? "upload" : "alert"} tone={isSupabaseConfigured ? "blue" : "amber"} size={24} />

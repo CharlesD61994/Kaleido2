@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabaseClient";
 import { LOGO_SRC } from "../splash/SplashScreen";
+import { THEME_CSS } from "../../styles/theme";
 
 export default function AuthScreen({ disabled = false }) {
   const [mode, setMode] = useState("signin");
@@ -41,8 +42,8 @@ export default function AuthScreen({ disabled = false }) {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0D0D1A",
-        color: "#F1F0EE",
+        background: "var(--k-bg)",
+        color: "var(--k-text)",
         fontFamily: "'DM Sans', sans-serif",
         display: "flex",
         alignItems: "center",
@@ -50,15 +51,15 @@ export default function AuthScreen({ disabled = false }) {
         padding: 22,
       }}
     >
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } input { font-size: 16px !important; }`}</style>
+      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } input { font-size: 16px !important; }`}</style>
       <form
         onSubmit={submit}
         style={{
           width: "100%",
           maxWidth: 430,
           borderRadius: 26,
-          background: "linear-gradient(135deg, rgba(30,30,50,0.98), rgba(20,20,36,0.96))",
-          border: "1px solid rgba(255,255,255,0.10)",
+          background: "var(--k-panel-gradient)",
+          border: "1px solid var(--k-border)",
           padding: 22,
           boxShadow: "0 24px 70px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
@@ -83,7 +84,7 @@ export default function AuthScreen({ disabled = false }) {
               border: mode === "signin" ? "1px solid #A78BFA66" : "1px solid rgba(255,255,255,0.08)",
               borderRadius: 14,
               background: mode === "signin" ? "rgba(167,139,250,0.18)" : "rgba(255,255,255,0.05)",
-              color: "#F1F0EE",
+              color: "var(--k-text)",
               padding: "12px 10px",
               fontWeight: 800,
               cursor: "pointer",
@@ -98,7 +99,7 @@ export default function AuthScreen({ disabled = false }) {
               border: mode === "signup" ? "1px solid #A78BFA66" : "1px solid rgba(255,255,255,0.08)",
               borderRadius: 14,
               background: mode === "signup" ? "rgba(167,139,250,0.18)" : "rgba(255,255,255,0.05)",
-              color: "#F1F0EE",
+              color: "var(--k-text)",
               padding: "12px 10px",
               fontWeight: 800,
               cursor: "pointer",
@@ -122,7 +123,7 @@ export default function AuthScreen({ disabled = false }) {
             border: "1.5px solid rgba(255,255,255,0.10)",
             borderRadius: 15,
             background: "rgba(13,13,26,0.72)",
-            color: "#F1F0EE",
+            color: "var(--k-text)",
             padding: 14,
             outline: "none",
             marginBottom: 14,
@@ -144,7 +145,7 @@ export default function AuthScreen({ disabled = false }) {
             border: "1.5px solid rgba(255,255,255,0.10)",
             borderRadius: 15,
             background: "rgba(13,13,26,0.72)",
-            color: "#F1F0EE",
+            color: "var(--k-text)",
             padding: 14,
             outline: "none",
             marginBottom: 18,

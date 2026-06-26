@@ -14,7 +14,7 @@ export default function PatronEditorHeader({
   totalRangsPatron,
 }) {
   return (
-    <div style={{ background: "linear-gradient(180deg, #1A0A2E 0%, #0D0D1A 100%)", padding: "44px 20px 20px", position: "sticky", top: 0, zIndex: 10 }}>
+    <div style={{ background: "var(--k-header-gradient)", padding: "44px 20px 20px", position: "sticky", top: 0, zIndex: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
         <button data-kaleido-back-button="true" onClick={isPatronMode ? navigateToLibrary : navigateToHub} style={{ background: "#1E1E32", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", fontSize: 16, cursor: "pointer" }}>←</button>
         {isEditingNom

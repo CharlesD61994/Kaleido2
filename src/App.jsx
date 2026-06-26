@@ -19,6 +19,7 @@ import ClientPortalRoute from "./ClientPortalRoute";
 import { getClientPortalTokenFromLocation } from "./services/clientPortalStore";
 import useKaleidoAuth from "./hooks/useKaleidoAuth";
 import AuthScreen from "./components/auth/AuthScreen";
+import { getThemeMode } from "./styles/theme";
 
 function KaleidoHub({ auth }) {
   const [currentView, setCurrentView] = useState(VIEWS.HUB);
@@ -188,6 +189,15 @@ const {
   updateProject,
   updateProProject,
 });
+const updateSettings = (updates) => {
+  setDatabase((current) => ({
+    ...current,
+    settings: {
+      ...(current.settings || {}),
+      ...(typeof updates === "function" ? updates(current.settings || {}) : updates),
+    },
+  }));
+};
 const {
   edgeSwipeActive,
   edgeSwipeDragging,
@@ -229,6 +239,7 @@ return (
     database,
     mode,
     projects,
+    themeMode: getThemeMode(database),
     viewTransition,
   }}
   setters={{
@@ -237,6 +248,7 @@ return (
     setCurrentView,
     setDatabase,
     setMode,
+    updateSettings,
   }}
   navigation={{
     navigateBackFromClientPage,

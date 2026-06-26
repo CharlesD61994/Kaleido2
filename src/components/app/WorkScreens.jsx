@@ -11,8 +11,8 @@ function WorkScreenFallback({ label = "Ouverture du projet..." }) {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0D0D1A",
-        color: "#F1F0EE",
+        background: "var(--k-bg)",
+        color: "var(--k-text)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -67,8 +67,8 @@ class WorkScreenErrorBoundary extends React.Component {
       <div
         style={{
           minHeight: "100vh",
-          background: "#0D0D1A",
-          color: "#F1F0EE",
+          background: "var(--k-bg)",
+          color: "var(--k-text)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

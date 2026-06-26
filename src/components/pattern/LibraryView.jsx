@@ -21,7 +21,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
     setMenuPatron(patron);
   };
   return (
-    <div style={{ background: "#0D0D1A", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ background: "var(--k-bg)", color: "var(--k-text)", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
         ::-webkit-scrollbar { width: 0; }
@@ -32,7 +32,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
         @keyframes slideInLeft { from { transform: translateX(-16px); } to { transform: translateX(0); } }
       `}</style>
       {/* Header */}
-      <div style={{ padding: "52px 20px 16px", background: "linear-gradient(180deg, #1A0A2E 0%, #0D0D1A 100%)" }}>
+      <div style={{ padding: "52px 20px 16px", background: "var(--k-header-gradient)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <button data-kaleido-back-button="true" onClick={() => { if (typeof onNavigateHub === "function") onNavigateHub(); }} style={{ background: "#1E1E32", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", fontSize: 16, cursor: "pointer", flexShrink: 0 }}>←</button>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 20, background: "linear-gradient(135deg, #A78BFA, #F472B6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}><span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Icon name="library" size={26} color="#A78BFA" />Bibliothèque</span></span>
