@@ -29,6 +29,7 @@ const splitInstructionSegments = (text = "") => {
 };
 
 export default function InstructionHighlighter({ text, selectedIndex, onSelect, color }) {
+  const accent = color || { bg: "#7C3AED", light: "#A78BFA" };
   const lines = String(text || "").split(/\r?\n/).map((line) => splitInstructionSegments(line));
   const hasParts = lines.some((line) => line.length > 0);
 
@@ -59,7 +60,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                     borderRadius: 8,
                     padding: "0 2px",
                     margin: 0,
-                    background: selected ? `linear-gradient(135deg, ${color.bg}, ${color.light})` : "transparent",
+                    background: selected ? `linear-gradient(135deg, ${accent.bg}, ${accent.light})` : "transparent",
                     color: selected ? "#fff" : "var(--k-text)",
                     font: "inherit",
                     lineHeight: "inherit",
@@ -67,7 +68,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                     overflowWrap: keepTogether ? "normal" : "break-word",
                     wordBreak: keepTogether ? "normal" : "break-word",
                     cursor: "pointer",
-                    boxShadow: selected ? `0 0 0 2px ${color.bg}55, 0 0 18px ${color.bg}55` : "none",
+                    boxShadow: selected ? `0 0 0 2px ${accent.bg}55, 0 0 18px ${accent.bg}55` : "none",
                     textDecoration: "none",
                     textUnderlineOffset: 3,
                   }}
