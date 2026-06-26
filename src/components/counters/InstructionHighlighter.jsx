@@ -42,14 +42,13 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
   return (
     <span style={{ display: "block" }}>
       {lines.map((parts, lineIndex) => (
-        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "1.5em" }}>
+        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "1.2em" }}>
           {parts.map((part, partIndex) => {
             segmentIndex += 1;
             const currentIndex = segmentIndex;
             const selected = selectedIndex === currentIndex;
-            const keepTogether = Boolean(part.separator);
             return (
-              <span key={`${part.body}-${lineIndex}-${partIndex}`} style={{ display: keepTogether ? "inline-flex" : "inline", alignItems: "baseline", whiteSpace: keepTogether ? "nowrap" : "normal", overflowWrap: keepTogether ? "normal" : "break-word", wordBreak: keepTogether ? "normal" : "break-word" }}>
+              <span key={`${part.body}-${lineIndex}-${partIndex}`} style={{ display: "inline", whiteSpace: "normal", overflowWrap: "break-word", wordBreak: "normal" }}>
                 {part.leading ? <span style={{ whiteSpace: "pre" }}>{part.leading}</span> : null}
                 <button
                   type="button"
@@ -57,26 +56,35 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                   style={{
                     display: "inline",
                     border: "none",
-                    borderRadius: 8,
-                    padding: "0 2px",
+                    borderRadius: 0,
+                    padding: 0,
                     margin: 0,
-                    background: selected ? `linear-gradient(135deg, ${accent.bg}, ${accent.light})` : "transparent",
-                    color: selected ? "#fff" : "var(--k-text)",
+                    background: "transparent",
+                    color: "var(--k-text)",
                     font: "inherit",
                     lineHeight: "inherit",
-                    whiteSpace: keepTogether ? "nowrap" : "normal",
-                    overflowWrap: keepTogether ? "normal" : "break-word",
-                    wordBreak: keepTogether ? "normal" : "break-word",
+                    whiteSpace: "normal",
+                    overflowWrap: "break-word",
+                    wordBreak: "normal",
                     cursor: "pointer",
-                    boxShadow: selected ? `0 0 0 2px ${accent.bg}55, 0 0 18px ${accent.bg}55` : "none",
+                    boxShadow: "none",
                     textDecoration: "none",
-                    textUnderlineOffset: 3,
                   }}
                 >
-                  {part.body}
+                  <span
+                    style={{
+                      borderRadius: 8,
+                      padding: "0 2px",
+                      background: selected ? `linear-gradient(135deg, ${accent.bg}, ${accent.light})` : "transparent",
+                      color: selected ? "#fff" : "var(--k-text)",
+                      boxShadow: selected ? `0 0 0 2px ${accent.bg}55, 0 0 18px ${accent.bg}55` : "none",
+                    }}
+                  >
+                    {part.body}
+                  </span>
+                  {part.separator}
                 </button>
                 {part.trailing ? <span style={{ whiteSpace: "pre" }}>{part.trailing}</span> : null}
-                {part.separator}
               </span>
             );
           })}
