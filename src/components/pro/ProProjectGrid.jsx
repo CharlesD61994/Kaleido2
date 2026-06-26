@@ -6,7 +6,7 @@ const isProjectCompleted = (project) => (
 
 function SectionTitle({ children }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", maxWidth: 376, margin: "18px auto 8px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", maxWidth: 364, margin: "18px auto 8px" }}>
       <div style={{ height: 1, flex: 1, background: "var(--k-divider)" }} />
       <div style={{ color: "var(--k-muted-3)", fontSize: 11, fontFamily: "monospace", fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", whiteSpace: "nowrap" }}>{children}</div>
       <div style={{ height: 1, flex: 1, background: "var(--k-divider)" }} />
@@ -22,13 +22,13 @@ function GridSection({ projects, unreadProjectIds, onProjectOpen, onMenuOpen, on
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(3, 112px)",
-        columnGap: 20,
+        columnGap: 14,
         rowGap: 16,
         justifyContent: "start",
         justifyItems: "center",
         alignItems: "start",
         width: "100%",
-        maxWidth: 376,
+        maxWidth: 364,
         margin: "0 auto",
       }}
     >

@@ -49,7 +49,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
         </div>
       </div>
       {/* Grille bulles */}
-      <div style={{ padding: "12px 6px 100px" }}>
+      <div style={{ padding: "18px 16px 100px" }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", color: "var(--k-muted-2)", padding: "60px 20px" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}><IconBadge name="yarn" tone="violet" size={24} badgeSize={52} /></div>
@@ -57,7 +57,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
             <div style={{ fontSize: 13 }}>Crée ou importe un patron avec le bouton +</div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", rowGap: 4, columnGap: 0 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 112px)", rowGap: 16, columnGap: 14, justifyContent: "start", justifyItems: "center", alignItems: "start", width: "100%", maxWidth: 364, margin: "0 auto" }}>
             {filtered.map((patron, idx) => (
               <div key={patron.id} style={{ animation: `fadeIn 0.3s ease ${idx * 0.04}s both` }}>
                 <ProjectBubble
@@ -71,7 +71,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
                     }
                     else onEditPatron(patron);
                   }}
-                  mode="library"
+                  mode="personal"
                 />
               </div>
             ))}

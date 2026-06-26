@@ -18,9 +18,18 @@ const ProBubble = React.memo(function ProBubble({ project, unreadClientMessageCo
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "10px 4px 14px" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "8px 4px 8px" }}>
       <div style={{ position: "relative", width: size, height: size, overflow: "visible", isolation: "isolate" }}>
-        <button onClick={handleOpen} style={{ position: "absolute", inset: 0, overflow: "visible", isolation: "isolate", background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+        <button
+          onClick={handleOpen}
+          style={{ position: "absolute", inset: 0, overflow: "visible", isolation: "isolate", background: "none", border: "none", padding: 0, cursor: "pointer", transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease", filter: "saturate(1.02)" }}
+          onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.94) translateY(3px)"; e.currentTarget.style.filter = "saturate(1.1) brightness(1.07)"; }}
+          onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.filter = "saturate(1.02)"; }}
+          onTouchCancel={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.filter = "saturate(1.02)"; }}
+          onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.944) translateY(3px)"; e.currentTarget.style.filter = "saturate(1.1) brightness(1.07)"; }}
+          onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.filter = "saturate(1.02)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.filter = "saturate(1.02)"; }}
+        >
           <div
             style={{
               position: "absolute",
@@ -54,6 +63,8 @@ const ProBubble = React.memo(function ProBubble({ project, unreadClientMessageCo
               left: "50%",
               transform: "translate(-50%, -50%)",
               zIndex: 1,
+              transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+              willChange: "transform, box-shadow",
             }}
           >
             {resolvedImage ? (
@@ -121,7 +132,7 @@ const ProBubble = React.memo(function ProBubble({ project, unreadClientMessageCo
           {project?.name || "Projet sans nom"}
         </div>
         {project?.client ? (
-          <div style={{ color: color.light, fontSize: 10, marginTop: 1, fontFamily: "monospace" }}>
+          <div style={{ color: color.bg, fontSize: 10, marginTop: 1, fontFamily: "monospace", fontWeight: 800 }}>
             {project.client}
           </div>
         ) : null}
