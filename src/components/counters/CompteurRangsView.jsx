@@ -155,10 +155,10 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
 
       <div style={{ position: "relative", zIndex: 10, padding: "0 8px 12px", flexShrink: 0 }}>
         <div style={{ background: "linear-gradient(180deg, var(--k-surface), var(--k-surface-2))", backdropFilter: "blur(20px)", border: `2px solid ${currentPartieColor.bg}5C`, borderRadius: 20, padding: "16px 20px", textAlign: "center", boxShadow: `0 8px 32px ${currentPartieColor.bg}26` }}>
-          <div style={{ background: `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, borderRadius: 12, padding: "10px 17px", display: "inline-block", marginBottom: 12, boxShadow: `0 5px 18px ${currentPartieColor.bg}70`, border: "1px solid rgba(255,255,255,0.20)" }}>
+          <div style={{ background: `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, borderRadius: 12, padding: "10px 17px", display: "inline-block", marginBottom: 16, boxShadow: `0 5px 18px ${currentPartieColor.bg}70`, border: "1px solid rgba(255,255,255,0.20)" }}>
             <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif" }}>{currentRang?.isNote ? "Note" : `Rang ${Math.max(1, currentPartieRangIndex + 1)}`}</span>
           </div>
-          <div style={{ color: "var(--k-text)", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.18, padding: "3px 8px 4px", marginBottom: 10, whiteSpace: "normal", overflowWrap: "normal", wordBreak: "normal", maxHeight: 210, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
+          <div style={{ color: "var(--k-text)", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.28, padding: "6px 8px 4px", marginBottom: 10, whiteSpace: "normal", overflowWrap: "normal", wordBreak: "normal", maxHeight: 210, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
             <InstructionHighlighter
               text={currentRang?.instruction}
               selectedIndex={instructionHighlights?.[currentRang?.id]}
