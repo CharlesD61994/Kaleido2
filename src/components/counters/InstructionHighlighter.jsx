@@ -46,8 +46,9 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
             segmentIndex += 1;
             const currentIndex = segmentIndex;
             const selected = selectedIndex === currentIndex;
+            const keepTogether = Boolean(part.separator);
             return (
-              <span key={`${part.body}-${lineIndex}-${partIndex}`} style={{ display: "inline-flex", alignItems: "baseline", whiteSpace: "nowrap" }}>
+              <span key={`${part.body}-${lineIndex}-${partIndex}`} style={{ display: keepTogether ? "inline-flex" : "inline", alignItems: "baseline", whiteSpace: keepTogether ? "nowrap" : "normal", overflowWrap: keepTogether ? "normal" : "break-word", wordBreak: keepTogether ? "normal" : "break-word" }}>
                 {part.leading ? <span style={{ whiteSpace: "pre" }}>{part.leading}</span> : null}
                 <button
                   type="button"
@@ -62,7 +63,9 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                     color: selected ? "#fff" : "var(--k-text)",
                     font: "inherit",
                     lineHeight: "inherit",
-                    whiteSpace: "nowrap",
+                    whiteSpace: keepTogether ? "nowrap" : "normal",
+                    overflowWrap: keepTogether ? "normal" : "break-word",
+                    wordBreak: keepTogether ? "normal" : "break-word",
                     cursor: "pointer",
                     boxShadow: selected ? `0 0 0 2px ${color.bg}55, 0 0 18px ${color.bg}55` : "none",
                     textDecoration: "none",
