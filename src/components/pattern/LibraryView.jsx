@@ -42,10 +42,10 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
           </div>
         </div>
         {/* Recherche */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--k-surface-2)", borderRadius: 12, padding: "10px 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--k-surface)", borderRadius: 14, padding: "12px 14px", border: "1px solid var(--k-border)" }}>
           <span style={{ color: "var(--k-muted-2)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="search" size={16} color="var(--k-muted-2)" /></span>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un patron..."
-            style={{ background: "none", border: "none", outline: "none", color: "var(--k-text)", flex: 1, fontFamily: "'DM Sans', sans-serif", fontSize: 16 }} />
+            style={{ background: "none", border: "none", outline: "none", color: "var(--k-text)", flex: 1, fontFamily: "'DM Sans', sans-serif", fontSize: 15 }} />
         </div>
       </div>
       {/* Grille bulles */}

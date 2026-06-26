@@ -158,7 +158,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
           <div style={{ background: `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, borderRadius: 12, padding: "10px 17px", display: "inline-block", marginBottom: 12, boxShadow: `0 5px 18px ${currentPartieColor.bg}70`, border: "1px solid rgba(255,255,255,0.20)" }}>
             <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif" }}>{currentRang?.isNote ? "Note" : `Rang ${Math.max(1, currentPartieRangIndex + 1)}`}</span>
           </div>
-          <div style={{ color: "var(--k-text)", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, padding: "0 8px", marginBottom: 10 }}>
+          <div style={{ color: "var(--k-text)", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, padding: "0 8px", marginBottom: 10, whiteSpace: "pre-wrap" }}>
             <InstructionHighlighter
               text={currentRang?.instruction}
               selectedIndex={instructionHighlights?.[currentRang?.id]}
@@ -205,7 +205,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
                   }}
                 >
                   <div style={{ color: "var(--k-muted-3)", fontSize: 11, fontFamily: "monospace", fontWeight: 800, marginBottom: 5 }}>{getPreviewLabel(rang)}</div>
-                  <div style={{ color: "var(--k-muted-2)", fontSize: 12, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: visualIndex === 0 ? 2 : 1, WebkitBoxOrient: "vertical" }}>
+                  <div style={{ color: "var(--k-muted-2)", fontSize: 12, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: visualIndex === 0 ? 3 : 2, WebkitBoxOrient: "vertical", whiteSpace: "pre-wrap" }}>
                     {rang.instruction}
                   </div>
                 </div>

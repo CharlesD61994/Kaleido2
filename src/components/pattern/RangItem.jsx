@@ -37,7 +37,7 @@ style={{ width: "100%", background: "var(--k-field)", border: "1px solid #D97706
 </div>
 ) : (
 <div onClick={handleEditClick} style={{ cursor: "pointer" }}>
-<div style={{ color: "#FCD34D", fontSize: 14, lineHeight: 1.5, wordWrap: "break-word" }}>{rang.instruction}</div>
+<div style={{ color: "#FCD34D", fontSize: 14, lineHeight: 1.5, wordWrap: "break-word", whiteSpace: "pre-wrap" }}>{rang.instruction}</div>
 <div style={{ color: "#D97706", fontSize: 10, marginTop: 4, fontStyle: "italic" }}>Note • Ne compte pas comme un rang</div>
 </div>
 )}
@@ -79,7 +79,7 @@ style={{ background: "var(--k-field)", border: "1px solid #A78BFA44", borderRadi
 </div>
 ) : (
 <div style={{ width: "100%", cursor: "pointer" }} onClick={handleEditClick}>
-<div style={{ color: "var(--k-text)", fontSize: 14, lineHeight: 1.5, marginBottom: 6, wordWrap: "break-word" }}>{rang.instruction}</div>
+<div style={{ color: "var(--k-text)", fontSize: 14, lineHeight: 1.5, marginBottom: 6, wordWrap: "break-word", whiteSpace: "pre-wrap" }}>{rang.instruction}</div>
 {rang.mailles && <div style={{ color: "#A78BFA", fontSize: 12, fontFamily: "monospace", marginBottom: 4 }}>{rang.mailles} mailles</div>}
 <div style={{ color: "#666", fontSize: 11, fontStyle: "italic" }}>Swipe ← pour actions • Clic pour modifier</div>
 </div>
