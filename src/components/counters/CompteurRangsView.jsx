@@ -145,7 +145,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
             const isActive = currentPartie?.id === partie.id;
             return (
               <button key={partie.id} type="button" onClick={() => goToPartie(partie.id)}
-                style={{ background: isActive ? `linear-gradient(135deg, ${col.bg}, ${col.light})` : "var(--k-surface-2)", border: isActive ? "1px solid transparent" : "1px solid var(--k-control-border)", borderRadius: 16, padding: "5px 15px", color: isActive ? "#fff" : col.light, fontSize: 11, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: "pointer", transform: isActive ? "scale(1.035)" : "scale(1)", textTransform: "uppercase", letterSpacing: 0.4, boxShadow: isActive ? `0 4px 12px ${col.bg}44` : "none", minWidth: 68, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap", flexShrink: 0 }}>
+                style={{ background: isActive ? `linear-gradient(135deg, ${col.bg}, ${col.light})` : `${col.bg}16`, border: isActive ? "1px solid transparent" : `1px solid ${col.bg}3F`, borderRadius: 16, padding: "5px 15px", color: isActive ? "#fff" : col.bg, fontSize: 11, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, cursor: "pointer", transform: isActive ? "scale(1.035)" : "scale(1)", textTransform: "uppercase", letterSpacing: 0.4, boxShadow: isActive ? `0 4px 12px ${col.bg}44` : `0 2px 8px ${col.bg}12`, minWidth: 68, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap", flexShrink: 0 }}>
                 {partie.nom}
               </button>
             );
@@ -154,8 +154,8 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
       </div>
 
       <div style={{ position: "relative", zIndex: 10, padding: "0 8px 12px", flexShrink: 0 }}>
-        <div style={{ background: "var(--k-surface)", backdropFilter: "blur(20px)", border: `2px solid ${currentPartieColor.light}44`, borderRadius: 20, padding: "16px 20px", textAlign: "center", boxShadow: `0 8px 32px ${currentPartieColor.bg}22` }}>
-          <div style={{ background: `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, borderRadius: 12, padding: "10px 16px", display: "inline-block", marginBottom: 12, boxShadow: `0 4px 16px ${currentPartieColor.bg}66` }}>
+        <div style={{ background: "linear-gradient(180deg, var(--k-surface), var(--k-surface-2))", backdropFilter: "blur(20px)", border: `2px solid ${currentPartieColor.bg}5C`, borderRadius: 20, padding: "16px 20px", textAlign: "center", boxShadow: `0 8px 32px ${currentPartieColor.bg}26` }}>
+          <div style={{ background: `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, borderRadius: 12, padding: "10px 17px", display: "inline-block", marginBottom: 12, boxShadow: `0 5px 18px ${currentPartieColor.bg}70`, border: "1px solid rgba(255,255,255,0.20)" }}>
             <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif" }}>{currentRang?.isNote ? "Note" : `Rang ${Math.max(1, currentPartieRangIndex + 1)}`}</span>
           </div>
           <div style={{ color: "var(--k-text)", fontSize: 19, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, padding: "0 8px", marginBottom: 10 }}>

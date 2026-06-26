@@ -30,7 +30,7 @@ export default function HomeHeader({
           <button
             key={currentMode}
             onClick={() => setMode(currentMode)}
-            style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: mode === currentMode ? "1px solid transparent" : "1px solid var(--k-control-border)", background: mode === currentMode ? "linear-gradient(135deg, #7C3AED, #DB2777)" : "var(--k-muted-fill)", color: mode === currentMode ? "#fff" : "var(--k-muted-2)", fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 220ms cubic-bezier(0.22, 1, 0.36, 1)" }}
+            style={{ flex: 1, padding: "9px 0", borderRadius: 11, border: mode === currentMode ? "1px solid transparent" : "1px solid var(--k-control-border)", background: mode === currentMode ? "linear-gradient(135deg, #7C3AED, #DB2777)" : "var(--k-segment-idle-bg)", color: mode === currentMode ? "#fff" : "var(--k-segment-idle-color)", fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 220ms cubic-bezier(0.22, 1, 0.36, 1)" }}
           >
             {currentMode === "personal" ? "Personnel" : "Professionnel"}
           </button>

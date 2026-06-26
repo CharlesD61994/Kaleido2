@@ -96,7 +96,7 @@ const ProBubble = React.memo(function ProBubble({ project, unreadClientMessageCo
           </div>
 
           <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 2 }} viewBox="0 0 110 110">
-            <circle cx="55" cy="55" r="51" fill="none" stroke="var(--k-divider)" strokeWidth="5" />
+            <circle cx="55" cy="55" r="51" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
             <circle
               cx="55"
               cy="55"
