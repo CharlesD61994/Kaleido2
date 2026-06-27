@@ -76,9 +76,9 @@ export default function ClientShareCard({ project, color, onPublishClientProject
           <div
             style={{
               borderRadius: 14,
-              background: "var(--k-muted-fill)",
-              border: "1px solid var(--k-border)",
-              color: "var(--k-text-soft)",
+              background: "var(--k-client-url-bg)",
+              border: "1px solid var(--k-client-url-border)",
+              color: "var(--k-client-url-color)",
               fontSize: 12,
               padding: 12,
               overflowWrap: "anywhere",
@@ -113,10 +113,10 @@ export default function ClientShareCard({ project, color, onPublishClientProject
             <button
               onClick={copyExisting}
               style={{
-                border: "1px solid var(--k-border)",
+                border: "1px solid var(--k-client-secondary-border)",
                 borderRadius: 14,
-                background: "var(--k-muted-fill-2)",
-                color: "var(--k-text)",
+                background: "var(--k-client-secondary-bg)",
+                color: "var(--k-client-secondary-color)",
                 padding: "12px 13px",
                 fontSize: 13,
                 fontWeight: 800,
@@ -132,10 +132,10 @@ export default function ClientShareCard({ project, color, onPublishClientProject
           <button
             onClick={prepareEmail}
             style={{
-              border: "1px solid var(--k-border)",
+              border: "1px solid var(--k-client-secondary-border)",
               borderRadius: 14,
-              background: "var(--k-muted-fill-2)",
-              color: "var(--k-text)",
+              background: "var(--k-client-secondary-bg-soft)",
+              color: "var(--k-client-secondary-color)",
               padding: "12px 13px",
               fontSize: 13,
               fontWeight: 800,

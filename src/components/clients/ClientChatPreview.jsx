@@ -176,7 +176,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
       ref={expanded ? fullscreenMessagesRef : compactMessagesRef}
       style={{
         borderRadius: expanded ? 0 : 18,
-        background: expanded ? "var(--k-bg)" : "var(--k-muted-fill)",
+        background: expanded ? "var(--k-client-chat-fullscreen-bg)" : "var(--k-client-chat-bg)",
         border: expanded ? "0" : "1px solid var(--k-border)",
         padding: expanded ? "14px 16px" : 12,
         minHeight: expanded ? 0 : 150,
@@ -265,7 +265,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
           width: "100%",
           border: "1.5px solid var(--k-border)",
           borderRadius: 16,
-          background: "var(--k-field)",
+          background: "var(--k-client-chat-field-bg)",
           color: "var(--k-text)",
           padding: 13,
           resize: "vertical",
@@ -303,7 +303,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              style={{ border: "1px solid var(--k-border)", borderRadius: 14, background: "var(--k-muted-fill-2)", color: "var(--k-text)", padding: "12px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer" }}
+              style={{ border: "1px solid var(--k-client-secondary-border)", borderRadius: 14, background: "var(--k-client-secondary-bg)", color: "var(--k-client-secondary-color)", padding: "12px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer" }}
             >
               Photo
             </button>
@@ -439,7 +439,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
           gap: 12,
           padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 12px",
           borderBottom: "1px solid var(--k-border)",
-          background: `linear-gradient(135deg, ${color.bg}18, var(--k-surface))`,
+          background: `linear-gradient(135deg, ${color.bg}30, var(--k-client-chat-header-end))`,
         }}
       >
         <div style={{ minWidth: 0 }}>
@@ -455,9 +455,9 @@ export default function ClientChatPreview({ project, color, publicView = false, 
             width: 42,
             height: 42,
             borderRadius: "50%",
-            border: "1px solid var(--k-border)",
+            border: "1px solid var(--k-client-close-border)",
             background: "var(--k-muted-fill-2)",
-            color: "var(--k-text)",
+            color: "var(--k-client-close-color)",
             fontSize: 20,
             fontWeight: 900,
             cursor: "pointer",

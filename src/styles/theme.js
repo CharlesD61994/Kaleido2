@@ -36,6 +36,23 @@ export const THEME_CSS = `
   --k-modal-backdrop: rgba(0,0,0,0.75);
   --k-header-gradient: linear-gradient(180deg, #1A0A2E 0%, #0D0D1A 100%);
   --k-panel-gradient: linear-gradient(135deg, rgba(30,30,50,0.98), rgba(20,20,36,0.96));
+  --k-client-url-bg: rgba(13,13,26,0.58);
+  --k-client-url-border: rgba(255,255,255,0.06);
+  --k-client-url-color: #A8A6B8;
+  --k-client-secondary-bg: rgba(255,255,255,0.07);
+  --k-client-secondary-bg-soft: rgba(255,255,255,0.05);
+  --k-client-secondary-border: rgba(255,255,255,0.10);
+  --k-client-secondary-color: #F1F0EE;
+  --k-client-chat-bg: rgba(13,13,26,0.58);
+  --k-client-chat-fullscreen-bg: rgba(13,13,26,0.32);
+  --k-client-chat-field-bg: rgba(13,13,26,0.72);
+  --k-client-chat-header-end: rgba(13,13,26,0.96);
+  --k-client-close-border: rgba(255,255,255,0.14);
+  --k-client-close-color: #fff;
+  --k-client-summary-accent-weight: 19%;
+  --k-client-summary-main-stop: 46%;
+  --k-client-summary-border-weight: 20%;
+  --k-client-summary-glow-weight: 9%;
   color-scheme: dark;
 }
 
@@ -65,6 +82,23 @@ export const THEME_CSS = `
   --k-modal-backdrop: rgba(24,18,35,0.42);
   --k-header-gradient: linear-gradient(180deg, #F3EAFE 0%, #F7F4FB 100%);
   --k-panel-gradient: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(244,239,250,0.96));
+  --k-client-url-bg: var(--k-muted-fill);
+  --k-client-url-border: var(--k-border);
+  --k-client-url-color: var(--k-text-soft);
+  --k-client-secondary-bg: var(--k-muted-fill-2);
+  --k-client-secondary-bg-soft: var(--k-muted-fill-2);
+  --k-client-secondary-border: var(--k-border);
+  --k-client-secondary-color: var(--k-text);
+  --k-client-chat-bg: var(--k-muted-fill);
+  --k-client-chat-fullscreen-bg: var(--k-bg);
+  --k-client-chat-field-bg: var(--k-field);
+  --k-client-chat-header-end: var(--k-surface);
+  --k-client-close-border: var(--k-border);
+  --k-client-close-color: var(--k-text);
+  --k-client-summary-accent-weight: 9%;
+  --k-client-summary-main-stop: 52%;
+  --k-client-summary-border-weight: 16%;
+  --k-client-summary-glow-weight: 6%;
   color-scheme: light;
 }
 
