@@ -49,10 +49,10 @@ export const THEME_CSS = `
   --k-client-chat-header-end: rgba(13,13,26,0.96);
   --k-client-close-border: rgba(255,255,255,0.14);
   --k-client-close-color: #fff;
-  --k-client-summary-accent-weight: 19%;
+  --k-client-summary-bg-alpha: 30;
   --k-client-summary-main-stop: 46%;
-  --k-client-summary-border-weight: 20%;
-  --k-client-summary-glow-weight: 9%;
+  --k-client-summary-border-alpha: 33;
+  --k-client-summary-glow-alpha: 18;
   color-scheme: dark;
 }
 
@@ -95,10 +95,10 @@ export const THEME_CSS = `
   --k-client-chat-header-end: var(--k-surface);
   --k-client-close-border: var(--k-border);
   --k-client-close-color: var(--k-text);
-  --k-client-summary-accent-weight: 9%;
+  --k-client-summary-bg-alpha: 18;
   --k-client-summary-main-stop: 52%;
-  --k-client-summary-border-weight: 16%;
-  --k-client-summary-glow-weight: 6%;
+  --k-client-summary-border-alpha: 30;
+  --k-client-summary-glow-alpha: 10;
   color-scheme: light;
 }
 
