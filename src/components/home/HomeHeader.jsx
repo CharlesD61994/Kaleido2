@@ -1,6 +1,7 @@
 ﻿import React from "react";
 import Icon from "../icons/Icon";
 import { LOGO_SRC } from "../splash/SplashScreen";
+import { IOS_TOP_PADDING } from "../../styles/layout";
 
 export default function HomeHeader({
   mode,
@@ -9,7 +10,7 @@ export default function HomeHeader({
   setShowSettingsModal,
 }) {
   return (
-    <div style={{ padding: "44px 20px 12px", background: "var(--k-header-gradient)" }}>
+    <div style={{ padding: `${IOS_TOP_PADDING} 20px 12px`, background: "var(--k-header-gradient)" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <img src={LOGO_SRC} alt="Kaleido" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />

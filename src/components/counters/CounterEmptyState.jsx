@@ -5,7 +5,11 @@ export default function CounterEmptyState({ onBack, onNavigateEditor, patron, pr
   return (
     <div style={{ background: "var(--k-bg)", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif", color: "var(--k-text)", maxWidth: 430, margin: "0 auto", padding: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 30 }}>
-        <button data-kaleido-back-button="true" onClick={onBack} style={{ background: "var(--k-surface-2)", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", fontSize: 16, cursor: "pointer" }}>←</button>
+        <button data-kaleido-back-button="true" onClick={onBack} style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", cursor: "pointer" }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
         <h1 style={{ color: "var(--k-text)", margin: 0, fontSize: 18, fontFamily: "'Syne', sans-serif" }}>{patron.nom}</h1>
       </div>
       <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--k-muted-2)" }}>

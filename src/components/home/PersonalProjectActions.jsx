@@ -2,6 +2,7 @@ import React from "react";
 import PhotoCropModal from "../modals/PhotoCropModal";
 import CompleteProjectModal from "../projects/CompleteProjectModal";
 import { ContextMenu, DeleteModal, RenameModal } from "../projects/ProjectMenu";
+import { FLOATING_ACTION_BOTTOM } from "../../styles/layout";
 
 export default function PersonalProjectActions({
   database,
@@ -35,7 +36,7 @@ export default function PersonalProjectActions({
 
   return (
     <>
-      <div style={{ position: "fixed", bottom: 28, right: "calc(50% - 184px)", zIndex: 50 }}>
+      <div style={{ position: "fixed", bottom: FLOATING_ACTION_BOTTOM, right: "calc(50% - 184px)", zIndex: 50 }}>
         <button onClick={handleNewProject} style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #7C3AED, #EC4899)", border: "none", cursor: "pointer", fontSize: 28, color: "#fff", boxShadow: "0 4px 20px #7C3AED88", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
       </div>
 

@@ -9,6 +9,7 @@ import ClientSectionCard from "./components/clients/ClientSectionCard";
 import ClientShareCard from "./components/clients/ClientShareCard";
 import ClientSummaryCard from "./components/clients/ClientSummaryCard";
 import { THEME_CSS } from "./styles/theme";
+import { IOS_TOP_PADDING } from "./styles/layout";
 
 const formatElapsedTime = (seconds = 0) => {
   const totalSeconds = Math.max(0, Math.round(Number(seconds) || 0));
@@ -96,7 +97,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         </button>
       ) : null}
 
-      <div style={{ position: "relative", zIndex: 2, padding: "44px 20px 28px" }}>
+      <div style={{ position: "relative", zIndex: 2, padding: `${IOS_TOP_PADDING} 20px 28px` }}>
         <ClientPageHeader project={project} color={color} onBack={onBack} publicView={publicView} />
         <ClientSummaryCard project={project} color={color} clientInitial={clientInitial} onEditClient={onEditClient} publicView={publicView} />
 

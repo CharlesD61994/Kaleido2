@@ -7,6 +7,7 @@ import CounterWidget, { ProgressionSwipeCard } from "./CounterWidget";
 import CounterEmptyState from "./CounterEmptyState";
 import PartieTransitionModals from "./PartieTransitionModals";
 import InstructionHighlighter from "./InstructionHighlighter";
+import { IOS_READER_TOP_PADDING } from "../../styles/layout";
 
 export default function CompteurRangsView({ project, onNavigateHub, onNavigateEditor, onSaveProgress, onOpenClientPage, unreadClientMessageCount = 0 }) {
   const {
@@ -89,7 +90,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
         <div key={index} style={{ position: "absolute", top: `${20 + index * 15}%`, left: `${10 + index * 12}%`, width: 20, height: 20, borderRadius: "50%", background: `${currentPartieColor.bg}22`, animation: `float ${3 + index * 0.5}s ease-in-out infinite`, animationDelay: `${index * 0.3}s` }} />
       ))}
 
-      <div style={{ position: "relative", zIndex: 10, padding: "44px 8px 0 6px", background: "color-mix(in srgb, var(--k-bg) 95%, transparent)", backdropFilter: "blur(10px)", flexShrink: 0 }}>
+      <div style={{ position: "relative", zIndex: 10, padding: `${IOS_READER_TOP_PADDING} 8px 0 6px`, background: "color-mix(in srgb, var(--k-bg) 95%, transparent)", backdropFilter: "blur(10px)", flexShrink: 0 }}>
         <WorkProjectHeader
           timeText={formatTime(elapsedTime)}
           isTimerRunning={isTimerRunning}

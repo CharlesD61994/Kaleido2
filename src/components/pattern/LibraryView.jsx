@@ -3,6 +3,7 @@ import Icon from "../icons/Icon";
 import IconBadge from "../ui/IconBadge";
 import ProjectBubble from "../projects/ProjectBubble";
 import { ContextMenu, DeleteModal, RenameModal } from "../projects/ProjectMenu";
+import { FLOATING_ACTION_BOTTOM, IOS_TOP_PADDING } from "../../styles/layout";
 
 export { default as EditPdfPatronModal } from "./EditPdfPatronModal";
 
@@ -32,7 +33,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
         @keyframes slideInLeft { from { transform: translateX(-16px); } to { transform: translateX(0); } }
       `}</style>
       {/* Header */}
-      <div style={{ padding: "52px 20px 16px", background: "var(--k-header-gradient)" }}>
+      <div style={{ padding: `${IOS_TOP_PADDING} 20px 16px`, background: "var(--k-header-gradient)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <button data-kaleido-back-button="true" onClick={() => { if (typeof onNavigateHub === "function") onNavigateHub(); }} style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", cursor: "pointer", flexShrink: 0 }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -83,7 +84,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
         )}
       </div>
       {/* Bouton + */}
-      <div style={{ position: "fixed", bottom: 28, right: "calc(50% - 184px)", zIndex: 50 }}>
+      <div style={{ position: "fixed", bottom: FLOATING_ACTION_BOTTOM, right: "calc(50% - 184px)", zIndex: 50 }}>
         <button onClick={() => setShowNewMenu(true)} style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #7C3AED, #EC4899)", border: "none", cursor: "pointer", fontSize: 28, color: "#fff", boxShadow: "0 4px 20px #7C3AED88", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
       </div>
       {/* Menu contextuel */}

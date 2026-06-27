@@ -6,6 +6,7 @@ import ProjectStatsModal from "./components/projects/ProjectStatsModal";
 import ProProjectGrid from "./components/pro/ProProjectGrid";
 import ProStats from "./components/pro/ProStats";
 import ProToolbar from "./components/pro/ProToolbar";
+import { FLOATING_ACTION_BOTTOM } from "./styles/layout";
 
 const isProjectCompleted = (project) => (
   project?.status === "termine"
@@ -110,7 +111,7 @@ export default function AppPro({
       </div>
       <ProProjectGrid projects={filteredProjects} unreadProjectIds={unreadProjectIds} onProjectOpen={onProjectOpen} onMenuOpen={handleMenuOpen} onCompletedProjectOpen={setStatsProject} />
 
-      <div style={{ position: "fixed", bottom: 28, right: "calc(50% - 184px)", zIndex: 50 }}>
+      <div style={{ position: "fixed", bottom: FLOATING_ACTION_BOTTOM, right: "calc(50% - 184px)", zIndex: 50 }}>
         <button
           onClick={onCreateProProject}
           style={{

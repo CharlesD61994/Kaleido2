@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabaseClient";
 import { LOGO_SRC } from "../splash/SplashScreen";
-import { THEME_CSS } from "../../styles/theme";
+import { getThemeMode, THEME_CSS } from "../../styles/theme";
+import { loadDatabase } from "../../services/databaseStore";
 
 export default function AuthScreen({ disabled = false }) {
+  const themeMode = getThemeMode(loadDatabase());
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,6 +42,7 @@ export default function AuthScreen({ disabled = false }) {
 
   return (
     <div
+      data-kaleido-theme={themeMode}
       style={{
         minHeight: "100vh",
         background: "var(--k-bg)",
@@ -81,9 +84,9 @@ export default function AuthScreen({ disabled = false }) {
             type="button"
             onClick={() => setMode("signin")}
             style={{
-              border: mode === "signin" ? "1px solid #A78BFA66" : "1px solid rgba(255,255,255,0.08)",
+              border: mode === "signin" ? "1px solid #A78BFA66" : "1px solid var(--k-border)",
               borderRadius: 14,
-              background: mode === "signin" ? "rgba(167,139,250,0.18)" : "rgba(255,255,255,0.05)",
+              background: mode === "signin" ? "rgba(167,139,250,0.18)" : "var(--k-muted-fill)",
               color: "var(--k-text)",
               padding: "12px 10px",
               fontWeight: 800,
@@ -96,9 +99,9 @@ export default function AuthScreen({ disabled = false }) {
             type="button"
             onClick={() => setMode("signup")}
             style={{
-              border: mode === "signup" ? "1px solid #A78BFA66" : "1px solid rgba(255,255,255,0.08)",
+              border: mode === "signup" ? "1px solid #A78BFA66" : "1px solid var(--k-border)",
               borderRadius: 14,
-              background: mode === "signup" ? "rgba(167,139,250,0.18)" : "rgba(255,255,255,0.05)",
+              background: mode === "signup" ? "rgba(167,139,250,0.18)" : "var(--k-muted-fill)",
               color: "var(--k-text)",
               padding: "12px 10px",
               fontWeight: 800,
@@ -120,9 +123,9 @@ export default function AuthScreen({ disabled = false }) {
           required
           style={{
             width: "100%",
-            border: "1.5px solid rgba(255,255,255,0.10)",
+            border: "1.5px solid var(--k-border)",
             borderRadius: 15,
-            background: "rgba(13,13,26,0.72)",
+            background: "var(--k-field)",
             color: "var(--k-text)",
             padding: 14,
             outline: "none",
@@ -142,9 +145,9 @@ export default function AuthScreen({ disabled = false }) {
           required
           style={{
             width: "100%",
-            border: "1.5px solid rgba(255,255,255,0.10)",
+            border: "1.5px solid var(--k-border)",
             borderRadius: 15,
-            background: "rgba(13,13,26,0.72)",
+            background: "var(--k-field)",
             color: "var(--k-text)",
             padding: 14,
             outline: "none",

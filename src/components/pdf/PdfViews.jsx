@@ -6,6 +6,7 @@ import WorkProjectHeader from "../work/WorkProjectHeader";
 import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
 import PdfCounterCard from "./PdfCounterCard";
 import PdfProgressModals from "./PdfProgressModals";
+import { IOS_READER_TOP_PADDING } from "../../styles/layout";
 
 export { default as ImportPdfModal } from "./ImportPdfModal";
 
@@ -113,7 +114,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
         ::-webkit-scrollbar{width:0} * { -webkit-tap-highlight-color: transparent; }
       `}</style>
 
-      <div style={{ flexShrink: 0, position: "relative", zIndex: 10, background: "color-mix(in srgb, var(--k-bg) 95%, transparent)", backdropFilter: "blur(10px)", padding: "44px 8px 0 6px" }}>
+      <div style={{ flexShrink: 0, position: "relative", zIndex: 10, background: "color-mix(in srgb, var(--k-bg) 95%, transparent)", backdropFilter: "blur(10px)", padding: `${IOS_READER_TOP_PADDING} 8px 0 6px` }}>
         <WorkProjectHeader
           timeText={formatTime(elapsedTime)}
           isTimerRunning={isTimerRunning}
