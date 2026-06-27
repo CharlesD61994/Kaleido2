@@ -110,7 +110,7 @@ export default function AppPro({
       </div>
       <ProProjectGrid projects={filteredProjects} unreadProjectIds={unreadProjectIds} onProjectOpen={onProjectOpen} onMenuOpen={handleMenuOpen} onCompletedProjectOpen={setStatsProject} />
 
-      <div style={{ position: "fixed", bottom: 28, right: "calc(50% - 200px)", zIndex: 50 }}>
+      <div style={{ position: "fixed", bottom: 28, right: "calc(50% - 140px)", zIndex: 50 }}>
         <button
           onClick={onCreateProProject}
           style={{
