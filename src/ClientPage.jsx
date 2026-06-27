@@ -72,8 +72,32 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         }}
       />
 
+      {publicView ? (
+        <button
+          type="button"
+          onClick={togglePublicTheme}
+          style={{
+            position: "absolute",
+            top: 14,
+            right: 20,
+            zIndex: 4,
+            border: "1px solid var(--k-control-border)",
+            borderRadius: 999,
+            background: "var(--k-surface-2)",
+            color: "var(--k-text)",
+            padding: "8px 12px",
+            fontSize: 12,
+            fontWeight: 900,
+            cursor: "pointer",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
+          }}
+        >
+          {publicThemeMode === "light" ? "Mode sombre" : "Mode clair"}
+        </button>
+      ) : null}
+
       <div style={{ position: "relative", zIndex: 2, padding: "44px 20px 28px" }}>
-        <ClientPageHeader project={project} color={color} onBack={onBack} publicView={publicView} themeMode={publicThemeMode} onToggleTheme={togglePublicTheme} />
+        <ClientPageHeader project={project} color={color} onBack={onBack} publicView={publicView} />
         <ClientSummaryCard project={project} color={color} clientInitial={clientInitial} onEditClient={onEditClient} publicView={publicView} />
 
         {!publicView && (
