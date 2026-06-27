@@ -1,32 +1,17 @@
 import React from "react";
-import ClientModal from "../clients/ClientModal";
 import ProjectCreationModals from "../projects/ProjectCreationModals";
 import { ImportPdfModal } from "../pdf/PdfViews";
 import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
-import { isValidOptionalClientEmail } from "../../services/clientStore";
 import { savePdf } from "../../services/mediaStore";
 
 export default function ProjectCreationDialogs({
-  cancelClientProjectCreation,
-  clientEmail,
-  clientEmailError,
-  clientError,
-  clientModalMode,
-  clientName,
-  clientNameInputRef,
-  confirmClientProjectCreation,
   createProjectFromPatron,
   database,
   navigateToLibrary,
   queueProjectCreation,
-  setClientEmail,
-  setClientEmailError,
-  setClientError,
-  setClientName,
   setShowImportModal,
   setShowNewMenu,
   setShowSelectPatronModal,
-  showClientModal,
   showImportModal,
   showNewMenu,
   showSelectPatronModal,
@@ -80,32 +65,6 @@ export default function ProjectCreationDialogs({
         onCloseSelectPatron={() => setShowSelectPatronModal(false)}
         onNavigateLibrary={navigateToLibrary}
         onCreateProjectFromPatron={createProjectFromPatron}
-      />
-
-      <ClientModal
-        show={showClientModal}
-        mode={clientModalMode}
-        clientName={clientName}
-        clientEmail={clientEmail}
-        clientError={clientError}
-        clientEmailError={clientEmailError}
-        clientNameInputRef={clientNameInputRef}
-        onClientNameChange={(value) => {
-          setClientName(value);
-          if (clientError) setClientError("");
-        }}
-        onClientEmailChange={(value) => {
-          setClientEmail(value);
-          if (clientEmailError) setClientEmailError("");
-        }}
-        onClientEmailBlur={() => {
-          const trimmed = clientEmail.trim();
-          if (trimmed && !isValidOptionalClientEmail(trimmed)) {
-            setClientEmailError("Le courriel n'est pas valide.");
-          }
-        }}
-        onConfirm={confirmClientProjectCreation}
-        onCancel={cancelClientProjectCreation}
       />
 
       {showImportModal && (

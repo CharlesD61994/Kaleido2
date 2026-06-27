@@ -21,21 +21,8 @@ export default function HomeView({
   setters,
 }) {
   const {
-    cancelClientProjectCreation,
-    clientEmail,
-    clientEmailError,
-    clientError,
-    clientModalMode,
-    clientName,
-    clientNameInputRef,
-    confirmClientProjectCreation,
     createProjectFromPatron,
     queueProjectCreation,
-    setClientEmail,
-    setClientEmailError,
-    setClientError,
-    setClientName,
-    showClientModal,
   } = creation;
 
   const {
@@ -111,26 +98,13 @@ export default function HomeView({
         showSettingsModal={showSettingsModal}
       />
       <ProjectCreationDialogs
-        cancelClientProjectCreation={cancelClientProjectCreation}
-        clientEmail={clientEmail}
-        clientEmailError={clientEmailError}
-        clientError={clientError}
-        clientModalMode={clientModalMode}
-        clientName={clientName}
-        clientNameInputRef={clientNameInputRef}
-        confirmClientProjectCreation={confirmClientProjectCreation}
         createProjectFromPatron={createProjectFromPatron}
         database={database}
         navigateToLibrary={navigateToLibrary}
         queueProjectCreation={queueProjectCreation}
-        setClientEmail={setClientEmail}
-        setClientEmailError={setClientEmailError}
-        setClientError={setClientError}
-        setClientName={setClientName}
         setShowImportModal={setShowImportModal}
         setShowNewMenu={setShowNewMenu}
         setShowSelectPatronModal={setShowSelectPatronModal}
-        showClientModal={showClientModal}
         showImportModal={showImportModal}
         showNewMenu={showNewMenu}
         showSelectPatronModal={showSelectPatronModal}

@@ -57,8 +57,8 @@ export default function ClientShareCard({ project, color, onPublishClientProject
       right={
         <div
           style={{
-            background: hasLink ? `${color.bg}22` : "rgba(251,191,36,0.12)",
-            color: hasLink ? color.light : "#FBBF24",
+            background: hasLink ? `${color.bg}18` : "rgba(251,191,36,0.12)",
+            color: hasLink ? color.bg : "#B45309",
             borderRadius: 999,
             padding: "6px 10px",
             fontSize: 11,
@@ -76,9 +76,9 @@ export default function ClientShareCard({ project, color, onPublishClientProject
           <div
             style={{
               borderRadius: 14,
-              background: "rgba(13,13,26,0.58)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              color: "#A8A6B8",
+              background: "var(--k-muted-fill)",
+              border: "1px solid var(--k-border)",
+              color: "var(--k-text-soft)",
               fontSize: 12,
               padding: 12,
               overflowWrap: "anywhere",
@@ -113,10 +113,10 @@ export default function ClientShareCard({ project, color, onPublishClientProject
             <button
               onClick={copyExisting}
               style={{
-                border: "1px solid rgba(255,255,255,0.10)",
+                border: "1px solid var(--k-border)",
                 borderRadius: 14,
-                background: "rgba(255,255,255,0.07)",
-                color: "#F1F0EE",
+                background: "var(--k-muted-fill-2)",
+                color: "var(--k-text)",
                 padding: "12px 13px",
                 fontSize: 13,
                 fontWeight: 800,
@@ -132,10 +132,10 @@ export default function ClientShareCard({ project, color, onPublishClientProject
           <button
             onClick={prepareEmail}
             style={{
-              border: "1px solid rgba(255,255,255,0.10)",
+              border: "1px solid var(--k-border)",
               borderRadius: 14,
-              background: "rgba(255,255,255,0.05)",
-              color: "#F1F0EE",
+              background: "var(--k-muted-fill-2)",
+              color: "var(--k-text)",
               padding: "12px 13px",
               fontSize: 13,
               fontWeight: 800,

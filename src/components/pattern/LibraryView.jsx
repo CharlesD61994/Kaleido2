@@ -34,7 +34,11 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
       {/* Header */}
       <div style={{ padding: "52px 20px 16px", background: "var(--k-header-gradient)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <button data-kaleido-back-button="true" onClick={() => { if (typeof onNavigateHub === "function") onNavigateHub(); }} style={{ background: "var(--k-surface-2)", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", fontSize: 16, cursor: "pointer", flexShrink: 0 }}>←</button>
+          <button data-kaleido-back-button="true" onClick={() => { if (typeof onNavigateHub === "function") onNavigateHub(); }} style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", cursor: "pointer", flexShrink: 0 }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 20, background: "linear-gradient(135deg, #A78BFA, #F472B6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}><span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Icon name="library" size={26} color="#A78BFA" />Bibliothèque</span></span>
           <div style={{ flex: 1 }} />
           <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 10, padding: "6px 12px" }}>
@@ -79,7 +83,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
         )}
       </div>
       {/* Bouton + */}
-      <div style={{ position: "fixed", bottom: 24, right: "calc(50% - 200px)", zIndex: 50 }}>
+      <div style={{ position: "fixed", bottom: 24, right: "calc(50% - 184px)", zIndex: 50 }}>
         <button onClick={() => setShowNewMenu(true)} style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #7C3AED, #EC4899)", border: "none", cursor: "pointer", fontSize: 28, color: "#fff", boxShadow: "0 4px 20px #7C3AED88", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
       </div>
       {/* Menu contextuel */}

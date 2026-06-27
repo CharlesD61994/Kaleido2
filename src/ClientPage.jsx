@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { computeProgress } from "./services/progressStore";
 import { KALEIDOSCOPE_COLORS } from "./constants/colors";
 import ClientChatPreview from "./components/clients/ClientChatPreview";
@@ -21,6 +21,10 @@ const formatElapsedTime = (seconds = 0) => {
 };
 
 export default function ClientPage({ project, onBack, onEditClient, onMarkMessagesRead, onPublishClientProject, publicView = false }) {
+  const [publicThemeMode, setPublicThemeMode] = useState(() => {
+    if (!publicView || typeof window === "undefined") return "dark";
+    return window.localStorage.getItem("kaleido-client-theme") === "light" ? "light" : "dark";
+  });
   const progress = computeProgress(project);
   const color = KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
   const elapsedTimeLabel = formatElapsedTime(project?.elapsedTime);
@@ -33,8 +37,19 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
     }
   }, [project?.id, project?.clientShareToken, publicView]);
 
+  const togglePublicTheme = () => {
+    setPublicThemeMode((current) => {
+      const next = current === "light" ? "dark" : "light";
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("kaleido-client-theme", next);
+      }
+      return next;
+    });
+  };
+
   return (
     <div
+      data-kaleido-theme={publicView ? publicThemeMode : undefined}
       style={{
         background: "var(--k-bg)",
         minHeight: "100vh",
@@ -58,7 +73,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
       />
 
       <div style={{ position: "relative", zIndex: 2, padding: "44px 20px 28px" }}>
-        <ClientPageHeader project={project} color={color} onBack={onBack} publicView={publicView} />
+        <ClientPageHeader project={project} color={color} onBack={onBack} publicView={publicView} themeMode={publicThemeMode} onToggleTheme={togglePublicTheme} />
         <ClientSummaryCard project={project} color={color} clientInitial={clientInitial} onEditClient={onEditClient} publicView={publicView} />
 
         {!publicView && (
@@ -75,7 +90,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         </ClientSectionCard>
 
         <ClientProgressCard color={color} progress={progress} elapsedTimeLabel={elapsedTimeLabel} statusLabel={statusLabel} />
-        <ClientChatPreview project={project} color={color} publicView={publicView} />
+        <ClientChatPreview project={project} color={color} publicView={publicView} themeMode={publicView ? publicThemeMode : undefined} />
       </div>
     </div>
   );

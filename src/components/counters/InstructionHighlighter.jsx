@@ -60,7 +60,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                   style={{
                     display: "inline",
                     borderRadius: 7,
-                    padding: selected ? "0 3px 1px" : 0,
+                    padding: "0 3px 1px",
                     margin: 0,
                     background: selected ? `linear-gradient(135deg, ${accent.bg}, ${accent.light})` : "transparent",
                     color: selected ? "#fff" : "var(--k-text)",

@@ -30,7 +30,7 @@ const imageFileToDataUrl = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-export default function ClientChatPreview({ project, color, publicView = false }) {
+export default function ClientChatPreview({ project, color, publicView = false, themeMode }) {
   const shareToken = project?.clientShareToken || "";
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
@@ -43,6 +43,10 @@ export default function ClientChatPreview({ project, color, publicView = false }
   const fileInputRef = useRef(null);
   const compactMessagesRef = useRef(null);
   const fullscreenMessagesRef = useRef(null);
+  const inheritedTheme = typeof document !== "undefined"
+    ? document.querySelector('[data-kaleido-screen="true"][data-kaleido-theme]')?.getAttribute("data-kaleido-theme")
+    : undefined;
+  const portalTheme = themeMode || inheritedTheme || undefined;
 
   const scrollMessagesToBottom = (target = "all") => {
     const pairs = target === "compact"
@@ -172,7 +176,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
       ref={expanded ? fullscreenMessagesRef : compactMessagesRef}
       style={{
         borderRadius: expanded ? 0 : 18,
-        background: expanded ? "rgba(13,13,26,0.32)" : "rgba(13,13,26,0.58)",
+        background: expanded ? "var(--k-bg)" : "var(--k-muted-fill)",
         border: expanded ? "0" : "1px solid var(--k-border)",
         padding: expanded ? "14px 16px" : 12,
         minHeight: expanded ? 0 : 150,
@@ -261,7 +265,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
           width: "100%",
           border: "1.5px solid var(--k-border)",
           borderRadius: 16,
-          background: "rgba(13,13,26,0.72)",
+          background: "var(--k-field)",
           color: "var(--k-text)",
           padding: 13,
           resize: "vertical",
@@ -299,7 +303,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, background: "rgba(255,255,255,0.07)", color: "#F1F0EE", padding: "12px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer" }}
+              style={{ border: "1px solid var(--k-border)", borderRadius: 14, background: "var(--k-muted-fill-2)", color: "var(--k-text)", padding: "12px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer" }}
             >
               Photo
             </button>
@@ -425,6 +429,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
         gridTemplateRows: "auto minmax(0, 1fr)",
         fontFamily: "'DM Sans', sans-serif",
       }}
+      data-kaleido-theme={portalTheme}
     >
       <div
         style={{
@@ -434,7 +439,7 @@ export default function ClientChatPreview({ project, color, publicView = false }
           gap: 12,
           padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 12px",
           borderBottom: "1px solid var(--k-border)",
-          background: `linear-gradient(135deg, ${color.bg}30, rgba(13,13,26,0.96))`,
+          background: `linear-gradient(135deg, ${color.bg}18, var(--k-surface))`,
         }}
       >
         <div style={{ minWidth: 0 }}>
@@ -450,9 +455,9 @@ export default function ClientChatPreview({ project, color, publicView = false }
             width: 42,
             height: 42,
             borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.14)",
+            border: "1px solid var(--k-border)",
             background: "var(--k-muted-fill-2)",
-            color: "#fff",
+            color: "var(--k-text)",
             fontSize: 20,
             fontWeight: 900,
             cursor: "pointer",

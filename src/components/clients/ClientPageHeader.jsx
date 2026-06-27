@@ -1,4 +1,4 @@
-export default function ClientPageHeader({ project, color, onBack, publicView = false }) {
+export default function ClientPageHeader({ project, onBack, publicView = false, themeMode = "dark", onToggleTheme }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
       {!publicView && (
@@ -7,7 +7,7 @@ export default function ClientPageHeader({ project, color, onBack, publicView = 
           onClick={onBack}
           style={{
             background: "var(--k-surface-2)",
-            border: "none",
+            border: "1px solid var(--k-control-border)",
             borderRadius: 10,
             width: 36,
             height: 36,
@@ -15,14 +15,14 @@ export default function ClientPageHeader({ project, color, onBack, publicView = 
             alignItems: "center",
             justifyContent: "center",
             color: "#A78BFA",
-            fontSize: 16,
             cursor: "pointer",
             flexShrink: 0,
-            boxShadow: "0 8px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
           aria-label="Retour au projet"
         >
-          ←
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
       )}
 
@@ -32,7 +32,7 @@ export default function ClientPageHeader({ project, color, onBack, publicView = 
         </h1>
         <div
           style={{
-            color: color.light,
+            color: "var(--k-muted)",
             fontSize: 11,
             fontFamily: "monospace",
             marginTop: 4,
@@ -46,6 +46,26 @@ export default function ClientPageHeader({ project, color, onBack, publicView = 
           {project?.name || "Projet"}
         </div>
       </div>
+
+      {publicView && typeof onToggleTheme === "function" ? (
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          style={{
+            border: "1px solid var(--k-control-border)",
+            borderRadius: 999,
+            background: "var(--k-surface-2)",
+            color: "var(--k-text)",
+            padding: "8px 11px",
+            fontSize: 12,
+            fontWeight: 900,
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          {themeMode === "light" ? "Sombre" : "Clair"}
+        </button>
+      ) : null}
     </div>
   );
 }

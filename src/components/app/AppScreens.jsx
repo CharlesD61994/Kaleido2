@@ -6,6 +6,8 @@ import { VIEWS } from "../../constants/views";
 import { GLOBAL_MOTION_CSS, getViewMotionStyle } from "../../styles/motion";
 import { THEME_CSS } from "../../styles/theme";
 import useClientMessageNotifications from "../../hooks/useClientMessageNotifications";
+import ClientModal from "../clients/ClientModal";
+import { isValidOptionalClientEmail } from "../../services/clientStore";
 
 export default function AppScreens({
   auth,
@@ -48,7 +50,20 @@ export default function AppScreens({
   } = navigation;
 
   const {
+    cancelClientProjectCreation,
+    clientEmail,
+    clientEmailError,
+    clientError,
+    clientModalMode,
+    clientName,
+    clientNameInputRef,
+    confirmClientProjectCreation,
     openClientEditor,
+    setClientEmail,
+    setClientEmailError,
+    setClientError,
+    setClientName,
+    showClientModal,
   } = creation;
 
   const {
@@ -173,6 +188,32 @@ export default function AppScreens({
         updateProject={updateProject}
         viewWrapStyle={viewWrapStyle}
         viewTransition={viewTransition}
+      />
+
+      <ClientModal
+        show={showClientModal}
+        mode={clientModalMode}
+        clientName={clientName}
+        clientEmail={clientEmail}
+        clientError={clientError}
+        clientEmailError={clientEmailError}
+        clientNameInputRef={clientNameInputRef}
+        onClientNameChange={(value) => {
+          setClientName(value);
+          if (clientError) setClientError("");
+        }}
+        onClientEmailChange={(value) => {
+          setClientEmail(value);
+          if (clientEmailError) setClientEmailError("");
+        }}
+        onClientEmailBlur={() => {
+          const trimmed = clientEmail.trim();
+          if (trimmed && !isValidOptionalClientEmail(trimmed)) {
+            setClientEmailError("Le courriel n'est pas valide.");
+          }
+        }}
+        onConfirm={confirmClientProjectCreation}
+        onCancel={cancelClientProjectCreation}
       />
     </div>
   );
