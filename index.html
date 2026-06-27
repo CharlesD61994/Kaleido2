@@ -11,6 +11,19 @@
     <title>KaleidoHub</title>
   </head>
   <body style="margin:0; background:#0D0D1A;">
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem("kaleido_database");
+          var db = raw ? JSON.parse(raw) : null;
+          var theme = db && db.settings && db.settings.themeMode === "light" ? "light" : "dark";
+          document.documentElement.setAttribute("data-kaleido-theme", theme);
+          document.body.style.background = theme === "light" ? "#F7F4FB" : "#0D0D1A";
+          var themeMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeMeta) themeMeta.setAttribute("content", theme === "light" ? "#F7F4FB" : "#0D0D1A");
+        } catch (error) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

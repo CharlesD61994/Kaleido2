@@ -212,7 +212,7 @@ const {
 // ─── RENDU CONDITIONNEL ───────────────────────────────────
 // ── Splash Screen ──────────────────────────────────────────────
 if (showSplash || !cloudReady) {
-return <SplashScreen fading={splashFading} />;
+return <SplashScreen fading={splashFading} themeMode={getThemeMode(database)} />;
 }
 
 const {
@@ -355,7 +355,7 @@ export default function App() {
   }
 
   if (auth.loading) {
-    return <SplashScreen fading={false} />;
+    return <SplashScreen fading={false} themeMode={getThemeMode(loadDatabase())} />;
   }
 
   if (!auth.user) {

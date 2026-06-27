@@ -4,9 +4,9 @@ import { THEME_CSS } from "../../styles/theme";
 
 export const LOGO_SRC = "/kaleido-logo.jpg";
 
-export default function SplashScreen({ fading }) {
+export default function SplashScreen({ fading, themeMode = "dark" }) {
   return (
-    <div style={{
+    <div data-kaleido-theme={themeMode} style={{
       position: "fixed", inset: 0, zIndex: 9999,
       background: "var(--k-bg)",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
