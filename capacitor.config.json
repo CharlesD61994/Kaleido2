@@ -1,5 +1,9 @@
 {
   "appId": "com.charlesdugre.kaleido",
   "appName": "Kaleido",
-  "webDir": "dist"
+  "webDir": "dist",
+  "backgroundColor": "#0D0D1A",
+  "ios": {
+    "scheme": "Kaleido"
+  }
 }
