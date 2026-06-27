@@ -50,6 +50,17 @@ const getCacheForStore = (storeName) => storeName === "images" ? mediaMemoryCach
 const mediaPath = (storeName, id) => `${getActiveCloudUserId()}/${storeName}/${encodeURIComponent(id)}.txt`;
 const legacyMediaPath = (storeName, id) => `${storeName}/${encodeURIComponent(id)}.txt`;
 
+const isMissingStorageObject = (error) => {
+  const message = String(error?.message || "").toLowerCase();
+  const status = Number(error?.statusCode || error?.status || 0);
+  return status === 404
+    || status === 400 && (
+      message.includes("not found")
+      || message.includes("does not exist")
+      || message.includes("object not found")
+    );
+};
+
 const putIntoStore = async (openDb, storeName, id, data) => {
   const db = await openDb();
 
@@ -144,12 +155,18 @@ const downloadFromCloud = async (storeName, id) => {
       return await data.text();
     }
 
+    if (error && !isMissingStorageObject(error)) {
+      console.warn("[KALEIDO] media cloud download error:", error);
+    }
+
     const legacy = await supabase.storage
       .from(MEDIA_BUCKET)
       .download(legacyMediaPath(storeName, id));
 
     if (legacy.error || !legacy.data) {
-      if (legacy.error) console.warn("[KALEIDO] media cloud download error:", legacy.error);
+      if (legacy.error && !isMissingStorageObject(legacy.error)) {
+        console.warn("[KALEIDO] media cloud legacy download error:", legacy.error);
+      }
       return null;
     }
 
