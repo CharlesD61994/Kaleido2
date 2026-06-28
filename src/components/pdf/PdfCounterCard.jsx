@@ -32,8 +32,9 @@ export default function PdfCounterCard({
   if (compact) {
     const circleSize = 95;
     const circleCenter = circleSize / 2;
-    const circleRadius = 43.5;
+    const circleRadius = 40.5;
     const circleCirc = 2 * Math.PI * circleRadius;
+    const circleStroke = 5;
     const localProgress = currentPartie && totalPartieCourante > 0
       ? Math.round((rangDansPartie / totalPartieCourante) * 100)
       : pct;
@@ -46,19 +47,19 @@ export default function PdfCounterCard({
         onClick={() => swiped && setSwiped(false)}
         style={{ background: "transparent", borderRadius: 0, border: "none", padding: "12px 0 9px", display: "flex", alignItems: "center", gap: 10, position: "relative", overflow: "hidden", width: "100%" }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 0, transform: swiped ? "translateX(-104px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, transform: swiped ? "translateX(-104px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
           <div style={{ position: "relative", flexShrink: 0, width: clientButton ? circleSize + 48 : circleSize }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
               <div style={{ color: color.bg, fontSize: 13, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
               <div style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 12px ${color.bg}3F)` }}>
                 <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
-                  <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth="4" fill="none" />
+                  <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth={circleStroke} fill="none" />
                   <circle
                     cx={circleCenter}
                     cy={circleCenter}
                     r={circleRadius}
                     stroke={color.bg}
-                    strokeWidth="4"
+                    strokeWidth={circleStroke}
                     fill="none"
                     strokeDasharray={circleCirc}
                     strokeDashoffset={circleCirc * (1 - pct / 100)}
@@ -67,8 +68,8 @@ export default function PdfCounterCard({
                   />
                 </svg>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ color: "var(--k-text)", fontSize: 26, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
-                  <span style={{ color: color.bg, fontSize: 12, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
+                  <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
+                  <span style={{ color: color.bg, fontSize: 13, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
                 </div>
               </div>
             </div>
@@ -98,7 +99,7 @@ export default function PdfCounterCard({
                     border: "none",
                     padding: 0,
                     color: color.bg,
-                    fontSize: 15,
+                    fontSize: 16,
                     fontFamily: "'DM Sans', sans-serif",
                     fontWeight: 600,
                     overflow: "hidden",
@@ -111,7 +112,7 @@ export default function PdfCounterCard({
                 >
                   {currentPartie?.nom || "Progression"}
                 </button>
-                <span style={{ color: color.bg, fontSize: 13, fontFamily: "monospace", fontWeight: 800, flexShrink: 0 }}>{currentPartie ? `${rangDansPartie}/${totalPartieCourante}` : `${pct}%`}</span>
+                <span style={{ color: color.bg, fontSize: 14, fontFamily: "monospace", fontWeight: 800, flexShrink: 0 }}>{currentPartie ? `${rangDansPartie}/${totalPartieCourante}` : `${pct}%`}</span>
               </div>
               <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: 8, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}10` }}>
                 <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${localProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${color.bg}55` }} />
