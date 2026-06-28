@@ -13,6 +13,7 @@ export default function usePressedFeedback() {
 
     const setPressedFromTarget = (target) => {
       if (!(target instanceof Element)) return null;
+      if (target.closest('[data-kaleido-no-press="true"]')) return null;
       const el = target.closest(selector);
       if (!el) return null;
       if (activeEl && activeEl !== el) {

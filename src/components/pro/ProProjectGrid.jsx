@@ -52,6 +52,7 @@ export default function ProProjectGrid({ projects, unreadProjectIds, onProjectOp
 
   return (
     <div style={{ padding: "18px 16px 116px" }}>
+      <style>{`[data-kaleido-no-press="true"], [data-kaleido-no-press="true"]:active, [data-kaleido-no-press="true"]:focus, [data-kaleido-no-press="true"]:focus-visible { outline: none !important; box-shadow: none !important; -webkit-tap-highlight-color: transparent !important; }`}</style>
       {projects.length === 0 ? (
         <div style={{ textAlign: "center", color: "var(--k-muted-2)", padding: "40px 0", fontSize: 14 }}>
           Aucun projet trouvé

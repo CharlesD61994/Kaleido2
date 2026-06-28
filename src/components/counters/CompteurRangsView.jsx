@@ -213,8 +213,6 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
         </div>
       )}
 
-      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 150, pointerEvents: "none", background: `radial-gradient(circle at 50% 100%, ${currentPartieColor.bg}22 0%, transparent 68%)`, opacity: 0.55 }} />
-
       <PartieTransitionModals
         allRangs={allRangs}
         completeProject={completeProject}

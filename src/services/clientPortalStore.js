@@ -41,8 +41,10 @@ export const ensureClientShareToken = (project = {}) => {
 export const buildClientPortalUrl = (token) => {
   if (!token) return "";
   const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
-  const isNativeOrigin = currentOrigin.startsWith("capacitor://") || currentOrigin.startsWith("ionic://");
-  const origin = isNativeOrigin ? PUBLIC_CLIENT_ORIGIN : currentOrigin;
+  const protocol = typeof window !== "undefined" ? window.location.protocol : "";
+  const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+  const isPublicWebOrigin = protocol === "https:" && !["localhost", "127.0.0.1"].includes(hostname);
+  const origin = isPublicWebOrigin ? currentOrigin : PUBLIC_CLIENT_ORIGIN;
   return `${origin}/client/${token}`;
 };
 

@@ -21,8 +21,9 @@ const ProBubble = React.memo(function ProBubble({ project, unreadClientMessageCo
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "8px 4px 8px" }}>
       <div style={{ position: "relative", width: size, height: size, overflow: "visible", isolation: "isolate" }}>
         <button
+          data-kaleido-no-press="true"
           onClick={handleOpen}
-          style={{ position: "absolute", inset: 0, overflow: "visible", isolation: "isolate", background: "none", border: "none", outline: "none", WebkitTapHighlightColor: "transparent", WebkitAppearance: "none", appearance: "none", padding: 0, cursor: "pointer", transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease", filter: "saturate(1.02)" }}
+          style={{ position: "absolute", inset: 0, overflow: "visible", isolation: "isolate", background: "none", border: "none", outline: "none", boxShadow: "none", WebkitTapHighlightColor: "transparent", WebkitAppearance: "none", appearance: "none", padding: 0, cursor: "pointer", transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease", filter: "saturate(1.02)" }}
           onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.94) translateY(3px)"; e.currentTarget.style.filter = "saturate(1.1) brightness(1.07)"; }}
           onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.filter = "saturate(1.02)"; }}
           onTouchCancel={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.filter = "saturate(1.02)"; }}
@@ -127,7 +128,7 @@ const ProBubble = React.memo(function ProBubble({ project, unreadClientMessageCo
         <ProBubbleMenuButton color={color} project={project} onMenuOpen={onMenuOpen} />
       </div>
 
-      <button onClick={handleOpen} style={{ background: "none", border: "none", outline: "none", WebkitTapHighlightColor: "transparent", WebkitAppearance: "none", appearance: "none", padding: 0, cursor: "pointer", textAlign: "center", width: size, maxWidth: 112 }}>
+      <button data-kaleido-no-press="true" onClick={handleOpen} style={{ background: "none", border: "none", outline: "none", boxShadow: "none", WebkitTapHighlightColor: "transparent", WebkitAppearance: "none", appearance: "none", padding: 0, cursor: "pointer", textAlign: "center", width: size, maxWidth: 112 }}>
         <div style={{ color: isCompleted ? "#8F8A9D" : "var(--k-text)", fontSize: "clamp(10px, 2.8vw, 12px)", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
           {project?.name || "Projet sans nom"}
         </div>
