@@ -69,13 +69,13 @@ style={{ background: "#DC2626", border: "none", borderRadius: 6, padding: "4px 5
 export function ProgressionSwipeCard({ currentPartieColor, currentIndex, totalRangs, circ_r, circ_c, currentPartie, currentPartieRangIndex, currentPartieTotal, onAddCounter, currentCountIndex, compact = false, timerProps = null, clientButton = null, onPrevRang = null, onNextRang = null, canPrev = true, canNext = true }) {
 const [swiped, setSwiped] = useState(false);
 const [startX, setStartX] = useState(0);
-const circleSize = compact ? 104 : 95;
+const circleSize = 95;
 const circleCenter = circleSize / 2;
-const circleRadius = compact ? 44 : circ_r;
+const circleRadius = compact ? 43.5 : circ_r;
 const circleCirc = 2 * Math.PI * circleRadius;
-const labelSize = compact ? 14 : 13;
-const countSize = compact ? 36 : 26;
-const barHeight = compact ? 10 : 8;
+const labelSize = 13;
+const countSize = 26;
+const barHeight = 8;
 const localRangNumber = Math.max(0, currentPartieRangIndex + 1);
 const showInlineControls = compact && typeof onPrevRang === "function" && typeof onNextRang === "function";
 return (
@@ -85,15 +85,15 @@ onTouchMove={e => { if (startX - e.touches[0].clientX > 40) setSwiped(true); }}
 onTouchEnd={e => { if (startX - e.changedTouches[0].clientX < -40) setSwiped(false); }}
 onClick={() => swiped && setSwiped(false)}
 style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, paddingBottom: compact ? 0 : 12, position: "relative", overflow: "hidden", width: "100%" }}>
-<div style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, flex: 1, minWidth: 0, padding: compact && showInlineControls ? "12px 0 9px" : 0, transform: swiped ? `translateX(${compact ? "-104px" : "-110px"})` : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
+<div style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 0, padding: compact && showInlineControls ? "12px 0 9px" : 0, transform: swiped ? `translateX(${compact ? "-104px" : "-110px"})` : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 {/* Cercle */}
-<div style={{ position: "relative", flexShrink: 0 }}>
+<div style={{ position: "relative", flexShrink: 0, width: clientButton && compact ? circleSize + 48 : circleSize }}>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: labelSize, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
 <div key={`progress-${currentCountIndex}-${totalRangs}`} style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 10px ${currentPartieColor.bg}33)`, transformOrigin: "center", animation: "kaleidoProgressCleanPulse 340ms cubic-bezier(0.25, 0.9, 0.35, 1)" }}>
 <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
-<circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth={compact ? 3 : 4} fill="none" />
-<circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="url(#kg)" strokeWidth={compact ? 3 : 4} fill="none"
+<circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth="4" fill="none" />
+<circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="url(#kg)" strokeWidth="4" fill="none"
 strokeDasharray={circleCirc} strokeDashoffset={circleCirc * (1 - Math.max(0, currentCountIndex + 1) / totalRangs)}
 strokeLinecap="round" style={{
   transition: "stroke-dashoffset 0.56s cubic-bezier(0.22, 1, 0.36, 1)",
@@ -108,13 +108,13 @@ strokeLinecap="round" style={{
 </svg>
 <div style={{ position: "absolute", top:0, left:0, right:0, bottom:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
 <div style={{ color: "var(--k-text)", fontSize: countSize, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{Math.max(0, currentCountIndex + 1)}</div>
-<div style={{ color: currentPartieColor.bg, fontSize: compact ? 12 : 12, fontFamily: "monospace", marginTop: compact ? 1 : 3, fontWeight: 800 }}>/ {totalRangs}</div>
+<div style={{ color: currentPartieColor.bg, fontSize: 12, fontFamily: "monospace", marginTop: compact ? 1 : 3, fontWeight: 800 }}>/ {totalRangs}</div>
 </div>
 </div>
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {clientButton && compact ? (
-<div style={{ position: "absolute", left: circleSize + 6, top: 78, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+<div style={{ position: "absolute", left: circleSize + 6, top: 70, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
 ) : null}
@@ -128,9 +128,9 @@ strokeLinecap="round" style={{
 ) : null}
 <div style={{ transform: showInlineControls ? "translateY(9px)" : "translateY(0)" }}>
 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compact ? 4 : 6, gap: 8 }}>
-<div style={{ color: currentPartieColor.bg, fontSize: compact ? 17 : 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
+<div style={{ color: currentPartieColor.bg, fontSize: 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-<div style={{ color: currentPartieColor.bg, fontSize: compact ? 15 : 13, fontFamily: "monospace", fontWeight: 800 }}>{localRangNumber}/{currentPartieTotal}</div>
+<div style={{ color: currentPartieColor.bg, fontSize: 13, fontFamily: "monospace", fontWeight: 800 }}>{localRangNumber}/{currentPartieTotal}</div>
 </div>
 </div>
 <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: barHeight, overflow: "hidden" }}>
