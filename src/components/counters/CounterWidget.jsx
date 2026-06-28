@@ -87,7 +87,7 @@ onClick={() => swiped && setSwiped(false)}
 style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, paddingBottom: compact ? 0 : 12, position: "relative", overflow: "hidden", width: "100%" }}>
 <div style={{ display: "flex", alignItems: "center", gap: compact ? 8 : 16, flex: 1, minWidth: 0, padding: compact && showInlineControls ? "18px 0 7px" : 0, transform: swiped ? `translateX(${compact ? "-84px" : "-110px"})` : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 {/* Cercle */}
-<div style={{ position: "relative", flexShrink: 0 }}>
+<div style={{ position: "relative", flexShrink: 0, width: clientButton && compact ? circleSize + 43 : circleSize }}>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: labelSize, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
 <div key={`progress-${currentCountIndex}-${totalRangs}`} style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 10px ${currentPartieColor.bg}33)`, transformOrigin: "center", animation: "kaleidoProgressCleanPulse 340ms cubic-bezier(0.25, 0.9, 0.35, 1)" }}>
@@ -114,7 +114,7 @@ strokeLinecap="round" style={{
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {clientButton && compact ? (
-<div style={{ position: "absolute", left: circleSize + 5, top: 63, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+<div style={{ position: "absolute", left: circleSize + 6, top: 63, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
 ) : null}

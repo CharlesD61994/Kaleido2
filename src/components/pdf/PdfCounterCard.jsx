@@ -30,9 +30,9 @@ export default function PdfCounterCard({
   };
 
   if (compact) {
-    const circleSize = 96;
+    const circleSize = 82;
     const circleCenter = circleSize / 2;
-    const circleRadius = 41;
+    const circleRadius = 35;
     const circleCirc = 2 * Math.PI * circleRadius;
     const localProgress = currentPartie && totalPartieCourante > 0
       ? Math.round((rangDansPartie / totalPartieCourante) * 100)
@@ -44,10 +44,10 @@ export default function PdfCounterCard({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={() => swiped && setSwiped(false)}
-        style={{ background: "transparent", borderRadius: 0, border: "none", padding: "16px 0 8px", display: "flex", alignItems: "center", gap: 10, position: "relative", overflow: "hidden", width: "100%" }}
+        style={{ background: "transparent", borderRadius: 0, border: "none", padding: "18px 0 7px", display: "flex", alignItems: "center", gap: 10, position: "relative", overflow: "hidden", width: "100%" }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, transform: swiped ? "translateX(-96px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
-          <div style={{ position: "relative", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0, transform: swiped ? "translateX(-84px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
+          <div style={{ position: "relative", flexShrink: 0, width: clientButton ? circleSize + 43 : circleSize }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
               <div style={{ color: color.bg, fontSize: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
               <div style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 12px ${color.bg}3F)` }}>
@@ -67,13 +67,13 @@ export default function PdfCounterCard({
                   />
                 </svg>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
-                  <span style={{ color: color.bg, fontSize: 11, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
+                  <span style={{ color: "var(--k-text)", fontSize: 28, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
+                  <span style={{ color: color.bg, fontSize: 10, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
                 </div>
               </div>
             </div>
             {clientButton ? (
-              <div style={{ position: "absolute", left: circleSize + 5, top: 72, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: circleSize + 6, top: 63, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
@@ -113,13 +113,13 @@ export default function PdfCounterCard({
                 </button>
                 <span style={{ color: color.bg, fontSize: 13, fontFamily: "monospace", fontWeight: 800, flexShrink: 0 }}>{currentPartie ? `${rangDansPartie}/${totalPartieCourante}` : `${pct}%`}</span>
               </div>
-              <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: 9, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}10` }}>
+              <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: 8, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}10` }}>
                 <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${localProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${color.bg}55` }} />
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <button onClick={decrementRang} style={{ width: 38, height: 38, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
-                <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
-                <button onClick={incrementRang} style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 3px 10px ${color.bg}55` }}>+</button>
+                <button onClick={decrementRang} style={{ width: 34, height: 34, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 20, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
+                <span style={{ color: "var(--k-text)", fontSize: 28, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 34, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
+                <button onClick={incrementRang} style={{ width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 20, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 3px 10px ${color.bg}55` }}>+</button>
               </div>
             </div>
           </div>
