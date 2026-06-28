@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KaleidoHub" />
+    <meta name="theme-color" content="#0D0D1A" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <title>KaleidoHub</title>
+    <script type="module" crossorigin src="/assets/index-Dc22Uz3U.js"></script>
+  <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
+  <body style="margin:0; background:#0D0D1A;">
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem("kaleido_database");
+          var db = raw ? JSON.parse(raw) : null;
+          var theme = db && db.settings && db.settings.themeMode === "light" ? "light" : "dark";
+          document.documentElement.setAttribute("data-kaleido-theme", theme);
+          document.body.style.background = theme === "light" ? "#F7F4FB" : "#0D0D1A";
+          var themeMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeMeta) themeMeta.setAttribute("content", theme === "light" ? "#F7F4FB" : "#0D0D1A");
+        } catch (error) {}
+      })();
+    </script>
+    <div id="root"></div>
+  </body>
+</html>
