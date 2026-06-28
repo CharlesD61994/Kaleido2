@@ -74,10 +74,11 @@ export default function WorkProjectHeader({
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: mainContent ? 6 : 12, position: "relative" }}>
       {mainContent ? (
-        <div style={{ width: 36, minWidth: 36, display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignSelf: "center", transform: "translateY(18px)" }}>
-          {backButton}
-          {clientButton}
-        </div>
+        clientButton ? (
+          <div style={{ width: 36, minWidth: 36, display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignSelf: "center" }}>
+            {clientButton}
+          </div>
+        ) : null
       ) : backButton}
 
       <div style={{ flex: 1, minWidth: 0 }}>

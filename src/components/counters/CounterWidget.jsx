@@ -69,13 +69,13 @@ style={{ background: "#DC2626", border: "none", borderRadius: 6, padding: "4px 5
 export function ProgressionSwipeCard({ currentPartieColor, currentIndex, totalRangs, circ_r, circ_c, currentPartie, currentPartieRangIndex, currentPartieTotal, onAddCounter, currentCountIndex, compact = false, timerProps = null, onPrevRang = null, onNextRang = null, canPrev = true, canNext = true }) {
 const [swiped, setSwiped] = useState(false);
 const [startX, setStartX] = useState(0);
-const circleSize = compact ? 82 : 95;
+const circleSize = compact ? 96 : 95;
 const circleCenter = circleSize / 2;
-const circleRadius = compact ? 35 : circ_r;
+const circleRadius = compact ? 41 : circ_r;
 const circleCirc = 2 * Math.PI * circleRadius;
 const labelSize = compact ? 12 : 13;
-const countSize = compact ? 28 : 26;
-const barHeight = compact ? 8 : 8;
+const countSize = compact ? 32 : 26;
+const barHeight = compact ? 9 : 8;
 const localRangNumber = Math.max(0, currentPartieRangIndex + 1);
 const showInlineControls = compact && typeof onPrevRang === "function" && typeof onNextRang === "function";
 return (
@@ -84,8 +84,8 @@ onTouchStart={e => setStartX(e.touches[0].clientX)}
 onTouchMove={e => { if (startX - e.touches[0].clientX > 40) setSwiped(true); }}
 onTouchEnd={e => { if (startX - e.changedTouches[0].clientX < -40) setSwiped(false); }}
 onClick={() => swiped && setSwiped(false)}
-style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, paddingBottom: compact ? 0 : 12, position: "relative", overflow: "hidden", width: "100%" }}>
-<div style={{ display: "flex", alignItems: "center", gap: compact ? 8 : 16, flex: 1, minWidth: 0, padding: compact && showInlineControls ? "18px 0 7px" : 0, transform: swiped ? `translateX(${compact ? "-84px" : "-110px"})` : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
+style={{ display: "flex", alignItems: "center", gap: compact ? 12 : 16, paddingBottom: compact ? 0 : 12, position: "relative", overflow: "hidden", width: "100%" }}>
+<div style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, flex: 1, minWidth: 0, padding: compact && showInlineControls ? "16px 0 8px" : 0, transform: swiped ? `translateX(${compact ? "-96px" : "-110px"})` : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 {/* Cercle */}
 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: labelSize, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
@@ -113,7 +113,7 @@ strokeLinecap="round" style={{
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {/* Barre partie */}
-<div style={{ flex: 1, minWidth: 0, maxWidth: compact ? 230 : "none", position: "relative" }}>
+<div style={{ flex: 1, minWidth: 0, maxWidth: "none", position: "relative" }}>
 {compact && timerProps ? (
 <div style={{ position: "absolute", top: -12, right: 0 }}>
 <TimerPill {...timerProps} color={currentPartieColor} />
@@ -131,9 +131,9 @@ strokeLinecap="round" style={{
 </div>
 {showInlineControls ? (
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 9 }}>
-<button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 34, height: 34, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
-<span style={{ color: "var(--k-text)", fontSize: 28, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 34, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
-<button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 34, height: 34, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 20, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
+<button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 38, height: 38, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
+<span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
+<button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 38, height: 38, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
 </div>
 ) : null}
 </div>
