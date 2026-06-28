@@ -16,6 +16,7 @@ export default function PdfCounterCard({
   onOpenPartiePicker,
   compact = false,
   timerProps = null,
+  clientButton = null,
 }) {
   const [swiped, setSwiped] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -46,29 +47,36 @@ export default function PdfCounterCard({
         style={{ background: "transparent", borderRadius: 0, border: "none", padding: "16px 0 8px", display: "flex", alignItems: "center", gap: 10, position: "relative", overflow: "hidden", width: "100%" }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, transform: swiped ? "translateX(-96px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
-            <div style={{ color: color.bg, fontSize: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
-            <div style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 12px ${color.bg}3F)` }}>
-              <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
-                <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth="3" fill="none" />
-                <circle
-                  cx={circleCenter}
-                  cy={circleCenter}
-                  r={circleRadius}
-                  stroke={color.bg}
-                  strokeWidth="3"
-                  fill="none"
-                  strokeDasharray={circleCirc}
-                  strokeDashoffset={circleCirc * (1 - pct / 100)}
-                  strokeLinecap="round"
-                  style={{ transition: "stroke-dashoffset 0.52s cubic-bezier(0.22, 1, 0.36, 1)", filter: "drop-shadow(0 0 4px currentColor)" }}
-                />
-              </svg>
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
-                <span style={{ color: color.bg, fontSize: 11, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: clientButton ? 8 : 0, flexShrink: 0 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
+              <div style={{ color: color.bg, fontSize: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
+              <div style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 12px ${color.bg}3F)` }}>
+                <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
+                  <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth="3" fill="none" />
+                  <circle
+                    cx={circleCenter}
+                    cy={circleCenter}
+                    r={circleRadius}
+                    stroke={color.bg}
+                    strokeWidth="3"
+                    fill="none"
+                    strokeDasharray={circleCirc}
+                    strokeDashoffset={circleCirc * (1 - pct / 100)}
+                    strokeLinecap="round"
+                    style={{ transition: "stroke-dashoffset 0.52s cubic-bezier(0.22, 1, 0.36, 1)", filter: "drop-shadow(0 0 4px currentColor)" }}
+                  />
+                </svg>
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
+                  <span style={{ color: color.bg, fontSize: 11, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
+                </div>
               </div>
             </div>
+            {clientButton ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transform: "translateY(12px)" }}>
+                {clientButton}
+              </div>
+            ) : null}
           </div>
 
           <div style={{ flex: 1, minWidth: 0, maxWidth: "none", position: "relative" }}>

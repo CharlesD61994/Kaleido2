@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { cloneElement, isValidElement, useState } from "react";
 import Icon from "../icons/Icon";
 
 export default function WorkProjectHeader({
@@ -70,19 +70,16 @@ export default function WorkProjectHeader({
       ) : null}
     </button>
   ) : null;
+  const enhancedMainContent = mainContent && isValidElement(mainContent)
+    ? cloneElement(mainContent, { clientButton })
+    : mainContent;
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: mainContent ? 6 : 12, position: "relative" }}>
-      {mainContent ? (
-        clientButton ? (
-          <div style={{ width: 36, minWidth: 36, display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignSelf: "center" }}>
-            {clientButton}
-          </div>
-        ) : null
-      ) : backButton}
+      {mainContent ? null : backButton}
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        {mainContent || (
+        {enhancedMainContent || (
           <>
             <h1 style={{ color: "var(--k-text)", margin: 0, fontSize: 16, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1.18, overflowWrap: "anywhere" }}>{title}</h1>
             {subtitle && <div style={{ color: "#A78BFA", fontSize: 11, fontFamily: "monospace", marginTop: 2, letterSpacing: 0.4 }}>{subtitle}</div>}
