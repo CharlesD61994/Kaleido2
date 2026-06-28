@@ -74,7 +74,7 @@ export default function PdfCounterCard({
               </div>
             </div>
             {clientButton ? (
-              <div style={{ position: "absolute", left: circleSize + 7, top: 84, transform: "translateY(-24px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: circleSize + 7, top: 84, transform: "translateY(-18px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
@@ -117,7 +117,7 @@ export default function PdfCounterCard({
               <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: 8, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}10` }}>
                 <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${localProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${color.bg}55` }} />
               </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}>
                 <button onClick={decrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
                 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
                 <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 3px 10px ${color.bg}55` }}>+</button>

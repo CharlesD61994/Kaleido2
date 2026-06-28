@@ -115,7 +115,7 @@ strokeLinecap="round" style={{
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {clientButton && compact ? (
-<div style={{ position: "absolute", left: circleSize + 7, top: 84, transform: "translateY(-24px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+<div style={{ position: "absolute", left: circleSize + 7, top: 84, transform: "translateY(-18px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
 ) : null}
@@ -138,7 +138,7 @@ strokeLinecap="round" style={{
 <div style={{ background: `linear-gradient(90deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, width: `${localRangNumber / currentPartieTotal * 100}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${currentPartieColor.bg}44` }} />
 </div>
 {showInlineControls ? (
-<div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 9 }}>
+<div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 13 }}>
 <button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 40, height: 40, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
 <button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 40, height: 40, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
