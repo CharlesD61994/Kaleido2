@@ -19,7 +19,7 @@ function ClientPortalState({ title, message }) {
         padding: 22,
       }}
     >
-      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }`}</style>
+      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); html, body, #root { margin: 0; min-height: 100%; width: 100%; background: var(--k-bg); } * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }`}</style>
       <div
         style={{
           width: "100%",

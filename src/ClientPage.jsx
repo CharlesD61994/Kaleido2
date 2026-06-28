@@ -29,6 +29,28 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
     }
   }, [project?.id, project?.clientShareToken, publicView]);
 
+  useEffect(() => {
+    if (!publicView || typeof document === "undefined") return undefined;
+
+    const bg = publicThemeMode === "light" ? "#F7F4FB" : "#0D0D1A";
+    const html = document.documentElement;
+    const body = document.body;
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    const previousHtmlBg = html.style.backgroundColor;
+    const previousBodyBg = body.style.backgroundColor;
+    const previousThemeColor = themeMeta?.getAttribute("content") || "";
+
+    html.style.backgroundColor = bg;
+    body.style.backgroundColor = bg;
+    if (themeMeta) themeMeta.setAttribute("content", bg);
+
+    return () => {
+      html.style.backgroundColor = previousHtmlBg;
+      body.style.backgroundColor = previousBodyBg;
+      if (themeMeta) themeMeta.setAttribute("content", previousThemeColor);
+    };
+  }, [publicThemeMode, publicView]);
+
   const togglePublicTheme = () => {
     setPublicThemeMode((current) => {
       const next = current === "light" ? "dark" : "light";
