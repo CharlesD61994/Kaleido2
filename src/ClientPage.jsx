@@ -20,7 +20,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
   const color = KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
   const statusLabel = project?.status === "termine" ? "Terminé" : "En cours";
   const clientInitial = (project?.client || "?").trim().charAt(0).toUpperCase() || "?";
-  const pageMinHeight = publicView ? "100svh" : "100dvh";
+  const pageMinHeight = publicView ? "100vh" : "100dvh";
   const contentPaddingTop = publicView ? 18 : IOS_TOP_PADDING;
 
   useEffect(() => {
@@ -68,14 +68,17 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         background: "var(--k-bg)",
         minHeight: pageMinHeight,
         width: "100%",
+        height: publicView ? "100vh" : undefined,
         fontFamily: "'DM Sans', sans-serif",
-        maxWidth: publicView ? "none" : 430,
-        margin: publicView ? 0 : "0 auto",
+        maxWidth: publicView ? "100%" : 430,
+        margin: publicView ? "0" : "0 auto",
         color: "var(--k-text)",
-        position: "relative",
+        position: publicView ? "fixed" : "relative",
+        inset: publicView ? 0 : undefined,
         overflowX: "hidden",
         overflowY: publicView ? "auto" : "hidden",
         overflowAnchor: "none",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); html, body, #root { margin: 0; min-height: 100%; width: 100%; background: var(--k-bg); } body { overflow-x: hidden; } * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; } input, textarea, select { font-size: 16px !important; }`}</style>
@@ -84,6 +87,8 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         style={{
           position: publicView ? "fixed" : "absolute",
           inset: 0,
+          width: "100vw",
+          height: publicView ? "100vh" : "100%",
           minHeight: pageMinHeight,
           background: `radial-gradient(circle at 18% 0%, ${color.bg}40, transparent 34%), radial-gradient(circle at 92% 8%, rgba(236,72,153,0.18), transparent 32%), radial-gradient(circle at 50% 100%, rgba(6,182,212,0.10), transparent 36%), var(--k-bg)`,
           pointerEvents: "none",

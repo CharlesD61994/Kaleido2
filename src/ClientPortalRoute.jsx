@@ -8,7 +8,7 @@ function ClientPortalState({ title, message }) {
   return (
     <div
       style={{
-        minHeight: "100svh",
+        minHeight: "100vh",
         width: "100%",
         background: "var(--k-bg)",
         color: "var(--k-text)",
