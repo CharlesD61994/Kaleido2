@@ -75,9 +75,9 @@ const circleRadius = compact ? 40.5 : circ_r;
 const circleCirc = 2 * Math.PI * circleRadius;
 const labelSize = 13;
 const countSize = compact ? 32 : 26;
-const barHeight = 8;
+const barHeight = 9;
 const circleStroke = compact ? 6 : 4;
-const clientButtonTop = 72;
+const clientButtonTop = 71;
 const localRangNumber = Math.max(0, currentPartieRangIndex + 1);
 const showInlineControls = compact && typeof onPrevRang === "function" && typeof onNextRang === "function";
 return (
@@ -116,7 +116,7 @@ strokeLinecap="round" style={{
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {clientButton && compact ? (
-<div style={{ position: "absolute", left: circleSize + 10, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+<div style={{ position: "absolute", left: circleSize + 9, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
 ) : null}

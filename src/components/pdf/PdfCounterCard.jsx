@@ -35,7 +35,8 @@ export default function PdfCounterCard({
     const circleRadius = 40.5;
     const circleCirc = 2 * Math.PI * circleRadius;
     const circleStroke = 6;
-    const clientButtonTop = 72;
+    const barHeight = 9;
+    const clientButtonTop = 71;
     const localProgress = currentPartie && totalPartieCourante > 0
       ? Math.round((rangDansPartie / totalPartieCourante) * 100)
       : pct;
@@ -75,7 +76,7 @@ export default function PdfCounterCard({
               </div>
             </div>
             {clientButton ? (
-              <div style={{ position: "absolute", left: circleSize + 10, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: circleSize + 9, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
@@ -115,7 +116,7 @@ export default function PdfCounterCard({
                 </button>
                 <span style={{ color: color.bg, fontSize: 14, fontFamily: "monospace", fontWeight: 800, flexShrink: 0 }}>{currentPartie ? `${rangDansPartie}/${totalPartieCourante}` : `${pct}%`}</span>
               </div>
-              <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: 8, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}10` }}>
+              <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: barHeight, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}10` }}>
                 <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${localProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${color.bg}55` }} />
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}>
