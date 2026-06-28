@@ -76,7 +76,7 @@ const circleCirc = 2 * Math.PI * circleRadius;
 const labelSize = 13;
 const countSize = compact ? 32 : 26;
 const barHeight = 8;
-const circleStroke = compact ? 7 : 4;
+const circleStroke = compact ? 6 : 4;
 const localRangNumber = Math.max(0, currentPartieRangIndex + 1);
 const showInlineControls = compact && typeof onPrevRang === "function" && typeof onNextRang === "function";
 return (
@@ -115,7 +115,7 @@ strokeLinecap="round" style={{
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {clientButton && compact ? (
-<div style={{ position: "absolute", left: circleSize + 4, top: 92, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+<div style={{ position: "absolute", left: circleSize + 4, top: 84, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
 ) : null}
@@ -139,9 +139,9 @@ strokeLinecap="round" style={{
 </div>
 {showInlineControls ? (
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 9 }}>
-<button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 38, height: 38, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
+<button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 40, height: 40, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
-<button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 38, height: 38, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
+<button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 40, height: 40, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
 </div>
 ) : null}
 </div>
