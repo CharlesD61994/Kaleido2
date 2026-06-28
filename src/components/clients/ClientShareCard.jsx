@@ -24,7 +24,16 @@ export default function ClientShareCard({ project, color, onPublishClientProject
     setIsPublishing(true);
     setStatus("");
 
-    const result = await onPublishClientProject(project);
+    let result;
+    try {
+      result = await onPublishClientProject(project);
+    } catch (error) {
+      console.warn("[KALEIDO] publish client link error:", error);
+      setStatus(error?.message || "Le lien n'a pas pu etre publie.");
+      setIsPublishing(false);
+      return;
+    }
+
     setIsPublishing(false);
 
     if (!result?.ok) {

@@ -7,6 +7,16 @@ const CLIENT_MESSAGES_TABLE = "kaleido_client_messages";
 const LEGACY_OWNER_KEY = import.meta.env.VITE_KALEIDO_USER_KEY || "owner";
 const PUBLIC_CLIENT_ORIGIN = import.meta.env.VITE_PUBLIC_CLIENT_ORIGIN || "https://kaleido3.vercel.app";
 const getOwnerKey = () => getActiveCloudUserId() || LEGACY_OWNER_KEY;
+const CLIENT_PUBLISH_TIMEOUT_MS = 12000;
+
+const withTimeout = (promise, message = "La publication prend trop de temps. Reessaie dans quelques secondes.") => (
+  Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error(message)), CLIENT_PUBLISH_TIMEOUT_MS);
+    }),
+  ])
+);
 
 const makeToken = () => {
   const cryptoApi = typeof crypto !== "undefined" ? crypto : null;
@@ -79,17 +89,26 @@ export const publishClientProject = async (project = {}) => {
 
   const payload = buildClientProjectPayload(project);
 
-  const { error } = await supabase
-    .from(CLIENT_PROJECTS_TABLE)
-    .upsert({
-      share_token: payload.shareToken,
-      owner_key: getOwnerKey(),
-      project_id: String(project.id || ""),
-      project_json: payload.project,
-      updated_at: payload.updatedAt,
-    }, {
-      onConflict: "share_token",
-    });
+  let error = null;
+
+  try {
+    const result = await withTimeout(
+      supabase
+        .from(CLIENT_PROJECTS_TABLE)
+        .upsert({
+          share_token: payload.shareToken,
+          owner_key: getOwnerKey(),
+          project_id: String(project.id || ""),
+          project_json: payload.project,
+          updated_at: payload.updatedAt,
+        }, {
+          onConflict: "share_token",
+        })
+    );
+    error = result.error;
+  } catch (publishError) {
+    return { ok: false, error: publishError, reason: publishError.message || "La fiche client n'a pas pu etre publiee." };
+  }
 
   if (error) {
     return { ok: false, error, reason: error.message || "La fiche client n'a pas pu être publiée." };
