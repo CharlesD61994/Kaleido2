@@ -1,6 +1,6 @@
 import { computeProgress } from "./progressStore";
 import { supabase, isSupabaseConfigured } from "./supabaseClient";
-import { getActiveCloudUserId } from "./authStore";
+import { getActiveCloudUserId, setActiveCloudUserId } from "./authStore";
 
 const CLIENT_PROJECTS_TABLE = "kaleido_client_projects";
 const CLIENT_MESSAGES_TABLE = "kaleido_client_messages";
@@ -53,8 +53,33 @@ export const buildClientPortalUrl = (token) => {
   return `${PUBLIC_CLIENT_ORIGIN}/client/${token}`;
 };
 
-export const buildClientProjectPayload = (project = {}) => {
-  const token = ensureClientShareToken(project);
+const isOwnershipPolicyError = (error) => {
+  const message = String(error?.message || error?.details || "").toLowerCase();
+  return error?.code === "42501"
+    || message.includes("row-level security")
+    || message.includes("permission denied");
+};
+
+const getResolvedOwnerKey = async () => {
+  const activeOwnerKey = getActiveCloudUserId();
+  if (activeOwnerKey) return activeOwnerKey;
+
+  try {
+    const { data } = await supabase.auth.getUser();
+    const userId = data?.user?.id || "";
+    if (userId) {
+      setActiveCloudUserId(userId);
+      return userId;
+    }
+  } catch {
+    // Keep the legacy key as a fallback for older local data.
+  }
+
+  return LEGACY_OWNER_KEY;
+};
+
+export const buildClientProjectPayload = (project = {}, tokenOverride = "") => {
+  const token = tokenOverride || ensureClientShareToken(project);
   const progress = computeProgress(project);
   const updatedAt = new Date().toISOString();
 
@@ -87,7 +112,9 @@ export const publishClientProject = async (project = {}) => {
     return { ok: false, reason: "Supabase n'est pas configuré." };
   }
 
-  const payload = buildClientProjectPayload(project);
+  const publishWithToken = async (token) => {
+    const payload = buildClientProjectPayload(project, token);
+    const ownerKey = await getResolvedOwnerKey();
 
   let error = null;
 
@@ -97,7 +124,7 @@ export const publishClientProject = async (project = {}) => {
         .from(CLIENT_PROJECTS_TABLE)
         .upsert({
           share_token: payload.shareToken,
-          owner_key: getOwnerKey(),
+          owner_key: ownerKey,
           project_id: String(project.id || ""),
           project_json: payload.project,
           updated_at: payload.updatedAt,
@@ -120,6 +147,18 @@ export const publishClientProject = async (project = {}) => {
     url: buildClientPortalUrl(payload.shareToken),
     project: payload.project,
   };
+
+  };
+
+  const currentToken = ensureClientShareToken(project);
+  const result = await publishWithToken(currentToken);
+  if (result.ok || !project.clientShareToken || !isOwnershipPolicyError(result.error)) return result;
+
+  const replacementToken = makeToken();
+  const replacementResult = await publishWithToken(replacementToken);
+  return replacementResult.ok
+    ? { ...replacementResult, linkWasRecreated: true }
+    : replacementResult;
 };
 
 export const loadClientProjectByToken = async (token) => {

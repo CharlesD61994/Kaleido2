@@ -98,7 +98,13 @@ export default function useProjectRecords({
       setCurrentProject((prev) => (prev && prev.id === project.id ? { ...prev, clientShareToken: token } : prev));
     }
 
-    return publishClientProject(projectToPublish);
+    const result = await publishClientProject(projectToPublish);
+    if (result?.ok && result.token && result.token !== token) {
+      updateProProjectRecord(setDatabase, saveDatabase, project.id, { clientShareToken: result.token });
+      setCurrentProject((prev) => (prev && prev.id === project.id ? { ...prev, clientShareToken: result.token } : prev));
+    }
+
+    return result;
   };
 
   const markClientMessagesRead = (project) => {

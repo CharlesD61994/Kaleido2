@@ -42,6 +42,10 @@ export default function ClientShareCard({ project, color, onPublishClientProject
     }
 
     const copied = await copyToClipboard(result.url);
+    if (result.linkWasRecreated) {
+      setStatus(copied ? "Nouveau lien publie et copie." : "Nouveau lien publie.");
+      return;
+    }
     setStatus(copied ? "Lien publié et copié." : "Lien publié.");
   };
 
