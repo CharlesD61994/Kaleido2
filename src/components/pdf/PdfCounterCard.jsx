@@ -74,7 +74,7 @@ export default function PdfCounterCard({
               </div>
             </div>
             {clientButton ? (
-              <div style={{ position: "absolute", left: circleSize + 4, top: 84, transform: "translateY(-8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: circleSize + 5, top: 84, transform: "translateY(-10px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
