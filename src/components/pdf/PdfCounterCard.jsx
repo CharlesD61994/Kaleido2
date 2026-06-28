@@ -35,7 +35,7 @@ export default function PdfCounterCard({
     const circleRadius = 40.5;
     const circleCirc = 2 * Math.PI * circleRadius;
     const circleStroke = 6;
-    const clientButtonTop = 69;
+    const clientButtonTop = 72;
     const localProgress = currentPartie && totalPartieCourante > 0
       ? Math.round((rangDansPartie / totalPartieCourante) * 100)
       : pct;
@@ -75,7 +75,7 @@ export default function PdfCounterCard({
               </div>
             </div>
             {clientButton ? (
-              <div style={{ position: "absolute", left: circleSize + 7, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: circleSize + 10, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
