@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { loadClientProjectByToken } from "./services/clientPortalStore";
 import { THEME_CSS } from "./styles/theme";
 
-const ClientPage = lazy(() => import("./ClientPage"));
+const PublicClientPage = lazy(() => import("./PublicClientPage"));
 
 function ClientPortalState({ title, message }) {
   return (
@@ -83,7 +83,7 @@ export default function ClientPortalRoute({ token }) {
 
   return (
     <Suspense fallback={null}>
-      <ClientPage project={state.project} publicView />
+      <PublicClientPage project={state.project} />
     </Suspense>
   );
 }
