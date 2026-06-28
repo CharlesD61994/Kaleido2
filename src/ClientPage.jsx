@@ -20,6 +20,8 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
   const color = KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
   const statusLabel = project?.status === "termine" ? "Terminé" : "En cours";
   const clientInitial = (project?.client || "?").trim().charAt(0).toUpperCase() || "?";
+  const pageMinHeight = publicView ? "100svh" : "100dvh";
+  const contentPaddingTop = publicView ? 18 : IOS_TOP_PADDING;
 
   useEffect(() => {
     if (!publicView && project?.clientShareToken && typeof onMarkMessagesRead === "function") {
@@ -42,24 +44,27 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
       data-kaleido-theme={publicView ? publicThemeMode : undefined}
       style={{
         background: "var(--k-bg)",
-        minHeight: "100dvh",
+        minHeight: pageMinHeight,
         width: "100%",
         fontFamily: "'DM Sans', sans-serif",
         maxWidth: publicView ? "none" : 430,
         margin: publicView ? 0 : "0 auto",
         color: "var(--k-text)",
         position: "relative",
-        overflow: "hidden",
+        overflowX: "hidden",
+        overflowY: publicView ? "auto" : "hidden",
         overflowAnchor: "none",
       }}
     >
-      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); html, body, #root { margin: 0; min-height: 100%; background: var(--k-bg); } * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; } input, textarea, select { font-size: 16px !important; }`}</style>
+      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); html, body, #root { margin: 0; min-height: 100%; width: 100%; background: var(--k-bg); } body { overflow-x: hidden; } * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; } input, textarea, select { font-size: 16px !important; }`}</style>
 
       <div
         style={{
-          position: "absolute",
+          position: publicView ? "fixed" : "absolute",
           inset: 0,
+          minHeight: pageMinHeight,
           background: `radial-gradient(circle at 18% 0%, ${color.bg}40, transparent 34%), radial-gradient(circle at 92% 8%, rgba(236,72,153,0.18), transparent 32%), radial-gradient(circle at 50% 100%, rgba(6,182,212,0.10), transparent 36%), var(--k-bg)`,
+          pointerEvents: "none",
         }}
       />
 
@@ -69,7 +74,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
           onClick={togglePublicTheme}
           style={{
             position: "absolute",
-            top: "calc(env(safe-area-inset-top, 0px) + 14px)",
+            top: 14,
             right: 20,
             zIndex: 4,
             border: "1px solid var(--k-control-border)",
@@ -87,7 +92,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         </button>
       ) : null}
 
-      <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", padding: `${IOS_TOP_PADDING} 20px 28px` }}>
+      <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", padding: `${contentPaddingTop} 20px 28px` }}>
         <ClientPageHeader project={project} color={color} onBack={onBack} publicView={publicView} />
         <ClientSummaryCard project={project} color={color} clientInitial={clientInitial} onEditClient={onEditClient} publicView={publicView} />
 

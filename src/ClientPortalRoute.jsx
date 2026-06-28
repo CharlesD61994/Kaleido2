@@ -8,7 +8,7 @@ function ClientPortalState({ title, message }) {
   return (
     <div
       style={{
-        minHeight: "100dvh",
+        minHeight: "100svh",
         width: "100%",
         background: "var(--k-bg)",
         color: "var(--k-text)",
@@ -16,7 +16,7 @@ function ClientPortalState({ title, message }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "calc(env(safe-area-inset-top, 0px) + 22px) 22px 22px",
+        padding: 22,
       }}
     >
       <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }`}</style>
