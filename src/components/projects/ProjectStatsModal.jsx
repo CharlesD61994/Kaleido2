@@ -1,35 +1,12 @@
 import Icon from "../icons/Icon";
 import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
-
-const formatTime = (ms = 0) => {
-  const totalSeconds = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-};
+import { formatTimeMs, getProjectStats } from "../../utils/projectStats";
 
 const formatDate = (value) => {
   if (!value) return "Non indique";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Non indique";
   return date.toLocaleDateString("fr-CA", { year: "numeric", month: "short", day: "numeric" });
-};
-
-const getProjectParts = (project = {}) => {
-  if (project.projectType === "pdf") {
-    return (project.pdfParties || []).map((part, index) => ({
-      id: String(part.id ?? index),
-      name: part.nom || `Partie ${index + 1}`,
-      rows: Number(part.totalRangs) || 0,
-    }));
-  }
-
-  return (project.parties || []).map((part, index) => ({
-    id: String(part.id ?? index),
-    name: part.nom || part.name || `Partie ${index + 1}`,
-    rows: (part.rangs || []).filter((rang) => !rang?.isNote).length,
-  }));
 };
 
 function StatBox({ label, value, color }) {
@@ -45,12 +22,8 @@ export default function ProjectStatsModal({ project, onClose, onOpenClientPage }
   if (!project) return null;
 
   const color = KALEIDOSCOPE_COLORS[(project.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
-  const rowsDone = Number(project.rang) || 0;
-  const totalRows = Number(project.total) || rowsDone;
-  const elapsedTime = Number(project.elapsedTime) || 0;
-  const averageTime = rowsDone > 0 ? elapsedTime / rowsDone : 0;
-  const parts = getProjectParts(project);
-  const partTimes = project.partieTimes || {};
+  const stats = getProjectStats(project);
+  const { rowsDone, totalRows, parts, partTimes } = stats;
   const canOpenClientPage = typeof onOpenClientPage === "function" && project.client;
 
   return (
@@ -71,9 +44,9 @@ export default function ProjectStatsModal({ project, onClose, onOpenClientPage }
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
           <StatBox label="Rangs" value={`${rowsDone}/${totalRows || rowsDone}`} color="var(--k-text)" />
-          <StatBox label="Temps total" value={formatTime(elapsedTime)} color={color.light} />
-          <StatBox label="Moyenne" value={averageTime ? formatTime(averageTime) : "00:00:00"} color="#22D3EE" />
-          <StatBox label="Type" value={project.projectType === "pdf" ? "PDF" : "Custom"} color="#C4B5FD" />
+          <StatBox label="Temps total" value={stats.elapsedTimeLabel} color={color.light} />
+          <StatBox label="Moyenne" value={stats.averageTimeLabel} color="#22D3EE" />
+          <StatBox label="Type" value={stats.typeLabel} color="#C4B5FD" />
         </div>
 
         <div style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 800, margin: "4px 0 10px", fontFamily: "'DM Sans', sans-serif" }}>Temps par partie</div>
@@ -86,7 +59,7 @@ export default function ProjectStatsModal({ project, onClose, onOpenClientPage }
                   <div style={{ color: "var(--k-text-soft)", fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{part.name}</div>
                   <div style={{ color: "#77758A", fontSize: 11, marginTop: 2 }}>{part.rows} rangs</div>
                 </div>
-                <div style={{ color: color.light, fontSize: 13, fontWeight: 800, fontFamily: "monospace", flexShrink: 0 }}>{formatTime(time)}</div>
+                <div style={{ color: color.light, fontSize: 13, fontWeight: 800, fontFamily: "monospace", flexShrink: 0 }}>{formatTimeMs(time)}</div>
               </div>
             );
           }) : (

@@ -11,16 +11,6 @@ import ClientSummaryCard from "./components/clients/ClientSummaryCard";
 import { THEME_CSS } from "./styles/theme";
 import { IOS_TOP_PADDING } from "./styles/layout";
 
-const formatElapsedTime = (seconds = 0) => {
-  const totalSeconds = Math.max(0, Math.round(Number(seconds) || 0));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-  if (hours > 0) return `${hours} h ${String(minutes).padStart(2, "0")}`;
-  if (minutes > 0) return `${minutes} min`;
-  return "0 min";
-};
-
 export default function ClientPage({ project, onBack, onEditClient, onMarkMessagesRead, onPublishClientProject, publicView = false }) {
   const [publicThemeMode, setPublicThemeMode] = useState(() => {
     if (!publicView || typeof window === "undefined") return "dark";
@@ -28,7 +18,6 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
   });
   const progress = computeProgress(project);
   const color = KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
-  const elapsedTimeLabel = formatElapsedTime(project?.elapsedTime);
   const statusLabel = project?.status === "termine" ? "Terminé" : "En cours";
   const clientInitial = (project?.client || "?").trim().charAt(0).toUpperCase() || "?";
 
@@ -53,7 +42,8 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
       data-kaleido-theme={publicView ? publicThemeMode : undefined}
       style={{
         background: "var(--k-bg)",
-        minHeight: "100vh",
+        minHeight: "100dvh",
+        width: "100%",
         fontFamily: "'DM Sans', sans-serif",
         maxWidth: 430,
         margin: "0 auto",
@@ -63,7 +53,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         overflowAnchor: "none",
       }}
     >
-      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; } input, textarea, select { font-size: 16px !important; }`}</style>
+      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); html, body, #root { margin: 0; min-height: 100%; background: var(--k-bg); } * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; } input, textarea, select { font-size: 16px !important; }`}</style>
 
       <div
         style={{
@@ -114,7 +104,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
           <ClientInfoRow label="Projet associé" value={project?.name} />
         </ClientSectionCard>
 
-        <ClientProgressCard color={color} progress={progress} elapsedTimeLabel={elapsedTimeLabel} statusLabel={statusLabel} />
+        <ClientProgressCard color={color} progress={progress} project={project} statusLabel={statusLabel} />
         <ClientChatPreview project={project} color={color} publicView={publicView} themeMode={publicView ? publicThemeMode : undefined} />
       </div>
     </div>

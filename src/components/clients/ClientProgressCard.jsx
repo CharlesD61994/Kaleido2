@@ -1,9 +1,22 @@
 import ClientSectionCard from "./ClientSectionCard";
+import { formatTimeMs, getProjectStats } from "../../utils/projectStats";
 
-export default function ClientProgressCard({ color, progress, elapsedTimeLabel, statusLabel }) {
+function StatTile({ label, value, color }) {
+  return (
+    <div style={{ background: "var(--k-muted-fill)", borderRadius: 14, padding: 12, border: "1px solid var(--k-border)" }}>
+      <div style={{ color: "var(--k-muted-2)", fontSize: 11, marginBottom: 3 }}>{label}</div>
+      <div style={{ color, fontSize: 13, fontWeight: 800, fontFamily: label === "Temps total" || label === "Moyenne" ? "monospace" : "'DM Sans', sans-serif" }}>{value}</div>
+    </div>
+  );
+}
+
+export default function ClientProgressCard({ color, progress, project, statusLabel }) {
+  const stats = getProjectStats(project);
+  const isCompleted = project?.status === "termine";
+
   return (
     <ClientSectionCard
-      title="Suivi du projet"
+      title="Statistiques du projet"
       right={
         <div
           style={{
@@ -35,15 +48,35 @@ export default function ClientProgressCard({ color, progress, elapsedTimeLabel, 
         />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 13 }}>
-        <div style={{ background: "var(--k-muted-fill)", borderRadius: 14, padding: 12, border: "1px solid var(--k-border)" }}>
-          <div style={{ color: "var(--k-muted-2)", fontSize: 11, marginBottom: 3 }}>Temps</div>
-          <div style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 700 }}>{elapsedTimeLabel}</div>
-        </div>
-        <div style={{ background: "var(--k-muted-fill)", borderRadius: 14, padding: 12, border: "1px solid var(--k-border)" }}>
-          <div style={{ color: "var(--k-muted-2)", fontSize: 11, marginBottom: 3 }}>Statut</div>
-          <div style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 700 }}>{statusLabel}</div>
-        </div>
+        <StatTile label="Rangs" value={`${stats.rowsDone}/${stats.totalRows || stats.rowsDone}`} color="var(--k-text)" />
+        <StatTile label="Temps total" value={stats.elapsedTimeLabel} color={color.light} />
+        {isCompleted ? <StatTile label="Moyenne" value={stats.averageTimeLabel} color="#22D3EE" /> : null}
+        <StatTile label={isCompleted ? "Type" : "Statut"} value={isCompleted ? stats.typeLabel : statusLabel} color={isCompleted ? "#C4B5FD" : "var(--k-text)"} />
       </div>
+
+      {isCompleted ? (
+        <>
+          <div style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 800, margin: "16px 0 9px" }}>Temps par partie</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {stats.parts.length > 0 ? stats.parts.map((part) => {
+              const time = Number(stats.partTimes[String(part.id)]) || 0;
+              return (
+                <div key={part.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "var(--k-muted-fill)", border: "1px solid var(--k-border)", borderRadius: 12, padding: "10px 12px" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ color: "var(--k-text-soft)", fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{part.name}</div>
+                    <div style={{ color: "var(--k-muted-3)", fontSize: 11, marginTop: 2 }}>{part.rows} rangs</div>
+                  </div>
+                  <div style={{ color: color.light, fontSize: 13, fontWeight: 800, fontFamily: "monospace", flexShrink: 0 }}>{formatTimeMs(time)}</div>
+                </div>
+              );
+            }) : (
+              <div style={{ color: "var(--k-muted-3)", fontSize: 13, background: "var(--k-muted-fill)", border: "1px solid var(--k-border)", borderRadius: 12, padding: 12 }}>
+                Aucun detail par partie pour ce projet.
+              </div>
+            )}
+          </div>
+        </>
+      ) : null}
     </ClientSectionCard>
   );
 }

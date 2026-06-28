@@ -57,7 +57,9 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
       skipNextSaveRef.current = false;
       return;
     }
-    saveDatabase(database);
+    if (saveDatabase(database)) {
+      syncDatabaseMediaToCloud(database);
+    }
   }, [cloudReady, database]);
 
   useEffect(() => {
@@ -97,7 +99,9 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
     };
 
     const flushDatabase = () => {
-      saveDatabase(databaseRef.current);
+      if (saveDatabase(databaseRef.current)) {
+        syncDatabaseMediaToCloud(databaseRef.current);
+      }
     };
 
     const onVisibilityChange = () => {
