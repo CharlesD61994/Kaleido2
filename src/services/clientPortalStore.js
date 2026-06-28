@@ -5,7 +5,7 @@ import { getActiveCloudUserId } from "./authStore";
 const CLIENT_PROJECTS_TABLE = "kaleido_client_projects";
 const CLIENT_MESSAGES_TABLE = "kaleido_client_messages";
 const LEGACY_OWNER_KEY = import.meta.env.VITE_KALEIDO_USER_KEY || "owner";
-const PUBLIC_CLIENT_ORIGIN = import.meta.env.VITE_PUBLIC_CLIENT_ORIGIN || "https://kaleido-hub-m1fb.vercel.app";
+const PUBLIC_CLIENT_ORIGIN = import.meta.env.VITE_PUBLIC_CLIENT_ORIGIN || "https://kaleido3.vercel.app";
 const getOwnerKey = () => getActiveCloudUserId() || LEGACY_OWNER_KEY;
 
 const makeToken = () => {
