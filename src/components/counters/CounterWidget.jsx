@@ -71,10 +71,10 @@ const [swiped, setSwiped] = useState(false);
 const [startX, setStartX] = useState(0);
 const circleSize = 95;
 const circleCenter = circleSize / 2;
-const circleRadius = compact ? 43.5 : circ_r;
+const circleRadius = compact ? 45 : circ_r;
 const circleCirc = 2 * Math.PI * circleRadius;
 const labelSize = 13;
-const countSize = 26;
+const countSize = compact ? 30 : 26;
 const barHeight = 8;
 const localRangNumber = Math.max(0, currentPartieRangIndex + 1);
 const showInlineControls = compact && typeof onPrevRang === "function" && typeof onNextRang === "function";
@@ -85,9 +85,9 @@ onTouchMove={e => { if (startX - e.touches[0].clientX > 40) setSwiped(true); }}
 onTouchEnd={e => { if (startX - e.changedTouches[0].clientX < -40) setSwiped(false); }}
 onClick={() => swiped && setSwiped(false)}
 style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, paddingBottom: compact ? 0 : 12, position: "relative", overflow: "hidden", width: "100%" }}>
-<div style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 0, padding: compact && showInlineControls ? "12px 0 9px" : 0, transform: swiped ? `translateX(${compact ? "-104px" : "-110px"})` : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
+<div style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, flex: 1, minWidth: 0, padding: compact && showInlineControls ? "12px 0 9px" : 0, transform: swiped ? `translateX(${compact ? "-104px" : "-110px"})` : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 {/* Cercle */}
-<div style={{ position: "relative", flexShrink: 0, width: clientButton && compact ? circleSize + 48 : circleSize }}>
+<div style={{ position: "relative", flexShrink: 0, width: clientButton && compact ? circleSize + 42 : circleSize }}>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: labelSize, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
 <div key={`progress-${currentCountIndex}-${totalRangs}`} style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 10px ${currentPartieColor.bg}33)`, transformOrigin: "center", animation: "kaleidoProgressCleanPulse 340ms cubic-bezier(0.25, 0.9, 0.35, 1)" }}>
@@ -114,7 +114,7 @@ strokeLinecap="round" style={{
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {clientButton && compact ? (
-<div style={{ position: "absolute", left: circleSize + 6, top: 70, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+<div style={{ position: "absolute", left: circleSize + 4, top: 66, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
 ) : null}

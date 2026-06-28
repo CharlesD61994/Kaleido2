@@ -32,7 +32,7 @@ export default function PdfCounterCard({
   if (compact) {
     const circleSize = 95;
     const circleCenter = circleSize / 2;
-    const circleRadius = 43.5;
+    const circleRadius = 45;
     const circleCirc = 2 * Math.PI * circleRadius;
     const localProgress = currentPartie && totalPartieCourante > 0
       ? Math.round((rangDansPartie / totalPartieCourante) * 100)
@@ -46,8 +46,8 @@ export default function PdfCounterCard({
         onClick={() => swiped && setSwiped(false)}
         style={{ background: "transparent", borderRadius: 0, border: "none", padding: "12px 0 9px", display: "flex", alignItems: "center", gap: 10, position: "relative", overflow: "hidden", width: "100%" }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 0, transform: swiped ? "translateX(-104px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
-          <div style={{ position: "relative", flexShrink: 0, width: clientButton ? circleSize + 48 : circleSize }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, transform: swiped ? "translateX(-104px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
+          <div style={{ position: "relative", flexShrink: 0, width: clientButton ? circleSize + 42 : circleSize }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
               <div style={{ color: color.bg, fontSize: 13, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
               <div style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 12px ${color.bg}3F)` }}>
@@ -67,13 +67,13 @@ export default function PdfCounterCard({
                   />
                 </svg>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ color: "var(--k-text)", fontSize: 26, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
+                  <span style={{ color: "var(--k-text)", fontSize: 30, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
                   <span style={{ color: color.bg, fontSize: 12, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
                 </div>
               </div>
             </div>
             {clientButton ? (
-              <div style={{ position: "absolute", left: circleSize + 6, top: 70, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: circleSize + 4, top: 66, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
