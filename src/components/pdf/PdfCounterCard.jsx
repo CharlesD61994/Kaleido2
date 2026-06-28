@@ -47,7 +47,7 @@ export default function PdfCounterCard({
         style={{ background: "transparent", borderRadius: 0, border: "none", padding: "16px 0 8px", display: "flex", alignItems: "center", gap: 10, position: "relative", overflow: "hidden", width: "100%" }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, transform: swiped ? "translateX(-96px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: clientButton ? 8 : 0, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: clientButton ? 5 : 0, flexShrink: 0 }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
               <div style={{ color: color.bg, fontSize: 12, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
               <div style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 12px ${color.bg}3F)` }}>
@@ -73,7 +73,7 @@ export default function PdfCounterCard({
               </div>
             </div>
             {clientButton ? (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transform: "translateY(12px)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transform: "translateY(14px)" }}>
                 {clientButton}
               </div>
             ) : null}
