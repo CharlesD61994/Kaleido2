@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "cap:sync:ios": "npm run build && cap sync ios",
+    "cap:sync:ios": "npm run build && node scripts/prepare-capacitor-dist.mjs && cap sync ios",
     "cap:open:ios": "cap open ios",
     "smoke": "node scripts/smoke-check.mjs",
     "preview": "vite preview"
