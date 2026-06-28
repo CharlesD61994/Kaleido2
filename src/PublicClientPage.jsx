@@ -55,30 +55,16 @@ export default function PublicClientPage({ project }) {
     <main
       data-kaleido-theme={themeMode}
       style={{
-        position: "fixed",
-        inset: 0,
-        width: "100vw",
-        height: "100vh",
+        position: "relative",
+        width: "100%",
+        minHeight: "100dvh",
         overflowX: "hidden",
-        overflowY: "auto",
-        WebkitOverflowScrolling: "touch",
         background: "var(--k-bg)",
         color: "var(--k-text)",
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
-      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); html, body, #root { margin: 0; min-height: 100%; width: 100%; background: var(--k-bg); } body { overflow: hidden; } * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; } input, textarea, select { font-size: 16px !important; }`}</style>
-
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          width: "100vw",
-          height: "100vh",
-          background: `radial-gradient(circle at 18% 0%, ${color.bg}40, transparent 34%), radial-gradient(circle at 92% 8%, rgba(236,72,153,0.18), transparent 32%), radial-gradient(circle at 50% 100%, rgba(6,182,212,0.10), transparent 36%), var(--k-bg)`,
-          pointerEvents: "none",
-        }}
-      />
+      <style>{`${THEME_CSS}@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap'); html, body, #root { margin: 0; min-height: 100%; width: 100%; background: var(--k-bg); } body { overflow-x: hidden; } * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; } input, textarea, select { font-size: 16px !important; }`}</style>
 
       <button
         type="button"
