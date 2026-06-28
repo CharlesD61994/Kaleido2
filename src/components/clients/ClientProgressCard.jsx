@@ -16,7 +16,7 @@ export default function ClientProgressCard({ color, progress, project, statusLab
 
   return (
     <ClientSectionCard
-      title="Statistiques du projet"
+      title="Suivi du projet"
       right={
         <div
           style={{

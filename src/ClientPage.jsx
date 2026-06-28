@@ -45,8 +45,8 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         minHeight: "100dvh",
         width: "100%",
         fontFamily: "'DM Sans', sans-serif",
-        maxWidth: 430,
-        margin: "0 auto",
+        maxWidth: publicView ? "none" : 430,
+        margin: publicView ? 0 : "0 auto",
         color: "var(--k-text)",
         position: "relative",
         overflow: "hidden",
@@ -69,7 +69,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
           onClick={togglePublicTheme}
           style={{
             position: "absolute",
-            top: 14,
+            top: "calc(env(safe-area-inset-top, 0px) + 14px)",
             right: 20,
             zIndex: 4,
             border: "1px solid var(--k-control-border)",
@@ -87,7 +87,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         </button>
       ) : null}
 
-      <div style={{ position: "relative", zIndex: 2, padding: `${IOS_TOP_PADDING} 20px 28px` }}>
+      <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", padding: `${IOS_TOP_PADDING} 20px 28px` }}>
         <ClientPageHeader project={project} color={color} onBack={onBack} publicView={publicView} />
         <ClientSummaryCard project={project} color={color} clientInitial={clientInitial} onEditClient={onEditClient} publicView={publicView} />
 
