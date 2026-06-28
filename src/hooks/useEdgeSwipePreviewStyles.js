@@ -6,7 +6,7 @@ export default function useEdgeSwipePreviewStyles({
   edgeSwipeDragging,
   edgeSwipeProgress,
 }) {
-  const interactiveBackPreview = edgeSwipeActive && currentView !== VIEWS.HUB;
+  const interactiveBackPreview = edgeSwipeActive && currentView !== VIEWS.HUB && currentView !== VIEWS.CLIENT_PAGE;
   const previewUsesLibrary = interactiveBackPreview && currentView === VIEWS.PATRON_EDITOR;
   const previewUsesHub = interactiveBackPreview && currentView !== VIEWS.PATRON_EDITOR;
 

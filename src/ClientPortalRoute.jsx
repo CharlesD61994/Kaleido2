@@ -3,6 +3,7 @@ import { loadClientProjectByToken } from "./services/clientPortalStore";
 import { THEME_CSS } from "./styles/theme";
 
 const PublicClientPage = lazy(() => import("./PublicClientPage"));
+const CLIENT_LOAD_RETRY_DELAYS = [0, 900, 2200];
 
 function ClientPortalState({ title, message }) {
   return (
@@ -53,7 +54,16 @@ export default function ClientPortalRoute({ token }) {
         setState((current) => ({ ...current, loading: true }));
       }
 
-      const result = await loadClientProjectByToken(token);
+      let result = null;
+      for (let index = 0; index < CLIENT_LOAD_RETRY_DELAYS.length; index += 1) {
+        const delay = CLIENT_LOAD_RETRY_DELAYS[index];
+        if (delay > 0) {
+          await new Promise((resolve) => window.setTimeout(resolve, delay));
+        }
+        result = await loadClientProjectByToken(token);
+        if (!alive || result?.ok) break;
+      }
+
       if (!alive) return;
 
       if (!result.ok) {

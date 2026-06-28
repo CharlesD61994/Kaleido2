@@ -170,11 +170,23 @@ export const loadClientProjectByToken = async (token) => {
     return { ok: false, reason: "Lien client incomplet." };
   }
 
-  const { data, error } = await supabase
-    .from(CLIENT_PROJECTS_TABLE)
-    .select("project_json, owner_key, updated_at")
-    .eq("share_token", token)
-    .maybeSingle();
+  let data = null;
+  let error = null;
+
+  try {
+    const result = await withTimeout(
+      supabase
+        .from(CLIENT_PROJECTS_TABLE)
+        .select("project_json, owner_key, updated_at")
+        .eq("share_token", token)
+        .maybeSingle(),
+      "La fiche client prend trop de temps a charger."
+    );
+    data = result.data;
+    error = result.error;
+  } catch (loadError) {
+    return { ok: false, error: loadError, reason: loadError.message || "La fiche client est impossible a charger." };
+  }
 
   if (error) {
     return { ok: false, error, reason: error.message || "La fiche client est impossible à charger." };

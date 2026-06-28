@@ -10,6 +10,16 @@ const DB_BACKUP_KEY = "kaleido_database_backup";
 const DB_META_KEY = "kaleido_database_meta";
 const LEGACY_CLOUD_USER_KEY = import.meta.env.VITE_KALEIDO_USER_KEY || "owner";
 const CLOUD_TABLE = "kaleido_backups";
+const CLOUD_REQUEST_TIMEOUT_MS = 12000;
+const CLOUD_ERROR_LOG_INTERVAL_MS = 15000;
+const CLOUD_RETRY_BASE_MS = 3000;
+const CLOUD_RETRY_MAX_MS = 60000;
+
+let cloudUpsertPromise = null;
+let queuedCloudDatabase = null;
+let cloudRetryBlockedUntil = 0;
+let consecutiveCloudFailures = 0;
+let lastCloudErrorLogAt = 0;
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -235,6 +245,35 @@ const stripRuntimeMeta = (database) => {
 
 const getCloudUserKey = () => getActiveCloudUserId() || LEGACY_CLOUD_USER_KEY;
 
+const withCloudTimeout = (promise) => (
+  Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error("Supabase ne repond pas.")), CLOUD_REQUEST_TIMEOUT_MS);
+    }),
+  ])
+);
+
+const rememberCloudFailure = (error) => {
+  consecutiveCloudFailures += 1;
+  const retryDelay = Math.min(
+    CLOUD_RETRY_MAX_MS,
+    CLOUD_RETRY_BASE_MS * (2 ** Math.min(consecutiveCloudFailures - 1, 5))
+  );
+  cloudRetryBlockedUntil = Date.now() + retryDelay;
+
+  const now = Date.now();
+  if (now - lastCloudErrorLogAt >= CLOUD_ERROR_LOG_INTERVAL_MS) {
+    lastCloudErrorLogAt = now;
+    console.warn("[KALEIDO] cloudUpsertDatabase error:", error);
+  }
+};
+
+const rememberCloudSuccess = () => {
+  consecutiveCloudFailures = 0;
+  cloudRetryBlockedUntil = 0;
+};
+
 const isStarterDatabase = (database) => {
   const normalized = normalizeDatabase(database);
   return asArray(normalized.projectsPro).length === 0
@@ -243,7 +282,7 @@ const isStarterDatabase = (database) => {
     && asArray(normalized.projectsPersonal).every((project) => [1, 2, 3].includes(Number(project?.id)));
 };
 
-const cloudUpsertDatabase = async (database) => {
+const runCloudUpsertDatabase = async (database) => {
   if (!isSupabaseConfigured || !supabase || !hasActiveCloudUser()) {
     return { ok: false, reason: "Supabase non configuré." };
   }
@@ -254,22 +293,25 @@ const cloudUpsertDatabase = async (database) => {
     const updatedAt = meta.updatedAt || nowIso();
     const version = Number(meta.version || 1);
 
-    const { error } = await supabase
-      .from(CLOUD_TABLE)
-      .upsert({
-        user_key: getCloudUserKey(),
-        database_json: stripRuntimeMeta(normalized),
-        version,
-        updated_at: updatedAt,
-      }, {
-        onConflict: "user_key",
-      });
+    const { error } = await withCloudTimeout(
+      supabase
+        .from(CLOUD_TABLE)
+        .upsert({
+          user_key: getCloudUserKey(),
+          database_json: stripRuntimeMeta(normalized),
+          version,
+          updated_at: updatedAt,
+        }, {
+          onConflict: "user_key",
+        })
+    );
 
     if (error) {
-      console.warn("[KALEIDO] cloudUpsertDatabase error:", error);
+      rememberCloudFailure(error);
       return { ok: false, error };
     }
 
+    rememberCloudSuccess();
     writeDatabaseMeta({
       updatedAt,
       version,
@@ -279,12 +321,40 @@ const cloudUpsertDatabase = async (database) => {
 
     return { ok: true };
   } catch (error) {
-    console.warn("[KALEIDO] cloudUpsertDatabase exception:", error);
+    rememberCloudFailure(error);
     writeDatabaseMeta({
       lastCloudError: String(error?.message || error),
     });
     return { ok: false, error };
   }
+};
+
+const cloudUpsertDatabase = async (database, options = {}) => {
+  const { force = false } = options;
+
+  if (!force && Date.now() < cloudRetryBlockedUntil) {
+    queuedCloudDatabase = database;
+    return { ok: false, reason: "Synchronisation cloud en pause temporaire." };
+  }
+
+  if (cloudUpsertPromise) {
+    queuedCloudDatabase = database;
+    return { ok: true, queued: true };
+  }
+
+  cloudUpsertPromise = runCloudUpsertDatabase(database);
+  const result = await cloudUpsertPromise;
+  cloudUpsertPromise = null;
+
+  if (queuedCloudDatabase && Date.now() >= cloudRetryBlockedUntil) {
+    const nextDatabase = queuedCloudDatabase;
+    queuedCloudDatabase = null;
+    window.setTimeout(() => {
+      cloudUpsertDatabase(nextDatabase);
+    }, 600);
+  }
+
+  return result;
 };
 
 export const loadCloudDatabase = async () => {
