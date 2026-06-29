@@ -9,15 +9,24 @@ export const isNativePdfViewerTarget = () => (
 );
 
 const callNativePdfViewer = async (method, payload = {}) => {
-  if (!isNativePdfViewerTarget() || typeof NativePdfViewer?.[method] !== "function") {
-    return null;
+  if (!isNativePdfViewerTarget()) {
+    throw new Error("Le lecteur PDF natif est seulement disponible dans l'app iOS.");
   }
 
-  return NativePdfViewer[method](payload);
+  if (typeof NativePdfViewer?.[method] !== "function") {
+    throw new Error(`Le plugin PDF natif ne contient pas la methode ${method}.`);
+  }
+
+  const result = await NativePdfViewer[method](payload);
+  if (result == null && method !== "hide") {
+    throw new Error(`Le plugin PDF natif n'a pas repondu a ${method}.`);
+  }
+
+  return result;
 };
 
+export const checkNativePdfAvailability = () => callNativePdfViewer("isAvailable");
 export const showNativePdf = (payload) => callNativePdfViewer("show", payload);
 export const updateNativePdfFrame = (payload) => callNativePdfViewer("updateFrame", payload);
 export const hideNativePdf = () => callNativePdfViewer("hide");
 export const getNativePdfState = () => callNativePdfViewer("getState");
-

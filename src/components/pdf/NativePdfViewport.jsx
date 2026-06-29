@@ -1,6 +1,7 @@
 import React from "react";
 import { loadPdf } from "../../services/mediaStore";
 import {
+  checkNativePdfAvailability,
   getNativePdfState,
   hideNativePdf,
   isNativePdfViewerTarget,
@@ -23,6 +24,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
   const activeRef = React.useRef(false);
   const onStateChangeRef = React.useRef(onStateChange);
   const initialStateRef = React.useRef(initialState);
+  const [nativeError, setNativeError] = React.useState("");
 
   React.useEffect(() => {
     onStateChangeRef.current = onStateChange;
@@ -50,11 +52,14 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
       if (cancelled) return;
 
       if (!data) {
-        if (typeof onUnavailable === "function") onUnavailable();
+        const message = "PDF introuvable dans le stockage local.";
+        setNativeError(message);
+        if (typeof onUnavailable === "function") onUnavailable(message);
         return;
       }
 
       try {
+        await checkNativePdfAvailability();
         await showNativePdf({
           pdfId,
           data,
@@ -62,9 +67,12 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
           state: initialStateRef.current || null,
         });
         activeRef.current = true;
-      } catch {
+        setNativeError("");
+      } catch (error) {
         activeRef.current = false;
-        if (typeof onUnavailable === "function") onUnavailable();
+        const message = String(error?.message || error || "Le lecteur PDF natif n'a pas pu demarrer.");
+        setNativeError(message);
+        if (typeof onUnavailable === "function") onUnavailable(message);
       }
     };
 
@@ -147,6 +155,12 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
         position: "relative",
         overflow: "hidden",
       }}
-    />
+    >
+      {nativeError ? (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, color: "#F87171", fontSize: 13, textAlign: "center", lineHeight: 1.35 }}>
+          {nativeError}
+        </div>
+      ) : null}
+    </div>
   );
 }

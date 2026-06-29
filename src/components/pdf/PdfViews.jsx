@@ -66,6 +66,7 @@ function PdfPartiePickerModal({ currentPartieIdx, onClose, onSelect, pdfParties 
 export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, onOpenClientPage, unreadClientMessageCount = 0 }) {
   const [showPartiePicker, setShowPartiePicker] = React.useState(false);
   const [nativePdfUnavailable, setNativePdfUnavailable] = React.useState(false);
+  const [nativePdfError, setNativePdfError] = React.useState("");
   const useNativePdf = isNativePdfViewerTarget();
   const {
     addCounter,
@@ -182,13 +183,16 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
           pdfId={project?.pdfId}
           initialState={project?.pdfViewportState}
           hidden={hideNativePdf}
-          onUnavailable={() => setNativePdfUnavailable(true)}
+          onUnavailable={(message) => {
+            setNativePdfError(message || "Le lecteur PDF natif iOS n'a pas pu demarrer.");
+            setNativePdfUnavailable(true);
+          }}
           onStateChange={savePdfViewportState}
         />
       ) : (
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "#111", padding: 24, textAlign: "center" }}>
           <div style={{ color: nativePdfUnavailable ? "#F87171" : "#A78BFA", fontSize: 14, lineHeight: 1.4 }}>
-            {nativePdfUnavailable ? "Le lecteur PDF natif iOS n'a pas pu demarrer." : "Le lecteur PDF est disponible dans l'app iOS installee."}
+            {nativePdfUnavailable ? nativePdfError || "Le lecteur PDF natif iOS n'a pas pu demarrer." : "Le lecteur PDF est disponible dans l'app iOS installee."}
           </div>
         </div>
       )}

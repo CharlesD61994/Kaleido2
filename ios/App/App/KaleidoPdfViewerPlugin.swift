@@ -7,6 +7,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "KaleidoPdfViewerPlugin"
     public let jsName = "KaleidoPdfViewer"
     public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "show", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "updateFrame", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "hide", returnType: CAPPluginReturnPromise),
@@ -17,6 +18,13 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private var overlayWindow: UIWindow?
     private var overlayController: UIViewController?
     private var currentPdfId: String?
+
+    @objc func isAvailable(_ call: CAPPluginCall) {
+        call.resolve([
+            "available": true,
+            "viewer": "PDFKit"
+        ])
+    }
 
     @objc func show(_ call: CAPPluginCall) {
         guard let pdfId = call.getString("pdfId"), !pdfId.isEmpty else {
