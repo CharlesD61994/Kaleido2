@@ -18,6 +18,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private var overlayWindow: UIWindow?
     private var overlayController: UIViewController?
     private var currentPdfId: String?
+    private var edgePanRecognizer: UIScreenEdgePanGestureRecognizer?
 
     @objc func isAvailable(_ call: CAPPluginCall) {
         call.resolve([
@@ -138,6 +139,10 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         let passthroughView = KaleidoPdfOverlayView(frame: UIScreen.main.bounds)
         passthroughView.backgroundColor = .clear
         controller.view = passthroughView
+        let edgePan = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(handleNativeBackGesture(_:)))
+        edgePan.edges = .left
+        edgePan.cancelsTouchesInView = false
+        passthroughView.addGestureRecognizer(edgePan)
 
         let window = UIWindow(windowScene: scene)
         window.frame = scene.coordinateSpace.bounds
@@ -148,6 +153,23 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         overlayController = controller
         overlayWindow = window
+        edgePanRecognizer = edgePan
+    }
+
+    @objc private func handleNativeBackGesture(_ recognizer: UIScreenEdgePanGestureRecognizer) {
+        guard recognizer.state == .ended || recognizer.state == .recognized else {
+            return
+        }
+
+        let translation = recognizer.translation(in: recognizer.view)
+        let velocity = recognizer.velocity(in: recognizer.view)
+        guard translation.x > 54 || velocity.x > 420 else {
+            return
+        }
+
+        bridge?.webView?.evaluateJavaScript(
+            "window.dispatchEvent(new CustomEvent('kaleido-native-edge-back'))"
+        )
     }
 
     private func decodePdfData(_ value: String) -> Data? {

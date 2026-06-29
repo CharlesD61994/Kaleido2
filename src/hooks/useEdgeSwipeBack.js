@@ -260,6 +260,19 @@ export default function useEdgeSwipeBack({
     setEdgeSwipeDragging(false);
   }, [currentView]);
 
+  useEffect(() => {
+    const handleNativeEdgeBack = () => {
+      if (currentView === VIEWS.PDF_VIEWER) {
+        navigateToHub();
+      }
+    };
+
+    window.addEventListener("kaleido-native-edge-back", handleNativeEdgeBack);
+    return () => {
+      window.removeEventListener("kaleido-native-edge-back", handleNativeEdgeBack);
+    };
+  }, [currentView, navigateToHub]);
+
   return {
     edgeSwipeActive,
     edgeSwipeDragging,
