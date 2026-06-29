@@ -142,12 +142,50 @@ function PatronEditorEdgeZone({ edgeSwipeHandlersRef }) {
   );
 }
 
-function ClientPreviousProjectPreview({ project, style }) {
+function ClientPreviousProjectPreview({ project, style, previewView, unreadClientMessageCount = 0 }) {
   if (!project || !style) return null;
 
   const color = KALEIDOSCOPE_COLORS[(project.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
   const progress = computeProgress(project);
   const isPdf = project.projectType === "pdf";
+  const noop = () => {};
+
+  if (previewView === VIEWS.ROW_COUNTER || previewView === VIEWS.PDF_VIEWER) {
+    return (
+      <div
+        aria-hidden="true"
+        style={{
+          ...style,
+          background: "var(--k-bg)",
+          color: "var(--k-text)",
+          fontFamily: "'DM Sans', sans-serif",
+          overflow: "hidden",
+          pointerEvents: "none",
+        }}
+      >
+        <Suspense fallback={<WorkScreenFallback />}>
+          {previewView === VIEWS.PDF_VIEWER ? (
+            <PdfViewerView
+              project={project}
+              onNavigateHub={noop}
+              onSaveProgress={noop}
+              onOpenClientPage={noop}
+              unreadClientMessageCount={unreadClientMessageCount}
+            />
+          ) : (
+            <CompteurRangsView
+              project={project}
+              onNavigateHub={noop}
+              onNavigateEditor={noop}
+              onSaveProgress={noop}
+              onOpenClientPage={noop}
+              unreadClientMessageCount={unreadClientMessageCount}
+            />
+          )}
+        </Suspense>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -249,6 +287,7 @@ export default function WorkScreens({
   navigateToPatronEditor,
   openClientEditor,
   markClientMessagesRead,
+  prevView,
   publishClientProjectRecord,
   saveProjectProgress,
   unreadProjectIds,
@@ -264,7 +303,12 @@ export default function WorkScreens({
   return (
     <>
       {currentView === VIEWS.CLIENT_PAGE && (
-        <ClientPreviousProjectPreview project={currentProject} style={clientPreviousPreviewStyle} />
+        <ClientPreviousProjectPreview
+          project={currentProject}
+          style={clientPreviousPreviewStyle}
+          previewView={prevView}
+          unreadClientMessageCount={unreadClientMessageCount}
+        />
       )}
 
       {currentView === VIEWS.PATRON_EDITOR && (

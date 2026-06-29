@@ -29,6 +29,7 @@ export default function AppScreens({
     currentView,
     database,
     mode,
+    prevView,
     projects,
     themeMode,
     viewTransition,
@@ -183,6 +184,7 @@ export default function AppScreens({
         navigateToPatronEditor={navigateToPatronEditor}
         openClientEditor={openClientEditor}
         markClientMessagesRead={markClientMessagesRead}
+        prevView={prevView}
         publishClientProjectRecord={publishClientProjectRecord}
         saveProjectProgress={saveProjectProgress}
         unreadProjectIds={unreadProjectIds}
