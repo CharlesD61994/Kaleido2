@@ -48,7 +48,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         DispatchQueue.main.async {
             let view = self.ensurePdfView()
             view.frame = self.cgRect(from: frame)
-            view.isHidden = false
+            let shouldRestoreBeforeShowing = state != nil
+            view.isHidden = shouldRestoreBeforeShowing
             view.isUserInteractionEnabled = true
             view.layer.zPosition = 10000
             view.superview?.bringSubviewToFront(view)
@@ -63,8 +64,10 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             }
 
             print("[KALEIDO] native PDF show id=\(pdfId) frame=\(view.frame) scale=\(view.scaleFactor)")
-            self.restoreState(state, in: view)
-            call.resolve()
+            self.restoreState(state, in: view) {
+                view.isHidden = false
+                call.resolve()
+            }
         }
     }
 
@@ -195,8 +198,9 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         ]
     }
 
-    private func restoreState(_ state: JSObject?, in view: PDFView) {
+    private func restoreState(_ state: JSObject?, in view: PDFView, completion: @escaping () -> Void) {
         guard let state = state else {
+            completion()
             return
         }
 
@@ -221,6 +225,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
                     animated: false
                 )
             }
+
+            completion()
         }
     }
 
