@@ -4,7 +4,7 @@ import UIKit
 
 @objc(KaleidoPdfViewerPlugin)
 public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
-    public let identifier = "KaleidoPdfViewerPlugin"
+    public let identifier = "KaleidoPdfViewer"
     public let jsName = "KaleidoPdfViewer"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
@@ -62,6 +62,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
                 view.maxScaleFactor = 8.0
             }
 
+            print("[KALEIDO] native PDF show id=\(pdfId) frame=\(view.frame) scale=\(view.scaleFactor)")
             self.restoreState(state, in: view)
             call.resolve()
         }

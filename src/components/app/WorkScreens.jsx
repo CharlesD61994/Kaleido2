@@ -150,7 +150,7 @@ function ClientPreviousProjectPreview({ project, style, previewView, unreadClien
   const isPdf = project.projectType === "pdf";
   const noop = () => {};
 
-  if (previewView === VIEWS.ROW_COUNTER || previewView === VIEWS.PDF_VIEWER) {
+  if (previewView === VIEWS.ROW_COUNTER) {
     return (
       <div
         aria-hidden="true"
@@ -164,24 +164,14 @@ function ClientPreviousProjectPreview({ project, style, previewView, unreadClien
         }}
       >
         <Suspense fallback={<WorkScreenFallback />}>
-          {previewView === VIEWS.PDF_VIEWER ? (
-            <PdfViewerView
-              project={project}
-              onNavigateHub={noop}
-              onSaveProgress={noop}
-              onOpenClientPage={noop}
-              unreadClientMessageCount={unreadClientMessageCount}
-            />
-          ) : (
-            <CompteurRangsView
-              project={project}
-              onNavigateHub={noop}
-              onNavigateEditor={noop}
-              onSaveProgress={noop}
-              onOpenClientPage={noop}
-              unreadClientMessageCount={unreadClientMessageCount}
-            />
-          )}
+          <CompteurRangsView
+            project={project}
+            onNavigateHub={noop}
+            onNavigateEditor={noop}
+            onSaveProgress={noop}
+            onOpenClientPage={noop}
+            unreadClientMessageCount={unreadClientMessageCount}
+          />
         </Suspense>
       </div>
     );

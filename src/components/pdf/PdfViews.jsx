@@ -63,11 +63,11 @@ function PdfPartiePickerModal({ currentPartieIdx, onClose, onSelect, pdfParties 
   );
 }
 
-export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, onOpenClientPage, unreadClientMessageCount = 0 }) {
+export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, onOpenClientPage, unreadClientMessageCount = 0, nativePdfEnabled = true }) {
   const [showPartiePicker, setShowPartiePicker] = React.useState(false);
   const [nativePdfUnavailable, setNativePdfUnavailable] = React.useState(false);
   const [nativePdfError, setNativePdfError] = React.useState("");
-  const useNativePdf = isNativePdfViewerTarget();
+  const useNativePdf = nativePdfEnabled && isNativePdfViewerTarget();
   const {
     addCounter,
     color,
