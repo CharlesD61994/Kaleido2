@@ -130,7 +130,7 @@ export default function useEdgeSwipeBack({
       const forcedEdgeZone = event?.target instanceof Element
         && Boolean(event.target.closest('[data-kaleido-edge-zone="true"]'));
 
-      if (currentView === VIEWS.PATRON_EDITOR && !forcedEdgeZone) return;
+      if ((currentView === VIEWS.PATRON_EDITOR || currentView === VIEWS.CLIENT_PAGE) && !forcedEdgeZone) return;
       if (!event.touches || event.touches.length !== 1) return;
       if (!forcedEdgeZone && isInteractiveTarget(event.target)) return;
 

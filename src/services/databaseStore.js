@@ -20,6 +20,7 @@ let queuedCloudDatabase = null;
 let cloudRetryBlockedUntil = 0;
 let consecutiveCloudFailures = 0;
 let lastCloudErrorLogAt = 0;
+let cloudSyncDisabledReason = "";
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -254,6 +255,14 @@ const withCloudTimeout = (promise) => (
   ])
 );
 
+const isCloudNetworkFailure = (error) => {
+  const message = String(error?.message || error?.details || error?.hint || error || "").toLowerCase();
+  return message.includes("load failed")
+    || message.includes("failed to fetch")
+    || message.includes("network")
+    || message.includes("fetch");
+};
+
 const rememberCloudFailure = (error) => {
   consecutiveCloudFailures += 1;
   const retryDelay = Math.min(
@@ -261,6 +270,15 @@ const rememberCloudFailure = (error) => {
     CLOUD_RETRY_BASE_MS * (2 ** Math.min(consecutiveCloudFailures - 1, 5))
   );
   cloudRetryBlockedUntil = Date.now() + retryDelay;
+
+  if (isCloudNetworkFailure(error)) {
+    if (!cloudSyncDisabledReason) {
+      cloudSyncDisabledReason = "Supabase coupe les sauvegardes cloud pour le moment.";
+      console.warn("[KALEIDO] cloud sync disabled:", cloudSyncDisabledReason);
+    }
+    cloudRetryBlockedUntil = Date.now() + CLOUD_RETRY_MAX_MS;
+    return;
+  }
 
   const now = Date.now();
   if (now - lastCloudErrorLogAt >= CLOUD_ERROR_LOG_INTERVAL_MS) {
@@ -275,6 +293,7 @@ const rememberCloudFailure = (error) => {
 const rememberCloudSuccess = () => {
   consecutiveCloudFailures = 0;
   cloudRetryBlockedUntil = 0;
+  cloudSyncDisabledReason = "";
 };
 
 const isStarterDatabase = (database) => {
@@ -334,6 +353,11 @@ const runCloudUpsertDatabase = async (database) => {
 
 const cloudUpsertDatabase = async (database, options = {}) => {
   const { force = false } = options;
+
+  if (!force && cloudSyncDisabledReason) {
+    queuedCloudDatabase = database;
+    return { ok: false, reason: cloudSyncDisabledReason };
+  }
 
   if (!force && Date.now() < cloudRetryBlockedUntil) {
     queuedCloudDatabase = database;

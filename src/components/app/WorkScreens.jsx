@@ -142,6 +142,42 @@ function PatronEditorEdgeZone({ edgeSwipeHandlersRef }) {
   );
 }
 
+function ClientPageEdgeZone({ edgeSwipeHandlersRef }) {
+  return (
+    <div
+      aria-hidden="true"
+      data-kaleido-no-edge-back="true"
+      data-kaleido-edge-zone="true"
+      style={{
+        position: "fixed",
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 48,
+        zIndex: 9999,
+        touchAction: "none",
+        background: "transparent",
+      }}
+      onTouchStart={(event) => {
+        event.stopPropagation();
+        edgeSwipeHandlersRef.current.start?.(event);
+      }}
+      onTouchMove={(event) => {
+        event.stopPropagation();
+        edgeSwipeHandlersRef.current.move?.(event);
+      }}
+      onTouchEnd={(event) => {
+        event.stopPropagation();
+        edgeSwipeHandlersRef.current.end?.(event);
+      }}
+      onTouchCancel={(event) => {
+        event.stopPropagation();
+        edgeSwipeHandlersRef.current.end?.(event);
+      }}
+    />
+  );
+}
+
 function ClientPreviousProjectPreview({ project, style }) {
   if (!project || !style) return null;
 
@@ -269,6 +305,10 @@ export default function WorkScreens({
 
       {currentView === VIEWS.PATRON_EDITOR && (
         <PatronEditorEdgeZone edgeSwipeHandlersRef={edgeSwipeHandlersRef} />
+      )}
+
+      {currentView === VIEWS.CLIENT_PAGE && (
+        <ClientPageEdgeZone edgeSwipeHandlersRef={edgeSwipeHandlersRef} />
       )}
 
       {currentView === VIEWS.PATRON_EDITOR && (
