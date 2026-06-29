@@ -24,6 +24,12 @@ export default function useBrowserBackGuard({
   }, [currentView, navigateBackFromClientPage, navigateToHub, navigateToLibrary]);
 
   useEffect(() => {
+    const isPdfViewer = currentView === VIEWS.PDF_VIEWER;
+    document.documentElement.style.touchAction = isPdfViewer ? "auto" : "pan-y";
+    document.body.style.touchAction = isPdfViewer ? "auto" : "pan-y";
+  }, [currentView]);
+
+  useEffect(() => {
     const guardState = { kaleidoBackGuard: true };
     const GUARD_DEPTH = 8;
     const EDGE_WIDTH = 44;
@@ -153,15 +159,21 @@ export default function useBrowserBackGuard({
     };
 
     const preventGestureDefault = (event) => {
+      if (stateRef.current.currentView === VIEWS.PDF_VIEWER) return;
       event.preventDefault();
     };
 
-    document.documentElement.style.overscrollBehavior = "none";
-    document.documentElement.style.overscrollBehaviorX = "none";
-    document.documentElement.style.touchAction = "pan-y";
-    document.body.style.overscrollBehavior = "none";
-    document.body.style.overscrollBehaviorX = "none";
-    document.body.style.touchAction = "pan-y";
+    const applyGesturePolicy = () => {
+      const isPdfViewer = stateRef.current.currentView === VIEWS.PDF_VIEWER;
+      document.documentElement.style.overscrollBehavior = "none";
+      document.documentElement.style.overscrollBehaviorX = "none";
+      document.documentElement.style.touchAction = isPdfViewer ? "auto" : "pan-y";
+      document.body.style.overscrollBehavior = "none";
+      document.body.style.overscrollBehaviorX = "none";
+      document.body.style.touchAction = isPdfViewer ? "auto" : "pan-y";
+    };
+
+    applyGesturePolicy();
 
     resetGuardState();
     window.addEventListener("popstate", handlePopState);

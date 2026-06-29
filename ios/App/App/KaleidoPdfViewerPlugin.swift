@@ -39,13 +39,16 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             let view = self.ensurePdfView()
             view.frame = self.cgRect(from: frame)
             view.isHidden = false
+            view.isUserInteractionEnabled = true
+            view.layer.zPosition = 10000
+            view.superview?.bringSubviewToFront(view)
 
             if self.currentPdfId != pdfId || view.document == nil {
                 view.document = PDFDocument(data: pdfData)
                 self.currentPdfId = pdfId
                 view.autoScales = true
-                view.minScaleFactor = view.scaleFactorForSizeToFit * 0.75
-                view.maxScaleFactor = 6.0
+                view.minScaleFactor = 0.35
+                view.maxScaleFactor = 8.0
             }
 
             self.restoreState(state, in: view)
@@ -61,6 +64,10 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         DispatchQueue.main.async {
             self.pdfView?.frame = self.cgRect(from: frame)
+            if let pdfView = self.pdfView {
+                pdfView.layer.zPosition = 10000
+                pdfView.superview?.bringSubviewToFront(pdfView)
+            }
             call.resolve()
         }
     }
@@ -89,8 +96,12 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         view.displayDirection = .vertical
         view.usePageViewController(false)
         view.autoScales = true
+        view.displaysPageBreaks = true
+        view.isUserInteractionEnabled = true
+        view.layer.zPosition = 10000
 
         bridge?.viewController?.view.addSubview(view)
+        bridge?.viewController?.view.bringSubviewToFront(view)
         pdfView = view
         return view
     }
