@@ -261,6 +261,11 @@ export default function ClientChatPreview({ project, color, publicView = false, 
         onChange={(event) => setDraft(event.target.value)}
         placeholder={publicView ? "Votre message..." : "Repondre au client..."}
         rows={3}
+        autoComplete="on"
+        autoCorrect="on"
+        autoCapitalize="sentences"
+        spellCheck={true}
+        enterKeyHint="send"
         style={{
           width: "100%",
           border: "1.5px solid var(--k-border)",
