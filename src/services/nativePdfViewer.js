@@ -18,7 +18,7 @@ const callNativePdfViewer = async (method, payload = {}) => {
   }
 
   const result = await NativePdfViewer[method](payload);
-  if (result == null && method !== "hide") {
+  if (result == null && !["hide", "show", "updateFrame"].includes(method)) {
     throw new Error(`Le plugin PDF natif n'a pas repondu a ${method}.`);
   }
 
