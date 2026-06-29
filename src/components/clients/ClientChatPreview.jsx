@@ -257,10 +257,16 @@ export default function ClientChatPreview({ project, color, publicView = false, 
   const renderComposer = () => (
     <>
       <textarea
+        name={publicView ? "client-message" : "owner-message"}
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         placeholder={publicView ? "Votre message..." : "Repondre au client..."}
         rows={3}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="sentences"
+        spellCheck={false}
+        enterKeyHint="send"
         style={{
           width: "100%",
           border: "1.5px solid var(--k-border)",

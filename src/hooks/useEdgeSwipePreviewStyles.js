@@ -10,8 +10,7 @@ export default function useEdgeSwipePreviewStyles({
   const interactiveBackPreview = edgeSwipeActive && currentView !== VIEWS.HUB;
   const previewUsesLibrary = interactiveBackPreview && currentView === VIEWS.PATRON_EDITOR;
   const clientReturnsToHub = currentView === VIEWS.CLIENT_PAGE && (!prevView || prevView === VIEWS.HUB);
-  const clientReturnsToReader = currentView === VIEWS.CLIENT_PAGE && (prevView === VIEWS.ROW_COUNTER || prevView === VIEWS.PDF_VIEWER);
-  const previewUsesClientPrevious = interactiveBackPreview && clientReturnsToReader;
+  const previewUsesClientPrevious = false;
   const previewUsesHub = interactiveBackPreview
     && currentView !== VIEWS.PATRON_EDITOR
     && (currentView !== VIEWS.CLIENT_PAGE || clientReturnsToHub);
@@ -86,7 +85,8 @@ export default function useEdgeSwipePreviewStyles({
     willChange: "transform, opacity, filter",
   };
 
-  const previewBackdropStyle = interactiveBackPreview ? {
+  const hasBackPreview = previewUsesHub || previewUsesLibrary || previewUsesClientPrevious;
+  const previewBackdropStyle = interactiveBackPreview && hasBackPreview ? {
     position: "absolute",
     inset: 0,
     zIndex: 1,
@@ -98,7 +98,7 @@ export default function useEdgeSwipePreviewStyles({
 
   return {
     activeScreenInteractiveStyle,
-    clientPreviousPreviewStyle: previewUsesClientPrevious ? inactivePreviewContentStyle : null,
+    clientPreviousPreviewStyle: null,
     inactivePreviewContentStyle,
     keepHubMounted: currentView === VIEWS.HUB || currentView === VIEWS.PDF_VIEWER || previewUsesHub,
     keepLibraryMountedForPreview: previewUsesLibrary,
