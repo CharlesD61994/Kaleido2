@@ -246,7 +246,13 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 }
 
 final class KaleidoPdfOverlayView: UIView {
+    private let edgeBackPassthroughWidth: CGFloat = 32
+
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        if point.x <= edgeBackPassthroughWidth {
+            return nil
+        }
+
         let hit = super.hitTest(point, with: event)
         return hit === self ? nil : hit
     }
