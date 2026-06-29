@@ -332,6 +332,7 @@ export default function WorkScreens({
                 onEditClient={openClientEditor}
                 onMarkMessagesRead={markClientMessagesRead}
                 onPublishClientProject={publishClientProjectRecord}
+                unreadClientMessageCount={unreadClientMessageCount}
               />
             </Suspense>
           </WorkScreenErrorBoundary>

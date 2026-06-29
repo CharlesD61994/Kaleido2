@@ -274,7 +274,6 @@ const rememberCloudFailure = (error) => {
   if (isCloudNetworkFailure(error)) {
     if (!cloudSyncDisabledReason) {
       cloudSyncDisabledReason = "Supabase coupe les sauvegardes cloud pour le moment.";
-      console.warn("[KALEIDO] cloud sync disabled:", cloudSyncDisabledReason);
     }
     cloudRetryBlockedUntil = Date.now() + CLOUD_RETRY_MAX_MS;
     return;

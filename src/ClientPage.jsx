@@ -11,17 +11,17 @@ import ClientSummaryCard from "./components/clients/ClientSummaryCard";
 import { THEME_CSS } from "./styles/theme";
 import { IOS_TOP_PADDING } from "./styles/layout";
 
-export default function ClientPage({ project, onBack, onEditClient, onMarkMessagesRead, onPublishClientProject }) {
+export default function ClientPage({ project, onBack, onEditClient, onMarkMessagesRead, onPublishClientProject, unreadClientMessageCount = 0 }) {
   const progress = computeProgress(project);
   const color = KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
   const statusLabel = project?.status === "termine" ? "Terminé" : "En cours";
   const clientInitial = (project?.client || "?").trim().charAt(0).toUpperCase() || "?";
 
   useEffect(() => {
-    if (project?.clientShareToken && typeof onMarkMessagesRead === "function") {
+    if (unreadClientMessageCount > 0 && project?.clientShareToken && typeof onMarkMessagesRead === "function") {
       onMarkMessagesRead(project);
     }
-  }, [project?.id, project?.clientShareToken, onMarkMessagesRead, project]);
+  }, [project?.id, project?.clientShareToken, onMarkMessagesRead, unreadClientMessageCount]);
 
   return (
     <div
