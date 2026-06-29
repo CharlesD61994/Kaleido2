@@ -55,6 +55,7 @@ export default function useProjectRecords({
       projectId,
       data: progressData,
     });
+    setCurrentProject((prev) => (prev && String(prev.id) === String(projectId) ? { ...prev, ...progressData } : prev));
 
     if (currentProject?.clientShareToken) {
       publishSharedProjectQuietly({ ...currentProject, ...progressData });

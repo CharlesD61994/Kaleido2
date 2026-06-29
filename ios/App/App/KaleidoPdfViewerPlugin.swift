@@ -14,6 +14,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private var pdfView: PDFView?
+    private var overlayWindow: UIWindow?
+    private var overlayController: UIViewController?
     private var currentPdfId: String?
 
     @objc func show(_ call: CAPPluginCall) {
@@ -42,6 +44,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             view.isUserInteractionEnabled = true
             view.layer.zPosition = 10000
             view.superview?.bringSubviewToFront(view)
+            self.overlayWindow?.isHidden = false
 
             if self.currentPdfId != pdfId || view.document == nil {
                 view.document = PDFDocument(data: pdfData)
@@ -75,6 +78,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func hide(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             self.pdfView?.isHidden = true
+            self.overlayWindow?.isHidden = true
             call.resolve()
         }
     }
@@ -90,6 +94,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             return pdfView
         }
 
+        ensureOverlayWindow()
+
         let view = PDFView(frame: .zero)
         view.backgroundColor = UIColor(red: 0.067, green: 0.067, blue: 0.067, alpha: 1)
         view.displayMode = .singlePageContinuous
@@ -100,10 +106,36 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         view.isUserInteractionEnabled = true
         view.layer.zPosition = 10000
 
-        bridge?.viewController?.view.addSubview(view)
-        bridge?.viewController?.view.bringSubviewToFront(view)
+        overlayController?.view.addSubview(view)
+        overlayController?.view.bringSubviewToFront(view)
         pdfView = view
         return view
+    }
+
+    private func ensureOverlayWindow() {
+        if overlayWindow != nil {
+            return
+        }
+
+        guard let scene = bridge?.viewController?.view.window?.windowScene
+            ?? UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first else {
+            return
+        }
+
+        let controller = UIViewController()
+        let passthroughView = KaleidoPdfOverlayView(frame: UIScreen.main.bounds)
+        passthroughView.backgroundColor = .clear
+        controller.view = passthroughView
+
+        let window = UIWindow(windowScene: scene)
+        window.frame = scene.coordinateSpace.bounds
+        window.rootViewController = controller
+        window.backgroundColor = .clear
+        window.windowLevel = .normal + 2
+        window.isHidden = false
+
+        overlayController = controller
+        overlayWindow = window
     }
 
     private func decodePdfData(_ value: String) -> Data? {
@@ -195,5 +227,12 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
 
         return nil
+    }
+}
+
+final class KaleidoPdfOverlayView: UIView {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hit = super.hitTest(point, with: event)
+        return hit === self ? nil : hit
     }
 }
