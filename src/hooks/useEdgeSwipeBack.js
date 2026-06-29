@@ -121,8 +121,10 @@ export default function useEdgeSwipeBack({
         } else {
           runFallbackBack();
         }
-        setEdgeSwipeActive(false);
-        setEdgeSwipeProgress(0);
+        window.setTimeout(() => {
+          setEdgeSwipeActive(false);
+          setEdgeSwipeProgress(0);
+        }, 80);
       }, 180);
     };
 

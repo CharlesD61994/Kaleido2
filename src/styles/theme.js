@@ -5,7 +5,7 @@ export const THEME_MODES = {
 
 export const getThemeMode = (database) => {
   const mode = database?.settings?.themeMode;
-  return mode === THEME_MODES.light ? THEME_MODES.light : THEME_MODES.dark;
+  return mode === THEME_MODES.dark ? THEME_MODES.dark : THEME_MODES.light;
 };
 
 export const THEME_CSS = `

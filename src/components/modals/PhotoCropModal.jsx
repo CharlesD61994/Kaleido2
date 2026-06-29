@@ -140,9 +140,9 @@ export default function PhotoCropModal({ onClose, onConfirm, existingImage }) {
   };
 
   return (
-    <div data-kaleido-modal-backdrop="true" style={{ position: "fixed", inset: 0, zIndex: 300, background: "#000", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
+    <div data-kaleido-modal-backdrop="true" style={{ position: "fixed", inset: 0, zIndex: 300, background: "#000", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: "0 14px" }}>
       {!imgSrc ? (
-        <div data-kaleido-modal-card="true" style={{ textAlign: "center", padding: 32, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, width: "calc(100% - 40px)", maxWidth: 340 }}>
+        <div data-kaleido-modal-card="true" style={{ textAlign: "center", padding: 28, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, width: "100%", maxWidth: 340, boxSizing: "border-box" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><IconBadge name="camera" tone="pink" size={28} badgeSize={64} /></div>
           <h3 style={{ color: "var(--k-text)", fontSize: 20, fontFamily: "'Syne', sans-serif", margin: "0 0 8px" }}>Ajouter une photo</h3>
           <p style={{ color: "var(--k-muted-2)", fontSize: 14, margin: "0 0 28px" }}>Choisis une photo depuis ta galerie</p>

@@ -6,17 +6,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="KaleidoHub" />
-    <meta name="theme-color" content="#0D0D1A" />
+    <meta name="theme-color" content="#F7F4FB" />
     <link rel="apple-touch-icon" href="/icon.png" />
     <title>KaleidoHub</title>
   </head>
-  <body style="margin:0; background:#0D0D1A;">
+  <body style="margin:0; background:#F7F4FB;">
     <script>
       (function () {
         try {
           var raw = localStorage.getItem("kaleido_database");
           var db = raw ? JSON.parse(raw) : null;
-          var theme = db && db.settings && db.settings.themeMode === "light" ? "light" : "dark";
+          var theme = db && db.settings && db.settings.themeMode === "dark" ? "dark" : "light";
           document.documentElement.setAttribute("data-kaleido-theme", theme);
           document.body.style.background = theme === "light" ? "#F7F4FB" : "#0D0D1A";
           var themeMeta = document.querySelector('meta[name="theme-color"]');

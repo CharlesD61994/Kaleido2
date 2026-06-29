@@ -57,13 +57,13 @@ export default function ProjectCreationModals({
       )}
 
       {showSelectPatronModal && (
-        <div data-kaleido-modal-backdrop="true" onClick={onCloseSelectPatron} style={{ position: "fixed", inset: 0, zIndex: 200, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div data-kaleido-modal-card="true" onClick={(e) => e.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "20px 16px 40px", width: "100%", maxWidth: 430, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+        <div data-kaleido-modal-backdrop="true" onClick={onCloseSelectPatron} style={{ position: "fixed", inset: 0, zIndex: 200, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 12px" }}>
+          <div data-kaleido-modal-card="true" onClick={(e) => e.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "20px 10px 40px", width: "100%", maxWidth: 430, maxHeight: "80vh", display: "flex", flexDirection: "column", overflow: "visible" }}>
             <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 16px" }} />
             <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 4px", textAlign: "center" }}>Choisir un patron</h3>
             <p style={{ color: "var(--k-muted-2)", fontSize: 12, textAlign: "center", margin: "0 0 16px", fontFamily: "'DM Sans', sans-serif" }}>Appuie sur une bulle pour créer le projet</p>
-            <div style={{ overflowY: "auto", flex: 1 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 112px)", rowGap: 16, columnGap: 14, justifyContent: "start", justifyItems: "center", alignItems: "start", width: "100%", maxWidth: 364, margin: "0 auto" }}>
+            <div style={{ overflowY: "auto", overflowX: "hidden", overscrollBehaviorX: "none", touchAction: "pan-y", flex: 1, padding: "22px 10px 24px", margin: "0 -2px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", rowGap: 18, columnGap: 8, justifyContent: "center", justifyItems: "center", alignItems: "start", width: "100%", maxWidth: 390, margin: "0 auto" }}>
                 {patrons.map((patron, idx) => (
                   <div key={patron.id} style={{ animation: `fadeIn 0.3s ease ${idx * 0.04}s both` }}>
                     <ProjectBubble

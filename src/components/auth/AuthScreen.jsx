@@ -73,7 +73,7 @@ export default function AuthScreen({ disabled = false }) {
             <h1 style={{ margin: 0, fontFamily: "'Syne', sans-serif", fontSize: 26, letterSpacing: 0 }}>
               Kaleido
             </h1>
-            <div style={{ color: "#A8A6B8", fontSize: 13, marginTop: 2 }}>
+            <div style={{ color: "var(--k-muted)", fontSize: 13, marginTop: 2 }}>
               {isSignup ? "Créer ton compte" : "Connexion à ton compte"}
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function AuthScreen({ disabled = false }) {
           {busy ? "Un instant..." : isSignup ? "Créer mon compte" : "Me connecter"}
         </button>
 
-        <div style={{ color: status.includes("impossible") || status.includes("Invalid") ? "#FCA5A5" : "#A8A6B8", fontSize: 12, lineHeight: 1.4, marginTop: 14, minHeight: 18 }}>
+        <div style={{ color: status.includes("impossible") || status.includes("Invalid") ? "#DC2626" : "var(--k-muted)", fontSize: 12, lineHeight: 1.4, marginTop: 14, minHeight: 18 }}>
           {disabled ? "Supabase doit être configuré pour activer les comptes." : status}
         </div>
       </form>

@@ -12,10 +12,11 @@ const splitInstructionSegments = (text = "") => {
     if (char === "," && depth === 0) {
       const raw = value.slice(start, index);
       const leading = raw.match(/^\s*/)?.[0] || "";
-      const trailing = raw.match(/\s*$/)?.[0] || "";
+      const trailing = " ";
       const body = raw.trim();
       if (body) parts.push({ leading, body, trailing, separator: value[index] });
       start = index + 1;
+      while (value[start] === " ") start += 1;
     }
   }
 
@@ -46,7 +47,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
   return (
     <span style={{ display: "block" }}>
       {lines.map((parts, lineIndex) => (
-        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "1em" }}>
+        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "0.72em", lineHeight: 1.22, marginTop: lineIndex > 0 ? 2 : 0 }}>
           {parts.map((part, partIndex) => {
             segmentIndex += 1;
             const currentIndex = segmentIndex;
