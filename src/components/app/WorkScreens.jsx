@@ -1,5 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { VIEWS } from "../../constants/views";
+import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
+import { computeProgress } from "../../services/progressStore";
 
 const ClientPage = lazy(() => import("../../ClientPage"));
 const CompteurRangsView = lazy(() => import("../counters/CompteurRangsView"));
@@ -140,8 +142,102 @@ function PatronEditorEdgeZone({ edgeSwipeHandlersRef }) {
   );
 }
 
+function ClientPreviousProjectPreview({ project, style }) {
+  if (!project || !style) return null;
+
+  const color = KALEIDOSCOPE_COLORS[(project.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
+  const progress = computeProgress(project);
+  const isPdf = project.projectType === "pdf";
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        ...style,
+        background: "var(--k-bg)",
+        color: "var(--k-text)",
+        fontFamily: "'DM Sans', sans-serif",
+        overflow: "hidden",
+        pointerEvents: "none",
+      }}
+    >
+      <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 28px) 20px 28px", maxWidth: 430, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 34 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 13,
+              background: "var(--k-surface-2)",
+              border: "1px solid var(--k-control-border)",
+              color: "#A78BFA",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 28,
+              fontWeight: 700,
+            }}
+          >
+            ‹
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.05, fontFamily: "'Syne', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {project.name || "Projet"}
+            </div>
+            <div style={{ color: color.light, fontSize: 13, marginTop: 4, fontFamily: "monospace" }}>
+              {isPdf ? "PDF" : project.type || "patron"}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
+          <div>
+            <div style={{ color: color.light, fontSize: 18, fontWeight: 900, marginBottom: 10 }}>Global</div>
+            <div
+              style={{
+                width: 98,
+                height: 98,
+                borderRadius: "50%",
+                border: `6px solid ${color.light}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: `0 0 28px ${color.bg}38`,
+              }}
+            >
+              <div style={{ textAlign: "center", fontFamily: "monospace" }}>
+                <div style={{ fontSize: 31, fontWeight: 900 }}>{Number(project.rang) || 0}</div>
+                <div style={{ color: color.light, fontSize: 17, fontWeight: 800 }}>/ {Number(project.total) || 0}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0, paddingTop: 26 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+              <div style={{ fontSize: 20, fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {isPdf ? "Lecteur PDF" : "Lecteur de patron"}
+              </div>
+              <div style={{ color: color.light, fontFamily: "monospace", fontSize: 18, fontWeight: 900 }}>{progress}%</div>
+            </div>
+            <div style={{ height: 10, borderRadius: 999, background: "var(--k-muted-fill-2)", overflow: "hidden" }}>
+              <div style={{ width: `${progress}%`, height: "100%", borderRadius: 999, background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, boxShadow: `0 0 18px ${color.light}55` }} />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ borderRadius: 22, border: `1px solid ${color.light}33`, background: "var(--k-surface)", padding: 22, minHeight: 160, boxShadow: `0 16px 48px ${color.bg}20` }}>
+          <div style={{ width: 120, height: 38, borderRadius: 14, background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, margin: "0 auto 20px" }} />
+          <div style={{ height: 18, borderRadius: 999, background: "var(--k-muted-fill-2)", marginBottom: 12 }} />
+          <div style={{ height: 18, width: "74%", borderRadius: 999, background: "var(--k-muted-fill-2)", margin: "0 auto" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function WorkScreens({
   activeScreenInteractiveStyle,
+  clientPreviousPreviewStyle,
   currentPatron,
   currentProject,
   currentView,
@@ -167,6 +263,10 @@ export default function WorkScreens({
 
   return (
     <>
+      {currentView === VIEWS.CLIENT_PAGE && (
+        <ClientPreviousProjectPreview project={currentProject} style={clientPreviousPreviewStyle} />
+      )}
+
       {currentView === VIEWS.PATRON_EDITOR && (
         <PatronEditorEdgeZone edgeSwipeHandlersRef={edgeSwipeHandlersRef} />
       )}

@@ -217,6 +217,7 @@ return <SplashScreen fading={splashFading} themeMode={getThemeMode(database)} />
 
 const {
   activeScreenInteractiveStyle,
+  clientPreviousPreviewStyle,
   inactivePreviewContentStyle,
   keepHubMounted,
   keepLibraryMountedForPreview,
@@ -332,6 +333,7 @@ return (
   }}
   preview={{
     activeScreenInteractiveStyle,
+    clientPreviousPreviewStyle,
     inactivePreviewContentStyle,
     keepHubMounted,
     keepLibraryMountedForPreview,

@@ -91,6 +91,7 @@ export default function AppScreens({
 
   const {
     activeScreenInteractiveStyle,
+    clientPreviousPreviewStyle,
     inactivePreviewContentStyle,
     keepHubMounted,
     keepLibraryMountedForPreview,
@@ -170,6 +171,7 @@ export default function AppScreens({
 
       <WorkScreens
         activeScreenInteractiveStyle={activeScreenInteractiveStyle}
+        clientPreviousPreviewStyle={clientPreviousPreviewStyle}
         currentPatron={currentPatron}
         currentProject={currentProject}
         currentView={currentView}

@@ -6,9 +6,10 @@ export default function useEdgeSwipePreviewStyles({
   edgeSwipeDragging,
   edgeSwipeProgress,
 }) {
-  const interactiveBackPreview = edgeSwipeActive && currentView !== VIEWS.HUB && currentView !== VIEWS.CLIENT_PAGE;
+  const interactiveBackPreview = edgeSwipeActive && currentView !== VIEWS.HUB;
   const previewUsesLibrary = interactiveBackPreview && currentView === VIEWS.PATRON_EDITOR;
-  const previewUsesHub = interactiveBackPreview && currentView !== VIEWS.PATRON_EDITOR;
+  const previewUsesClientPrevious = interactiveBackPreview && currentView === VIEWS.CLIENT_PAGE;
+  const previewUsesHub = interactiveBackPreview && currentView !== VIEWS.PATRON_EDITOR && currentView !== VIEWS.CLIENT_PAGE;
 
   const activeScreenInteractiveStyle = interactiveBackPreview ? {
     transform: `translate3d(${(edgeSwipeProgress * 100).toFixed(3)}vw, 0, 0)`,
@@ -92,6 +93,7 @@ export default function useEdgeSwipePreviewStyles({
 
   return {
     activeScreenInteractiveStyle,
+    clientPreviousPreviewStyle: previewUsesClientPrevious ? inactivePreviewContentStyle : null,
     inactivePreviewContentStyle,
     keepHubMounted: currentView === VIEWS.HUB || currentView === VIEWS.PDF_VIEWER || previewUsesHub,
     keepLibraryMountedForPreview: previewUsesLibrary,

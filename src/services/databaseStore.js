@@ -265,7 +265,10 @@ const rememberCloudFailure = (error) => {
   const now = Date.now();
   if (now - lastCloudErrorLogAt >= CLOUD_ERROR_LOG_INTERVAL_MS) {
     lastCloudErrorLogAt = now;
-    console.warn("[KALEIDO] cloudUpsertDatabase error:", error);
+    const message = String(error?.message || error?.details || error?.hint || "").trim();
+    if (message) {
+      console.warn("[KALEIDO] cloudUpsertDatabase error:", message);
+    }
   }
 };
 
