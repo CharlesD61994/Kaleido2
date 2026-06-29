@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from "./supabaseClient";
 import { getActiveCloudUserId, hasActiveCloudUser } from "./authStore";
 
 const MEDIA_BUCKET = "kaleido-media";
+let mediaCloudDisabledReason = "";
 
 const openIndexedDb = (dbName, storeName) => {
   let db = null;
@@ -59,6 +60,21 @@ const isMissingStorageObject = (error) => {
       || message.includes("does not exist")
       || message.includes("object not found")
     );
+};
+
+const isMissingStorageBucket = (error) => {
+  const message = String(error?.message || error?.error || "").toLowerCase();
+  const status = Number(error?.statusCode || error?.status || 0);
+  return message.includes("bucket not found")
+    || message.includes("bucket does not exist")
+    || message.includes("the resource was not found")
+    || status === 404 && message.includes("bucket");
+};
+
+const disableMediaCloudForSession = (reason) => {
+  if (mediaCloudDisabledReason) return;
+  mediaCloudDisabledReason = reason || "Supabase Storage indisponible.";
+  console.warn("[KALEIDO] media cloud disabled:", mediaCloudDisabledReason);
 };
 
 const putIntoStore = async (openDb, storeName, id, data) => {
@@ -121,7 +137,7 @@ const deleteFromStore = async (openDb, storeName, id) => {
 };
 
 const uploadToCloud = async (storeName, id, data) => {
-  if (!isSupabaseConfigured || !supabase || !hasActiveCloudUser() || !id || typeof data !== "string") return false;
+  if (mediaCloudDisabledReason || !isSupabaseConfigured || !supabase || !hasActiveCloudUser() || !id || typeof data !== "string") return false;
 
   try {
     const { error } = await supabase.storage
@@ -132,19 +148,23 @@ const uploadToCloud = async (storeName, id, data) => {
       });
 
     if (error) {
-      console.warn("[KALEIDO] media cloud upload error:", error);
+      if (isMissingStorageBucket(error)) {
+        disableMediaCloudForSession(`Bucket Storage "${MEDIA_BUCKET}" introuvable.`);
+      } else {
+        console.warn("[KALEIDO] media cloud upload error:", error?.message || error);
+      }
       return false;
     }
 
     return true;
   } catch (error) {
-    console.warn("[KALEIDO] media cloud upload exception:", error);
+    console.warn("[KALEIDO] media cloud upload exception:", error?.message || error);
     return false;
   }
 };
 
 const downloadFromCloud = async (storeName, id) => {
-  if (!isSupabaseConfigured || !supabase || !hasActiveCloudUser() || !id) return null;
+  if (mediaCloudDisabledReason || !isSupabaseConfigured || !supabase || !hasActiveCloudUser() || !id) return null;
 
   try {
     const { data, error } = await supabase.storage
@@ -155,8 +175,13 @@ const downloadFromCloud = async (storeName, id) => {
       return await data.text();
     }
 
+    if (error && isMissingStorageBucket(error)) {
+      disableMediaCloudForSession(`Bucket Storage "${MEDIA_BUCKET}" introuvable.`);
+      return null;
+    }
+
     if (error && !isMissingStorageObject(error)) {
-      console.warn("[KALEIDO] media cloud download error:", error);
+      console.warn("[KALEIDO] media cloud download error:", error?.message || error);
     }
 
     const legacy = await supabase.storage
@@ -164,15 +189,19 @@ const downloadFromCloud = async (storeName, id) => {
       .download(legacyMediaPath(storeName, id));
 
     if (legacy.error || !legacy.data) {
+      if (legacy.error && isMissingStorageBucket(legacy.error)) {
+        disableMediaCloudForSession(`Bucket Storage "${MEDIA_BUCKET}" introuvable.`);
+        return null;
+      }
       if (legacy.error && !isMissingStorageObject(legacy.error)) {
-        console.warn("[KALEIDO] media cloud legacy download error:", legacy.error);
+        console.warn("[KALEIDO] media cloud legacy download error:", legacy.error?.message || legacy.error);
       }
       return null;
     }
 
     return await legacy.data.text();
   } catch (error) {
-    console.warn("[KALEIDO] media cloud download exception:", error);
+    console.warn("[KALEIDO] media cloud download exception:", error?.message || error);
     return null;
   }
 };
