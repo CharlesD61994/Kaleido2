@@ -102,7 +102,7 @@ export default function useEdgeSwipeBack({
     };
 
     const completeBack = () => {
-      const backButton = currentView === VIEWS.PATRON_EDITOR || currentView === VIEWS.CLIENT_PAGE
+      const backButton = currentView === VIEWS.PATRON_EDITOR
         ? null
         : findVisibleBackButton();
 
@@ -114,10 +114,10 @@ export default function useEdgeSwipeBack({
       completeTimer = window.setTimeout(() => {
         if (currentView === VIEWS.PATRON_EDITOR) {
           navigateToLibrary();
-        } else if (currentView === VIEWS.CLIENT_PAGE) {
-          navigateBackFromClientPage?.();
         } else if (backButton) {
           backButton.click();
+        } else if (currentView === VIEWS.CLIENT_PAGE) {
+          navigateBackFromClientPage?.();
         } else {
           runFallbackBack();
         }
@@ -130,7 +130,7 @@ export default function useEdgeSwipeBack({
       const forcedEdgeZone = event?.target instanceof Element
         && Boolean(event.target.closest('[data-kaleido-edge-zone="true"]'));
 
-      if ((currentView === VIEWS.PATRON_EDITOR || currentView === VIEWS.CLIENT_PAGE) && !forcedEdgeZone) return;
+      if (currentView === VIEWS.PATRON_EDITOR && !forcedEdgeZone) return;
       if (!event.touches || event.touches.length !== 1) return;
       if (!forcedEdgeZone && isInteractiveTarget(event.target)) return;
 
