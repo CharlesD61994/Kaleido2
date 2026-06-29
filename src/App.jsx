@@ -205,6 +205,7 @@ const {
   edgeSwipeProgress,
 } = useEdgeSwipeBack({
   currentView,
+  navigateBackFromClientPage,
   navigateToHub,
   navigateToLibrary,
 });

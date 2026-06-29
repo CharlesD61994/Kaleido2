@@ -3,6 +3,7 @@ import { VIEWS } from "../constants/views";
 
 export default function useEdgeSwipeBack({
   currentView,
+  navigateBackFromClientPage,
   navigateToHub,
   navigateToLibrary,
 }) {
@@ -62,6 +63,10 @@ export default function useEdgeSwipeBack({
         navigateToLibrary();
         return true;
       }
+      if (currentView === VIEWS.CLIENT_PAGE) {
+        navigateBackFromClientPage?.();
+        return true;
+      }
       if (currentView === VIEWS.ROW_COUNTER || currentView === VIEWS.PDF_VIEWER) {
         navigateToHub();
         return true;
@@ -96,7 +101,9 @@ export default function useEdgeSwipeBack({
     };
 
     const completeBack = () => {
-      const backButton = currentView === VIEWS.PATRON_EDITOR ? null : findVisibleBackButton();
+      const backButton = currentView === VIEWS.PATRON_EDITOR || currentView === VIEWS.CLIENT_PAGE
+        ? null
+        : findVisibleBackButton();
 
       consumed = true;
       tracking = false;
@@ -106,6 +113,8 @@ export default function useEdgeSwipeBack({
       completeTimer = window.setTimeout(() => {
         if (currentView === VIEWS.PATRON_EDITOR) {
           navigateToLibrary();
+        } else if (currentView === VIEWS.CLIENT_PAGE) {
+          navigateBackFromClientPage?.();
         } else if (backButton) {
           backButton.click();
         } else {
@@ -240,7 +249,7 @@ export default function useEdgeSwipeBack({
       window.removeEventListener("touchend", finishGesture);
       window.removeEventListener("touchcancel", finishGesture);
     };
-  }, [currentView, navigateToHub, navigateToLibrary]);
+  }, [currentView, navigateBackFromClientPage, navigateToHub, navigateToLibrary]);
 
   useEffect(() => {
     setEdgeSwipeActive(false);

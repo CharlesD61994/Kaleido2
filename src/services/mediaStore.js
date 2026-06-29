@@ -226,7 +226,9 @@ const loadMedia = async (openDb, storeName, id) => {
 
 export const savePdf = async (id, data) => {
   const localSaved = await putIntoLocalStore(pdfDb, "pdfs", id, data);
-  await uploadToCloud("pdfs", id, data);
+  if (localSaved) {
+    uploadToCloud("pdfs", id, data);
+  }
   return localSaved;
 };
 
@@ -243,7 +245,9 @@ export const deletePdf = async (id) => {
 
 export const saveImage = async (id, data) => {
   const localSaved = await putIntoLocalStore(imageDb, "images", id, data);
-  await uploadToCloud("images", id, data);
+  if (localSaved) {
+    uploadToCloud("images", id, data);
+  }
   return localSaved;
 };
 
