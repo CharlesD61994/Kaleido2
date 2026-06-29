@@ -2,6 +2,7 @@ import Capacitor
 
 class KaleidoBridgeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
-        bridge?.registerPluginType(KaleidoPdfViewerPlugin.self)
+        bridge?.registerPluginInstance(KaleidoPdfViewerPlugin())
+        print("[KALEIDO] native PDF plugin registered")
     }
 }
