@@ -15,7 +15,7 @@ onRestore ? { icon: <Icon name="undo" size={21} color="#86EFAC" />, label: "Rame
 { icon: <Icon name="edit" size={21} color="currentColor" />, label: "Renommer", action: onRename },
 onEditClient ? { icon: <Icon name="projects" size={21} color="currentColor" />, label: "Modifier la fiche client", action: onEditClient } : null,
 { icon: <Icon name="image" size={21} color="currentColor" />, label: "Changer la photo", action: onChangePhoto },
-onComplete && !isCompleted ? { icon: <Icon name="checkBadge" size={21} color="#86EFAC" />, label: "Termine", action: onComplete } : null,
+onComplete && !isCompleted ? { icon: <Icon name="checkBadge" size={21} color="#86EFAC" />, label: "Terminé", action: onComplete } : null,
 ].filter(Boolean);
 return (
 <>

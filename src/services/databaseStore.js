@@ -10,7 +10,7 @@ const DB_BACKUP_KEY = "kaleido_database_backup";
 const DB_META_KEY = "kaleido_database_meta";
 const LEGACY_CLOUD_USER_KEY = import.meta.env.VITE_KALEIDO_USER_KEY || "owner";
 const CLOUD_TABLE = "kaleido_backups";
-const CLOUD_REQUEST_TIMEOUT_MS = 12000;
+const CLOUD_REQUEST_TIMEOUT_MS = 5000;
 const CLOUD_ERROR_LOG_INTERVAL_MS = 15000;
 const CLOUD_RETRY_BASE_MS = 3000;
 const CLOUD_RETRY_MAX_MS = 60000;
@@ -389,11 +389,13 @@ export const loadCloudDatabase = async () => {
   }
 
   try {
-    const { data, error } = await supabase
-      .from(CLOUD_TABLE)
-      .select("database_json, version, updated_at")
-      .eq("user_key", getCloudUserKey())
-      .maybeSingle();
+    const { data, error } = await withCloudTimeout(
+      supabase
+        .from(CLOUD_TABLE)
+        .select("database_json, version, updated_at")
+        .eq("user_key", getCloudUserKey())
+        .maybeSingle()
+    );
 
     if (error) {
       console.warn("[KALEIDO] loadCloudDatabase error:", error);

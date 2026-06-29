@@ -47,7 +47,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
   return (
     <span style={{ display: "block" }}>
       {lines.map((parts, lineIndex) => (
-        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "0.72em", lineHeight: 1.22, marginTop: lineIndex > 0 ? 2 : 0 }}>
+        <span key={`line-${lineIndex}`} style={{ display: "block", minHeight: parts.length ? "auto" : "0.55em", lineHeight: 1.2, marginTop: lineIndex > 0 ? 1 : 0 }}>
           {parts.map((part, partIndex) => {
             segmentIndex += 1;
             const currentIndex = segmentIndex;
@@ -79,7 +79,7 @@ export default function InstructionHighlighter({ text, selectedIndex, onSelect, 
                   {protectInstructionUnits(part.body)}
                   {part.separator}
                 </span>
-                {part.trailing ? <span style={{ whiteSpace: "pre" }}>{part.trailing}</span> : null}
+                {part.trailing ? <span>{part.trailing}</span> : null}
               </span>
             );
           })}

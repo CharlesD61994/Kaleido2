@@ -15,6 +15,7 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
   const [cloudReady, setCloudReady] = useState(!isSupabaseConfigured);
   const skipNextSaveRef = useRef(false);
   const lastAppliedCloudRef = useRef("");
+  const lastLocalWriteAtRef = useRef(0);
 
   useEffect(() => {
     databaseRef.current = database;
@@ -58,6 +59,7 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
       return;
     }
     if (saveDatabase(database)) {
+      lastLocalWriteAtRef.current = Date.now();
       syncDatabaseMediaToCloud(database);
     }
   }, [cloudReady, database]);
@@ -68,8 +70,13 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
 
     const applyCloudDatabase = (cloudDatabase) => {
       if (!cloudDatabase) return false;
+      if (Date.now() - lastLocalWriteAtRef.current < 12000) return false;
       const fingerprint = getDatabaseCloudFingerprint(cloudDatabase);
       if (!fingerprint || fingerprint === lastAppliedCloudRef.current) return false;
+
+      const cloudTime = Date.parse(cloudDatabase?._meta?.updatedAt || 0);
+      const localTime = Date.parse(databaseRef.current?._meta?.updatedAt || 0);
+      if (cloudTime <= localTime) return false;
 
       lastAppliedCloudRef.current = fingerprint;
       skipNextSaveRef.current = true;
@@ -100,6 +107,7 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
 
     const flushDatabase = () => {
       if (saveDatabase(databaseRef.current)) {
+        lastLocalWriteAtRef.current = Date.now();
         syncDatabaseMediaToCloud(databaseRef.current);
       }
     };
