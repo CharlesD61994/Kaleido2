@@ -13,7 +13,7 @@ export default function useEdgeSwipeBack({
   const edgeSwipeHandlersRef = useRef({ start: null, move: null, end: null });
 
   useEffect(() => {
-    if (currentView === VIEWS.HUB) {
+    if (currentView === VIEWS.HUB || currentView === VIEWS.CLIENT_PAGE) {
       edgeSwipeHandlersRef.current = { start: null, move: null, end: null };
       return undefined;
     }
