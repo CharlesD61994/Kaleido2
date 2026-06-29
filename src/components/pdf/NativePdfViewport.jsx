@@ -22,9 +22,15 @@ const getViewportFrame = (element) => {
 export default function NativePdfViewport({ pdfId, initialState, hidden = false, onUnavailable, onStateChange }) {
   const hostRef = React.useRef(null);
   const activeRef = React.useRef(false);
+  const onUnavailableRef = React.useRef(onUnavailable);
   const onStateChangeRef = React.useRef(onStateChange);
   const initialStateRef = React.useRef(initialState);
+  const lastSavedStateRef = React.useRef("");
   const [nativeError, setNativeError] = React.useState("");
+
+  React.useEffect(() => {
+    onUnavailableRef.current = onUnavailable;
+  }, [onUnavailable]);
 
   React.useEffect(() => {
     onStateChangeRef.current = onStateChange;
@@ -35,6 +41,14 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
     try {
       const state = await getNativePdfState();
       if (state && typeof onStateChangeRef.current === "function") {
+        const stateKey = JSON.stringify({
+          pageIndex: Number(state.pageIndex) || 0,
+          scaleFactor: Math.round((Number(state.scaleFactor) || 0) * 1000) / 1000,
+          offsetX: Math.round(Number(state.offsetX) || 0),
+          offsetY: Math.round(Number(state.offsetY) || 0),
+        });
+        if (stateKey === lastSavedStateRef.current) return;
+        lastSavedStateRef.current = stateKey;
         onStateChangeRef.current(state);
       }
     } catch {
@@ -54,7 +68,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
       if (!data) {
         const message = "PDF introuvable dans le stockage local.";
         setNativeError(message);
-        if (typeof onUnavailable === "function") onUnavailable(message);
+        if (typeof onUnavailableRef.current === "function") onUnavailableRef.current(message);
         return;
       }
 
@@ -72,7 +86,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
         activeRef.current = false;
         const message = String(error?.message || error || "Le lecteur PDF natif n'a pas pu demarrer.");
         setNativeError(message);
-        if (typeof onUnavailable === "function") onUnavailable(message);
+        if (typeof onUnavailableRef.current === "function") onUnavailableRef.current(message);
       }
     };
 
@@ -85,7 +99,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
         hideNativePdf();
       });
     };
-  }, [hidden, onUnavailable, pdfId, saveState]);
+  }, [hidden, pdfId, saveState]);
 
   React.useEffect(() => {
     if (!isNativePdfViewerTarget() || hidden || !pdfId || !hostRef.current) return undefined;
