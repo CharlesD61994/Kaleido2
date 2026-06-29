@@ -1,0 +1,188 @@
+import Capacitor
+import PDFKit
+import UIKit
+
+@objc(KaleidoPdfViewerPlugin)
+public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "KaleidoPdfViewerPlugin"
+    public let jsName = "KaleidoPdfViewer"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "show", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "updateFrame", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "hide", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getState", returnType: CAPPluginReturnPromise)
+    ]
+
+    private var pdfView: PDFView?
+    private var currentPdfId: String?
+
+    @objc func show(_ call: CAPPluginCall) {
+        guard let pdfId = call.getString("pdfId"), !pdfId.isEmpty else {
+            call.reject("PDF manquant.")
+            return
+        }
+
+        guard let frame = call.getObject("frame") else {
+            call.reject("Zone PDF manquante.")
+            return
+        }
+
+        guard let dataString = call.getString("data"),
+              let pdfData = decodePdfData(dataString) else {
+            call.reject("PDF illisible.")
+            return
+        }
+
+        let state = call.getObject("state")
+
+        DispatchQueue.main.async {
+            let view = self.ensurePdfView()
+            view.frame = self.cgRect(from: frame)
+            view.isHidden = false
+
+            if self.currentPdfId != pdfId || view.document == nil {
+                view.document = PDFDocument(data: pdfData)
+                self.currentPdfId = pdfId
+                view.autoScales = true
+                view.minScaleFactor = view.scaleFactorForSizeToFit * 0.75
+                view.maxScaleFactor = 6.0
+            }
+
+            self.restoreState(state, in: view)
+            call.resolve()
+        }
+    }
+
+    @objc func updateFrame(_ call: CAPPluginCall) {
+        guard let frame = call.getObject("frame") else {
+            call.reject("Zone PDF manquante.")
+            return
+        }
+
+        DispatchQueue.main.async {
+            self.pdfView?.frame = self.cgRect(from: frame)
+            call.resolve()
+        }
+    }
+
+    @objc func hide(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.pdfView?.isHidden = true
+            call.resolve()
+        }
+    }
+
+    @objc func getState(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            call.resolve(self.currentState())
+        }
+    }
+
+    private func ensurePdfView() -> PDFView {
+        if let pdfView = pdfView {
+            return pdfView
+        }
+
+        let view = PDFView(frame: .zero)
+        view.backgroundColor = UIColor(red: 0.067, green: 0.067, blue: 0.067, alpha: 1)
+        view.displayMode = .singlePageContinuous
+        view.displayDirection = .vertical
+        view.usePageViewController(false)
+        view.autoScales = true
+
+        bridge?.viewController?.view.addSubview(view)
+        pdfView = view
+        return view
+    }
+
+    private func decodePdfData(_ value: String) -> Data? {
+        let base64 = value.components(separatedBy: ",").last ?? value
+        return Data(base64Encoded: base64, options: [.ignoreUnknownCharacters])
+    }
+
+    private func cgRect(from object: JSObject) -> CGRect {
+        let x = CGFloat(doubleValue(object["x"]))
+        let y = CGFloat(doubleValue(object["y"]))
+        let width = CGFloat(doubleValue(object["width"]))
+        let height = CGFloat(doubleValue(object["height"]))
+        return CGRect(x: x, y: y, width: width, height: height)
+    }
+
+    private func doubleValue(_ value: Any?) -> Double {
+        if let double = value as? Double { return double }
+        if let int = value as? Int { return Double(int) }
+        if let number = value as? NSNumber { return number.doubleValue }
+        return 0
+    }
+
+    private func intValue(_ value: Any?) -> Int {
+        if let int = value as? Int { return int }
+        if let double = value as? Double { return Int(double) }
+        if let number = value as? NSNumber { return number.intValue }
+        return 0
+    }
+
+    private func currentState() -> JSObject {
+        guard let view = pdfView else {
+            return [:]
+        }
+
+        let pageIndex: Int
+        if let page = view.currentPage, let document = view.document {
+            pageIndex = document.index(for: page)
+        } else {
+            pageIndex = 0
+        }
+
+        let scrollView = findScrollView(in: view)
+        return [
+            "pageIndex": pageIndex,
+            "scaleFactor": Double(view.scaleFactor),
+            "offsetX": Double(scrollView?.contentOffset.x ?? 0),
+            "offsetY": Double(scrollView?.contentOffset.y ?? 0)
+        ]
+    }
+
+    private func restoreState(_ state: JSObject?, in view: PDFView) {
+        guard let state = state else {
+            return
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+            let pageIndex = self.intValue(state["pageIndex"])
+            if let page = view.document?.page(at: max(0, pageIndex)) {
+                view.go(to: page)
+            }
+
+            let scaleFactor = self.doubleValue(state["scaleFactor"])
+            if scaleFactor > 0 {
+                view.scaleFactor = CGFloat(scaleFactor)
+            }
+
+            if let scrollView = self.findScrollView(in: view) {
+                let x = CGFloat(self.doubleValue(state["offsetX"]))
+                let y = CGFloat(self.doubleValue(state["offsetY"]))
+                let maxX = max(0, scrollView.contentSize.width - scrollView.bounds.width)
+                let maxY = max(0, scrollView.contentSize.height - scrollView.bounds.height)
+                scrollView.setContentOffset(
+                    CGPoint(x: min(max(0, x), maxX), y: min(max(0, y), maxY)),
+                    animated: false
+                )
+            }
+        }
+    }
+
+    private func findScrollView(in view: UIView) -> UIScrollView? {
+        if let scrollView = view as? UIScrollView {
+            return scrollView
+        }
+
+        for subview in view.subviews {
+            if let scrollView = findScrollView(in: subview) {
+                return scrollView
+            }
+        }
+
+        return nil
+    }
+}

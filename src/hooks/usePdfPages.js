@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { loadPdf } from "../services/mediaStore";
 
-export default function usePdfPages(pdfId) {
+export default function usePdfPages(pdfId, options = {}) {
+  const disabled = Boolean(options.disabled);
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -11,9 +12,13 @@ export default function usePdfPages(pdfId) {
     let cancelled = false;
 
     setPages([]);
-    setLoading(true);
+    setLoading(!disabled);
     setLoadError(false);
     setLoadErrorMessage("Le fichier n'a pas pu être chargé");
+
+    if (disabled) {
+      return undefined;
+    }
 
     if (!pdfId) {
       setLoadErrorMessage("Aucun PDF n'est associé à ce projet.");
@@ -114,7 +119,7 @@ export default function usePdfPages(pdfId) {
     return () => {
       cancelled = true;
     };
-  }, [pdfId]);
+  }, [disabled, pdfId]);
 
   return {
     pages,

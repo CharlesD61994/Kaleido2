@@ -6,7 +6,9 @@ import WorkProjectHeader from "../work/WorkProjectHeader";
 import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
 import PdfCounterCard from "./PdfCounterCard";
 import PdfProgressModals from "./PdfProgressModals";
+import NativePdfViewport from "./NativePdfViewport";
 import { IOS_READER_TOP_PADDING } from "../../styles/layout";
+import { isNativePdfViewerTarget } from "../../services/nativePdfViewer";
 
 export { default as ImportPdfModal } from "./ImportPdfModal";
 
@@ -64,7 +66,9 @@ function PdfPartiePickerModal({ currentPartieIdx, onClose, onSelect, pdfParties 
 
 export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, onOpenClientPage, unreadClientMessageCount = 0 }) {
   const [showPartiePicker, setShowPartiePicker] = React.useState(false);
-  const { pages, loading, loadError } = usePdfPages(project?.pdfId);
+  const [nativePdfUnavailable, setNativePdfUnavailable] = React.useState(false);
+  const useNativePdf = isNativePdfViewerTarget() && !nativePdfUnavailable;
+  const { pages, loading, loadError } = usePdfPages(project?.pdfId, { disabled: useNativePdf });
   const {
     addCounter,
     color,
@@ -106,6 +110,14 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     setRang(offset + 1);
     setShowPartiePicker(false);
   };
+
+  const savePdfViewportState = React.useCallback((pdfViewportState) => {
+    if (typeof onSaveProgress === "function" && pdfViewportState) {
+      onSaveProgress(rang, total, elapsedTime, { pdfViewportState });
+    }
+  }, [elapsedTime, onSaveProgress, rang, total]);
+
+  const hideNativePdf = showPartiePicker || showFinModal || showNextPartieModal || showPrevPartieModal;
 
   return (
     <div style={{ background: "var(--k-bg)", color: "var(--k-text)", height: "100vh", fontFamily: "'DM Sans', sans-serif", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -167,23 +179,33 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
         </div>
       )}
 
-      <div style={{ flex: 1, overflowY: "auto", background: "#111", WebkitOverflowScrolling: "touch" }}>
-        {loading ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "50vh", gap: 14 }}>
-            <div style={{ fontSize: 14, color: "#A78BFA" }}>Chargement du PDF...</div>
-          </div>
-        ) : loadError ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "50vh", gap: 12 }}>
-            <div style={{ fontSize: 14, color: "#F87171" }}>PDF introuvable</div>
-          </div>
-        ) : (
-          pages.map((src, index) => (
-            <div key={index} style={{ borderBottom: "2px solid var(--k-surface)" }}>
-              <img src={src} alt={`Page ${index + 1}`} style={{ width: "100%", display: "block" }} />
+      {useNativePdf ? (
+        <NativePdfViewport
+          pdfId={project?.pdfId}
+          initialState={project?.pdfViewportState}
+          hidden={hideNativePdf}
+          onUnavailable={() => setNativePdfUnavailable(true)}
+          onStateChange={savePdfViewportState}
+        />
+      ) : (
+        <div style={{ flex: 1, overflowY: "auto", background: "#111", WebkitOverflowScrolling: "touch" }}>
+          {loading ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "50vh", gap: 14 }}>
+              <div style={{ fontSize: 14, color: "#A78BFA" }}>Chargement du PDF...</div>
             </div>
-          ))
-        )}
-      </div>
+          ) : loadError ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "50vh", gap: 12 }}>
+              <div style={{ fontSize: 14, color: "#F87171" }}>PDF introuvable</div>
+            </div>
+          ) : (
+            pages.map((src, index) => (
+              <div key={index} style={{ borderBottom: "2px solid var(--k-surface)" }}>
+                <img src={src} alt={`Page ${index + 1}`} style={{ width: "100%", display: "block" }} />
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       <PdfPartiePickerModal
         currentPartieIdx={currentPartieIdx}
