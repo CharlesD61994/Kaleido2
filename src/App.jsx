@@ -131,6 +131,7 @@ const {
 } = useAppNavigation({
   currentProject,
   currentView,
+  prevView,
   setCurrentProject,
   setCurrentView,
   setPrevView,
@@ -230,6 +231,7 @@ const {
   edgeSwipeActive,
   edgeSwipeDragging,
   edgeSwipeProgress,
+  prevView,
 });
 
 return (

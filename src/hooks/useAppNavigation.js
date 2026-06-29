@@ -5,6 +5,7 @@ import { loadPdf } from "../services/mediaStore";
 export default function useAppNavigation({
   currentProject,
   currentView,
+  prevView,
   setCurrentProject,
   setCurrentView,
   setPrevView,
@@ -82,17 +83,24 @@ export default function useAppNavigation({
 
   const navigateToClientPage = useCallback((project = currentProject) => {
     if (!project) return;
+    setPrevView(currentView);
     setCurrentProject(project);
     setCurrentView(VIEWS.CLIENT_PAGE);
-  }, [currentProject, setCurrentProject, setCurrentView]);
+  }, [currentProject, currentView, setCurrentProject, setCurrentView, setPrevView]);
 
   const navigateBackFromClientPage = useCallback(() => {
-    if (currentProject?.projectType === "pdf") {
+    if (prevView === VIEWS.HUB) {
+      setCurrentView(VIEWS.HUB);
+    } else if (prevView === VIEWS.PDF_VIEWER) {
+      setCurrentView(VIEWS.PDF_VIEWER);
+    } else if (prevView === VIEWS.ROW_COUNTER) {
+      setCurrentView(VIEWS.ROW_COUNTER);
+    } else if (currentProject?.projectType === "pdf") {
       setCurrentView(VIEWS.PDF_VIEWER);
     } else {
       setCurrentView(VIEWS.ROW_COUNTER);
     }
-  }, [currentProject, setCurrentView]);
+  }, [currentProject, prevView, setCurrentView]);
 
   return {
     navigateBackFromClientPage,
