@@ -263,6 +263,11 @@ const isCloudNetworkFailure = (error) => {
     || message.includes("fetch");
 };
 
+const getCloudErrorMessage = (error, fallback = "Supabase ne repond pas.") => {
+  const message = String(error?.message || error?.details || error?.hint || error || "").trim();
+  return message && message !== "[object Object]" ? message : fallback;
+};
+
 const rememberCloudFailure = (error) => {
   consecutiveCloudFailures += 1;
   const retryDelay = Math.min(
@@ -410,7 +415,7 @@ export const loadCloudDatabase = async () => {
       source: "cloud",
     });
   } catch (error) {
-    console.warn("[KALEIDO] loadCloudDatabase exception:", error);
+    console.warn("[KALEIDO] loadCloudDatabase exception:", getCloudErrorMessage(error));
     return null;
   }
 };
