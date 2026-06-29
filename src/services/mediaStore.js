@@ -71,6 +71,14 @@ const isMissingStorageBucket = (error) => {
     || status === 404 && message.includes("bucket");
 };
 
+const isMediaNetworkFailure = (error) => {
+  const message = String(error?.message || error?.error || error || "").toLowerCase();
+  return message.includes("load failed")
+    || message.includes("failed to fetch")
+    || message.includes("network")
+    || message.includes("egress");
+};
+
 const disableMediaCloudForSession = (reason) => {
   if (mediaCloudDisabledReason) return;
   mediaCloudDisabledReason = reason || "Supabase Storage indisponible.";
@@ -150,6 +158,8 @@ const uploadToCloud = async (storeName, id, data) => {
     if (error) {
       if (isMissingStorageBucket(error)) {
         disableMediaCloudForSession(`Bucket Storage "${MEDIA_BUCKET}" introuvable.`);
+      } else if (isMediaNetworkFailure(error)) {
+        disableMediaCloudForSession("Supabase Storage refuse ou coupe les transferts media pour le moment.");
       } else {
         console.warn("[KALEIDO] media cloud upload error:", error?.message || error);
       }
@@ -158,7 +168,11 @@ const uploadToCloud = async (storeName, id, data) => {
 
     return true;
   } catch (error) {
-    console.warn("[KALEIDO] media cloud upload exception:", error?.message || error);
+    if (isMediaNetworkFailure(error)) {
+      disableMediaCloudForSession("Supabase Storage refuse ou coupe les transferts media pour le moment.");
+    } else {
+      console.warn("[KALEIDO] media cloud upload exception:", error?.message || error);
+    }
     return false;
   }
 };

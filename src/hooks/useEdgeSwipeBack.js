@@ -30,13 +30,14 @@ export default function useEdgeSwipeBack({
     let resetTimer = 0;
     let completeTimer = 0;
 
-    const EDGE_ZONE = 22;
+    const isClientPage = currentView === VIEWS.CLIENT_PAGE;
+    const EDGE_ZONE = isClientPage ? 54 : 32;
     const LOCK_DX = 12;
     const LOCK_DY = 24;
     const MAX_DY = 64;
-    const COMPLETE_THRESHOLD = 0.56;
-    const FLICK_MIN_DX = 18;
-    const FLICK_VELOCITY = 0.18;
+    const COMPLETE_THRESHOLD = isClientPage ? 0.34 : 0.56;
+    const FLICK_MIN_DX = isClientPage ? 12 : 18;
+    const FLICK_VELOCITY = isClientPage ? 0.12 : 0.18;
 
     const isInteractiveTarget = (target) => {
       if (!(target instanceof Element)) return false;
@@ -211,7 +212,7 @@ export default function useEdgeSwipeBack({
       }
 
       if (!consumed) {
-        const shouldCompleteByDistance = lastDx >= window.innerWidth * 0.24;
+        const shouldCompleteByDistance = lastDx >= window.innerWidth * (isClientPage ? 0.14 : 0.24);
         const shouldCompleteByFlick = lastDx >= FLICK_MIN_DX && releaseVelocityX >= FLICK_VELOCITY;
 
         if (shouldCompleteByDistance || shouldCompleteByFlick) {
@@ -234,20 +235,20 @@ export default function useEdgeSwipeBack({
       end: finishGesture,
     };
 
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
-    window.addEventListener("touchend", finishGesture, { passive: true });
-    window.addEventListener("touchcancel", finishGesture, { passive: true });
+    document.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
+    document.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
+    document.addEventListener("touchend", finishGesture, { passive: true, capture: true });
+    document.addEventListener("touchcancel", finishGesture, { passive: true, capture: true });
 
     return () => {
       edgeSwipeHandlersRef.current = { start: null, move: null, end: null };
       window.clearTimeout(resetTimer);
       window.clearTimeout(completeTimer);
       hardResetPreview();
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", finishGesture);
-      window.removeEventListener("touchcancel", finishGesture);
+      document.removeEventListener("touchstart", onTouchStart, { capture: true });
+      document.removeEventListener("touchmove", onTouchMove, { capture: true });
+      document.removeEventListener("touchend", finishGesture, { capture: true });
+      document.removeEventListener("touchcancel", finishGesture, { capture: true });
     };
   }, [currentView, navigateBackFromClientPage, navigateToHub, navigateToLibrary]);
 
