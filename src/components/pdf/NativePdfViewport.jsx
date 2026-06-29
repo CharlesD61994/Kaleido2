@@ -22,6 +22,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
   const hostRef = React.useRef(null);
   const activeRef = React.useRef(false);
   const onStateChangeRef = React.useRef(onStateChange);
+  const initialStateRef = React.useRef(initialState);
 
   React.useEffect(() => {
     onStateChangeRef.current = onStateChange;
@@ -58,7 +59,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
           pdfId,
           data,
           frame: getViewportFrame(hostRef.current),
-          state: initialState || null,
+          state: initialStateRef.current || null,
         });
         activeRef.current = true;
       } catch {
@@ -76,7 +77,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
         hideNativePdf();
       });
     };
-  }, [hidden, initialState, onUnavailable, pdfId, saveState]);
+  }, [hidden, onUnavailable, pdfId, saveState]);
 
   React.useEffect(() => {
     if (!isNativePdfViewerTarget() || hidden || !pdfId || !hostRef.current) return undefined;
@@ -127,6 +128,14 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
       window.removeEventListener("pagehide", saveWhenLeaving);
     };
   }, [saveState]);
+
+  React.useEffect(() => {
+    if (hidden || !pdfId) return undefined;
+    const interval = window.setInterval(() => {
+      saveState();
+    }, 1800);
+    return () => window.clearInterval(interval);
+  }, [hidden, pdfId, saveState]);
 
   return (
     <div
