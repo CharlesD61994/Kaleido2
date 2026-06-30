@@ -148,7 +148,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
               decrementRang={decrementRang}
               incrementRang={incrementRang}
               addCounter={addCounter}
-              resetRang={() => setRang(0)}
+              resetRang={() => setRang(1)}
               onOpenPartiePicker={() => setShowPartiePicker(true)}
               compact
               timerProps={{

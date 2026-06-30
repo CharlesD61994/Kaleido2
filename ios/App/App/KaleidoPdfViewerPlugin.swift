@@ -20,6 +20,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private var currentPdfId: String?
     private var edgePanRecognizer: UIScreenEdgePanGestureRecognizer?
     private var edgeBackTriggered = false
+    private var viewerBaseFrame: CGRect = .zero
 
     @objc func isAvailable(_ call: CAPPluginCall) {
         call.resolve([
@@ -168,10 +169,12 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         switch recognizer.state {
         case .began:
             edgeBackTriggered = false
+            resetPdfBackTransform()
             dispatchEdgeEvent("kaleido-native-edge-start")
 
         case .changed:
             guard !edgeBackTriggered else { return }
+            applyPdfWindowBackProgress(progress)
             dispatchEdgeEvent("kaleido-native-edge-progress", progress: progress)
 
             if progress >= 0.56 {
@@ -185,7 +188,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             if shouldCompleteByDistance || shouldCompleteByFlick {
                 completeNativeBackGesture()
             } else {
-                resetPdfBackTransform()
+                animatePdfWindowBack(to: 0)
                 dispatchEdgeEvent("kaleido-native-edge-cancel")
             }
 
@@ -197,7 +200,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private func completeNativeBackGesture() {
         guard !edgeBackTriggered else { return }
         edgeBackTriggered = true
-        resetPdfBackTransform()
+        animatePdfWindowBack(to: 1)
         dispatchEdgeEvent("kaleido-native-edge-complete")
     }
 
@@ -215,6 +218,29 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private func resetPdfBackTransform() {
         pdfView?.transform = .identity
         pdfView?.alpha = 1
+        if viewerBaseFrame.width > 1, viewerBaseFrame.height > 1 {
+            overlayWindow?.frame = viewerBaseFrame
+        }
+    }
+
+    private func applyPdfWindowBackProgress(_ progress: CGFloat) {
+        guard viewerBaseFrame.width > 1, viewerBaseFrame.height > 1 else { return }
+        let width = max(bridge?.viewController?.view.window?.bounds.width ?? UIScreen.main.bounds.width, 1)
+        var frame = viewerBaseFrame
+        frame.origin.x = viewerBaseFrame.origin.x + (width * max(0, min(1, progress)))
+        overlayWindow?.frame = frame
+    }
+
+    private func animatePdfWindowBack(to progress: CGFloat) {
+        let timing = UICubicTimingParameters(
+            controlPoint1: CGPoint(x: 0.22, y: 1),
+            controlPoint2: CGPoint(x: 0.36, y: 1)
+        )
+        let animator = UIViewPropertyAnimator(duration: 0.24, timingParameters: timing)
+        animator.addAnimations {
+            self.applyPdfWindowBackProgress(progress)
+        }
+        animator.startAnimation()
     }
 
     private func dispatchEdgeEvent(_ name: String, progress: CGFloat? = nil) {
@@ -244,6 +270,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         let targetFrame = cgRect(from: object).integral
         guard targetFrame.width > 1, targetFrame.height > 1 else { return }
 
+        viewerBaseFrame = targetFrame
         overlayWindow?.frame = targetFrame
         overlayController?.view.frame = CGRect(origin: .zero, size: targetFrame.size)
         pdfView?.frame = CGRect(origin: .zero, size: targetFrame.size)

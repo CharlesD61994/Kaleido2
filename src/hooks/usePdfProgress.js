@@ -5,8 +5,9 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const pdfParties = project?.pdfParties || [];
   const hasParties = pdfParties.length > 0;
   const total = project?.total || 0;
-  const getPartieIndexForRang = (targetRang = 0) => {
-    if (!hasParties || targetRang <= 0) return 0;
+  const initialRang = Math.max(1, Number(project?.rang) || 1);
+  const getPartieIndexForRang = (targetRang = 1) => {
+    if (!hasParties || targetRang <= 1) return 0;
     let offset = 0;
     for (let i = 0; i < pdfParties.length; i++) {
       offset += Number(pdfParties[i]?.totalRangs) || 0;
@@ -14,9 +15,9 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     }
     return Math.max(0, pdfParties.length - 1);
   };
-  const [currentPartieIdx, setCurrentPartieIdx] = useState(() => getPartieIndexForRang(project?.rang || 0));
-  const [rang, setRang] = useState(project?.rang || 0);
-  const rangRef = useRef(project?.rang || 0);
+  const [currentPartieIdx, setCurrentPartieIdx] = useState(() => getPartieIndexForRang(initialRang));
+  const [rang, setRang] = useState(initialRang);
+  const rangRef = useRef(initialRang);
   const [counters, setCounters] = useState([]);
   const countersRef = useRef([]);
   const [startTime, setStartTime] = useState(Date.now() - (project?.elapsedTime || 0));
@@ -238,7 +239,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const decrementRang = () => {
     addPartieTime();
     const liveRang = rangRef.current;
-    if (liveRang <= 0) return;
+    if (liveRang <= 1) return;
 
     const newRang = liveRang - 1;
 
@@ -281,7 +282,8 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   };
 
   const setRangWithProgress = (next) => {
-    const nextRang = typeof next === "function" ? next(rangRef.current) : next;
+    const rawNextRang = typeof next === "function" ? next(rangRef.current) : next;
+    const nextRang = Math.max(1, Number(rawNextRang) || 1);
     rangRef.current = nextRang;
     if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(nextRang));
     setRang(nextRang);
