@@ -22,32 +22,81 @@ export default function SettingsModals({
 
   if (!showSettingsModal) return null;
 
+  const getBackupItemLabel = (item, fallback) => item?.name || item?.client || fallback || "Element";
+
   const exportBackup = async () => {
     try {
       const allProjects = [...(database.projectsPersonal || []), ...(database.projectsPro || [])];
       const pdfProjects = allProjects.filter((project) => project.projectType === "pdf" && project.pdfId);
       const patronPdfs = (database.patrons || []).filter((patron) => patron.projectType === "pdf" && patron.pdfId);
       const pdfs = {};
+      const missingPdfs = [];
 
       for (const project of [...pdfProjects, ...patronPdfs]) {
         const data = await loadPdf(project.pdfId);
-        if (data) pdfs[project.pdfId] = data;
+        if (data) {
+          pdfs[project.pdfId] = data;
+        } else {
+          missingPdfs.push({
+            id: project.pdfId,
+            name: getBackupItemLabel(project, "PDF"),
+            source: patronPdfs.includes(project) ? "patron" : "projet",
+          });
+        }
       }
 
       const imageIds = new Set();
+      const imageSources = {};
       const collectImageId = (item) => {
         const imageId = item?.image?.imageId;
-        if (imageId) imageIds.add(imageId);
+        const previewId = item?.image?.previewId;
+        const label = getBackupItemLabel(item, "Image");
+        if (imageId) {
+          imageIds.add(imageId);
+          imageSources[imageId] = label;
+        }
+        if (previewId) {
+          imageIds.add(previewId);
+          imageSources[previewId] = `${label} (vignette)`;
+        }
       };
       [...allProjects, ...(database.patrons || [])].forEach(collectImageId);
 
       const images = {};
+      const missingImages = [];
       for (const imageId of imageIds) {
         const imageData = await loadImage(imageId);
-        if (imageData) images[imageId] = imageData;
+        if (imageData) {
+          images[imageId] = imageData;
+        } else {
+          missingImages.push({
+            id: imageId,
+            name: imageSources[imageId] || "Image",
+          });
+        }
       }
 
-      const fullExport = JSON.stringify({ ...database, pdfs, images });
+      const backupMeta = {
+        format: "kaleido-json-backup",
+        version: 2,
+        createdAt: new Date().toISOString(),
+        counts: {
+          personalProjects: database.projectsPersonal?.length || 0,
+          proProjects: database.projectsPro?.length || 0,
+          patrons: database.patrons?.length || 0,
+          pdfsExpected: pdfProjects.length + patronPdfs.length,
+          pdfsIncluded: Object.keys(pdfs).length,
+          imagesExpected: imageIds.size,
+          imagesIncluded: Object.keys(images).length,
+          missingMedia: missingPdfs.length + missingImages.length,
+        },
+        missingMedia: {
+          pdfs: missingPdfs,
+          images: missingImages,
+        },
+      };
+
+      const fullExport = JSON.stringify({ ...database, pdfs, images, backupMeta });
       const blob = new Blob([fullExport], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
@@ -55,6 +104,18 @@ export default function SettingsModals({
       anchor.download = `kaleido-backup-${new Date().toISOString().split("T")[0]}.json`;
       anchor.click();
       URL.revokeObjectURL(url);
+
+      const missingCount = missingPdfs.length + missingImages.length;
+      alert([
+        "Sauvegarde JSON creee.",
+        "",
+        `${backupMeta.counts.personalProjects + backupMeta.counts.proProjects} projets, ${backupMeta.counts.patrons} patrons.`,
+        `${backupMeta.counts.pdfsIncluded}/${backupMeta.counts.pdfsExpected} PDF inclus.`,
+        `${backupMeta.counts.imagesIncluded}/${backupMeta.counts.imagesExpected} images incluses.`,
+        missingCount
+          ? `${missingCount} media manquant. Fais une autre sauvegarde depuis l'appareil qui contient ces fichiers si necessaire.`
+          : "Aucun media manquant detecte.",
+      ].join("\n"));
     } catch (error) {
       alert("Erreur export : " + error.message);
     }
@@ -70,19 +131,36 @@ export default function SettingsModals({
       const sourceDb = data?.database && typeof data.database === "object" ? data.database : data;
 
       const pdfsToRestore = data?.pdfs || sourceDb?.pdfs || {};
+      let restoredPdfCount = 0;
       for (const [pdfId, pdfData] of Object.entries(pdfsToRestore)) {
-        if (pdfId && typeof pdfData === "string") await savePdf(pdfId, pdfData);
+        if (pdfId && typeof pdfData === "string") {
+          const saved = await savePdf(pdfId, pdfData);
+          if (saved) restoredPdfCount += 1;
+        }
       }
 
       const imagesToRestore = data?.images || sourceDb?.images || {};
+      let restoredImageCount = 0;
       for (const [imageId, imageData] of Object.entries(imagesToRestore)) {
-        if (imageId && typeof imageData === "string") await saveImage(imageId, imageData);
+        if (imageId && typeof imageData === "string") {
+          const saved = await saveImage(imageId, imageData);
+          if (saved) restoredImageCount += 1;
+        }
       }
 
       const restoredDb = importDatabase(data);
       onRestoreDatabase(restoredDb);
       event.target.value = "";
-      alert("Données restaurées avec succès !");
+      const missingCount = Number(data?.backupMeta?.counts?.missingMedia || 0);
+      alert([
+        "Donnees restaurees avec succes.",
+        "",
+        `${restoredPdfCount} PDF restaures.`,
+        `${restoredImageCount} images restaurees.`,
+        missingCount
+          ? `Attention : cette sauvegarde indiquait ${missingCount} media manquant au moment de l'export.`
+          : "Aucun media manquant signale dans cette sauvegarde.",
+      ].join("\n"));
     } catch (error) {
       alert("Erreur import : " + (error?.message || "fichier invalide"));
     }
