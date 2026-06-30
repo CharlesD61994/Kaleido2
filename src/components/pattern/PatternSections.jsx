@@ -76,6 +76,18 @@ style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradien
 </div>
 {!isCollapsed && (
 <>
+{!isFirst && (
+<button
+type="button"
+onClick={(e) => act(e, () => onUpdate(partie.id, { continuesFromPrevious: !partie.continuesFromPrevious }))}
+style={{ width: "100%", border: `1px solid ${partie.continuesFromPrevious ? color.light : "var(--k-border)"}`, borderRadius: 10, background: partie.continuesFromPrevious ? `${color.bg}22` : "var(--k-muted-fill)", color: partie.continuesFromPrevious ? color.light : "var(--k-muted)", padding: "9px 11px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+>
+<span style={{ fontSize: 12, fontWeight: 800 }}>Continuer le compteur précédent</span>
+<span style={{ width: 36, height: 20, borderRadius: 999, background: partie.continuesFromPrevious ? `linear-gradient(135deg, ${color.bg}, ${color.light})` : "var(--k-border-strong)", position: "relative", flexShrink: 0 }}>
+<span style={{ position: "absolute", top: 3, left: partie.continuesFromPrevious ? 19 : 3, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left 180ms ease" }} />
+</span>
+</button>
+)}
 <div style={{ color: "#666", fontSize: 11, marginBottom: 12, fontStyle: "italic", textAlign: "center", padding: "6px 12px", background: `${color.bg}11`, borderRadius: 6, border: `1px dashed ${color.light}22` }}>
 Swipe vers la gauche sur les rangs pour dupliquer ⧉ et supprimer ✗
 </div>

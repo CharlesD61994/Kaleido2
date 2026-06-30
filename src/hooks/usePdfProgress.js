@@ -84,13 +84,41 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   }, [isTimerRunning, startTime]);
 
   const currentPartie = hasParties ? pdfParties[currentPartieIdx] : null;
-  const totalPartieCourante = currentPartie?.totalRangs || 0;
-  const rangDansPartie = hasParties ? (() => {
+  const actualTotalPartieCourante = currentPartie?.totalRangs || 0;
+  const actualRangDansPartie = hasParties ? (() => {
     let offset = 0;
     for (let i = 0; i < currentPartieIdx; i++) offset += pdfParties[i].totalRangs;
     const local = Math.max(0, rang - offset);
-    return totalPartieCourante > 0 ? Math.min(local, totalPartieCourante) : local;
+    return actualTotalPartieCourante > 0 ? Math.min(local, actualTotalPartieCourante) : local;
   })() : rang;
+  const currentPartieSegment = hasParties ? (() => {
+    let start = currentPartieIdx;
+    while (start > 0 && pdfParties[start]?.continuesFromPrevious === true) {
+      start -= 1;
+    }
+
+    let end = currentPartieIdx;
+    while (end + 1 < pdfParties.length && pdfParties[end + 1]?.continuesFromPrevious === true) {
+      end += 1;
+    }
+
+    let offset = 0;
+    for (let i = start; i < currentPartieIdx; i += 1) {
+      offset += Number(pdfParties[i]?.totalRangs) || 0;
+    }
+
+    let total = 0;
+    for (let i = start; i <= end; i += 1) {
+      total += Number(pdfParties[i]?.totalRangs) || 0;
+    }
+
+    return {
+      rang: Math.max(0, offset + actualRangDansPartie),
+      total: Math.max(1, total),
+    };
+  })() : { rang: rang, total: total || 1 };
+  const totalPartieCourante = currentPartieSegment.total;
+  const rangDansPartie = currentPartieSegment.rang;
   const color = currentPartie
     ? KALEIDOSCOPE_COLORS[currentPartie.colorIdx % KALEIDOSCOPE_COLORS.length]
     : KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];

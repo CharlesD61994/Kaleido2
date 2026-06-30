@@ -73,6 +73,7 @@ export default function usePatronEditor({
         id: partieId,
         nom: (typeof rawPartie.nom === "string" && rawPartie.nom.trim()) ? rawPartie.nom : "Nouvelle partie",
         colorIdx: Number.isInteger(rawPartie.colorIdx) ? rawPartie.colorIdx : (partieIndex % KALEIDOSCOPE_COLORS.length),
+        continuesFromPrevious: partieIndex > 0 && rawPartie.continuesFromPrevious === true,
         rangs: normalizedRangs,
       };
     });
@@ -233,6 +234,7 @@ export default function usePatronEditor({
           id: makeId(),
           nom: "Nouvelle partie",
           colorIdx: Math.floor(Math.random() * KALEIDOSCOPE_COLORS.length),
+          continuesFromPrevious: false,
           rangs: [],
         },
       ],

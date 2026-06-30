@@ -11,10 +11,11 @@ export default function EditPdfPatronModal({ patron, onClose, onSave }) {
     nom: partie.nom,
     rangs: String(partie.totalRangs),
     colorIdx: Number.isInteger(partie.colorIdx) ? partie.colorIdx : index % KALEIDOSCOPE_COLORS.length,
+    continuesFromPrevious: index > 0 && partie.continuesFromPrevious === true,
   })));
   const [colorPickerPartie, setColorPickerPartie] = useState(null);
 
-  const addPartie = () => setParties((prev) => [...prev, { id: Date.now(), nom: "", rangs: "", colorIdx: prev.length % KALEIDOSCOPE_COLORS.length }]);
+  const addPartie = () => setParties((prev) => [...prev, { id: Date.now(), nom: "", rangs: "", colorIdx: prev.length % KALEIDOSCOPE_COLORS.length, continuesFromPrevious: false }]);
   const updatePartie = (id, field, value) => setParties((prev) => prev.map((partie) => (partie.id === id ? { ...partie, [field]: value } : partie)));
   const removePartie = (id) => setParties((prev) => prev.filter((partie) => partie.id !== id));
   const totalFromParties = parties.reduce((sum, partie) => sum + (parseInt(partie.rangs) || 0), 0);
@@ -28,6 +29,7 @@ export default function EditPdfPatronModal({ patron, onClose, onSave }) {
         nom: partie.nom.trim(),
         totalRangs: parseInt(partie.rangs) || 0,
         colorIdx: Number.isInteger(partie.colorIdx) ? partie.colorIdx : index % KALEIDOSCOPE_COLORS.length,
+        continuesFromPrevious: index > 0 && partie.continuesFromPrevious === true,
       }));
     onSave({ name: name.trim(), total, pdfParties });
   };
@@ -61,11 +63,18 @@ export default function EditPdfPatronModal({ patron, onClose, onSave }) {
             {parties.map((partie, index) => {
               const color = KALEIDOSCOPE_COLORS[(partie.colorIdx ?? index) % KALEIDOSCOPE_COLORS.length];
               return (
-                <div key={partie.id} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center", width: "100%", minWidth: 0 }}>
-                  <button type="button" onClick={() => setColorPickerPartie(partie)} aria-label="Choisir la couleur de la partie" style={{ width: 22, height: 22, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, flexShrink: 0, border: "2px solid var(--k-surface)", padding: 0, cursor: "pointer", boxShadow: `0 0 12px ${color.bg}55` }} />
-                  <input value={partie.nom} onChange={(event) => updatePartie(partie.id, "nom", event.target.value)} placeholder={`Partie ${index + 1}`} style={{ flex: 1, minWidth: 0, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 10, padding: "10px 12px", color: "var(--k-text)", fontSize: 15, outline: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
-                  <input value={partie.rangs} onChange={(event) => updatePartie(partie.id, "rangs", event.target.value)} placeholder="Rangs" type="number" style={{ width: 64, flexShrink: 0, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 10, padding: "10px 8px", color: "var(--k-text)", fontSize: 15, outline: "none", textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
-                  <button onClick={() => removePartie(partie.id)} style={{ width: 28, height: 28, borderRadius: 6, background: "#DC262633", border: "none", color: "#F87171", fontSize: 18, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}>x</button>
+                <div key={partie.id} style={{ display: "grid", gap: 7, marginBottom: 10 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", width: "100%", minWidth: 0 }}>
+                    <button type="button" onClick={() => setColorPickerPartie(partie)} aria-label="Choisir la couleur de la partie" style={{ width: 22, height: 22, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, flexShrink: 0, border: "2px solid var(--k-surface)", padding: 0, cursor: "pointer", boxShadow: `0 0 12px ${color.bg}55` }} />
+                    <input value={partie.nom} onChange={(event) => updatePartie(partie.id, "nom", event.target.value)} placeholder={`Partie ${index + 1}`} style={{ flex: 1, minWidth: 0, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 10, padding: "10px 12px", color: "var(--k-text)", fontSize: 15, outline: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
+                    <input value={partie.rangs} onChange={(event) => updatePartie(partie.id, "rangs", event.target.value)} placeholder="Rangs" type="number" style={{ width: 64, flexShrink: 0, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 10, padding: "10px 8px", color: "var(--k-text)", fontSize: 15, outline: "none", textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
+                    <button onClick={() => removePartie(partie.id)} style={{ width: 28, height: 28, borderRadius: 6, background: "#DC262633", border: "none", color: "#F87171", fontSize: 18, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}>x</button>
+                  </div>
+                  {index > 0 ? (
+                    <button type="button" onClick={() => updatePartie(partie.id, "continuesFromPrevious", !partie.continuesFromPrevious)} style={{ justifySelf: "stretch", border: `1px solid ${partie.continuesFromPrevious ? color.light : "var(--k-border)"}`, borderRadius: 9, background: partie.continuesFromPrevious ? `${color.bg}18` : "var(--k-muted-fill)", color: partie.continuesFromPrevious ? color.light : "var(--k-muted)", padding: "7px 10px", fontSize: 11, fontWeight: 800, cursor: "pointer", textAlign: "left" }}>
+                      {partie.continuesFromPrevious ? "Compteur continu depuis la partie précédente" : "Compteur recommence à 1"}
+                    </button>
+                  ) : null}
                 </div>
               );
             })}

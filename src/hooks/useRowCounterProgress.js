@@ -127,6 +127,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     ? allRangs.slice(0, currentIndex).filter(r => !r.isNote).length - 1
     : allRangs.slice(0, currentIndex + 1).filter(r => !r.isNote).length - 1;
   const currentPartie = currentRang ? patron.parties.find(p => p.id === currentRang.partieId) : null;
+  const currentPartieIndex = currentPartie ? patron.parties.findIndex(p => p.id === currentPartie.id) : -1;
   const partieRangsOnly = currentPartie ? currentPartie.rangs.filter(r => !r.isNote) : [];
   const currentPartieRangIndex = currentPartie ? (() => {
     if (!currentRang?.isNote) return partieRangsOnly.findIndex(r => r.id === currentRang?.id);
@@ -135,7 +136,35 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     if (lastNormalBefore.length === 0) return -1;
     return partieRangsOnly.findIndex(r => r.id === lastNormalBefore[lastNormalBefore.length - 1].id);
   })() : 0;
-  const currentPartieTotal = partieRangsOnly.length || 1;
+  const getCountableRangsInPartie = (partie) => (partie?.rangs || []).filter(r => !r.isNote).length;
+  const currentPartieSegment = currentPartie ? (() => {
+    let start = Math.max(0, currentPartieIndex);
+    while (start > 0 && patron.parties[start]?.continuesFromPrevious === true) {
+      start -= 1;
+    }
+
+    let end = Math.max(0, currentPartieIndex);
+    while (end + 1 < patron.parties.length && patron.parties[end + 1]?.continuesFromPrevious === true) {
+      end += 1;
+    }
+
+    let offset = 0;
+    for (let i = start; i < currentPartieIndex; i += 1) {
+      offset += getCountableRangsInPartie(patron.parties[i]);
+    }
+
+    let total = 0;
+    for (let i = start; i <= end; i += 1) {
+      total += getCountableRangsInPartie(patron.parties[i]);
+    }
+
+    return {
+      rangIndex: Math.max(0, offset + currentPartieRangIndex),
+      total: Math.max(1, total),
+    };
+  })() : { rangIndex: currentPartieRangIndex, total: partieRangsOnly.length || 1 };
+  const currentPartieTotal = currentPartieSegment.total;
+  const currentPartieDisplayRangIndex = currentPartieSegment.rangIndex;
   const currentPartieColor = currentPartie
     ? KALEIDOSCOPE_COLORS[currentPartie.colorIdx % KALEIDOSCOPE_COLORS.length]
     : KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
@@ -318,7 +347,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     currentIndex,
     currentPartie,
     currentPartieColor,
-    currentPartieRangIndex,
+    currentPartieRangIndex: currentPartieDisplayRangIndex,
     currentPartieTotal,
     currentRang,
     deleteCounter,

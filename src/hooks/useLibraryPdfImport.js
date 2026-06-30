@@ -24,6 +24,7 @@ export default function useLibraryPdfImport({
         nom: partie.nom.trim(),
         totalRangs: parseInt(partie.rangs) || 0,
         colorIdx: Number.isInteger(partie.colorIdx) ? partie.colorIdx : index % KALEIDOSCOPE_COLORS.length,
+        continuesFromPrevious: index > 0 && partie.continuesFromPrevious === true,
       }));
 
     const newPatron = {

@@ -31,6 +31,7 @@ export default function ProjectCreationDialogs({
       nom: part.nom.trim(),
       totalRangs: parseInt(part.rangs, 10) || 0,
       colorIdx: Number.isInteger(part.colorIdx) ? part.colorIdx : index % KALEIDOSCOPE_COLORS.length,
+      continuesFromPrevious: index > 0 && part.continuesFromPrevious === true,
     }));
 
     const realTotal = pdfParties.length > 0
