@@ -262,33 +262,68 @@ export default function useEdgeSwipeBack({
 
   useEffect(() => {
     let nativeBackTimer = 0;
-    let nativeBackFrame = 0;
+    let nativeResetTimer = 0;
 
-    const handleNativeEdgeBack = () => {
-      if (currentView === VIEWS.PDF_VIEWER) {
-        window.clearTimeout(nativeBackTimer);
-        window.cancelAnimationFrame(nativeBackFrame);
-        setEdgeSwipeActive(true);
-        setEdgeSwipeDragging(false);
-        setEdgeSwipeProgress(0);
-        nativeBackFrame = window.requestAnimationFrame(() => {
-          setEdgeSwipeProgress(1);
-        });
-        nativeBackTimer = window.setTimeout(() => {
-          navigateToHub();
-          window.setTimeout(() => {
-            setEdgeSwipeActive(false);
-            setEdgeSwipeProgress(0);
-          }, 80);
-        }, 180);
-      }
+    const clearNativeTimers = () => {
+      window.clearTimeout(nativeBackTimer);
+      window.clearTimeout(nativeResetTimer);
     };
 
-    window.addEventListener("kaleido-native-edge-back", handleNativeEdgeBack);
+    const clampProgress = (value) => Math.max(0, Math.min(1, Number(value) || 0));
+
+    const handleNativeStart = () => {
+      if (currentView !== VIEWS.PDF_VIEWER) return;
+      clearNativeTimers();
+      setEdgeSwipeActive(true);
+      setEdgeSwipeDragging(true);
+      setEdgeSwipeProgress(0);
+    };
+
+    const handleNativeProgress = (event) => {
+      if (currentView !== VIEWS.PDF_VIEWER) return;
+      clearNativeTimers();
+      setEdgeSwipeActive(true);
+      setEdgeSwipeDragging(true);
+      setEdgeSwipeProgress(clampProgress(event?.detail?.progress));
+    };
+
+    const handleNativeComplete = () => {
+      if (currentView !== VIEWS.PDF_VIEWER) return;
+      clearNativeTimers();
+      setEdgeSwipeActive(true);
+      setEdgeSwipeDragging(false);
+      setEdgeSwipeProgress(1);
+      nativeBackTimer = window.setTimeout(() => {
+        navigateToHub();
+        nativeResetTimer = window.setTimeout(() => {
+          setEdgeSwipeActive(false);
+          setEdgeSwipeProgress(0);
+        }, 80);
+      }, 180);
+    };
+
+    const handleNativeCancel = () => {
+      if (currentView !== VIEWS.PDF_VIEWER) return;
+      clearNativeTimers();
+      setEdgeSwipeDragging(false);
+      setEdgeSwipeProgress(0);
+      nativeResetTimer = window.setTimeout(() => {
+        setEdgeSwipeActive(false);
+      }, 220);
+    };
+
+    window.addEventListener("kaleido-native-edge-start", handleNativeStart);
+    window.addEventListener("kaleido-native-edge-progress", handleNativeProgress);
+    window.addEventListener("kaleido-native-edge-complete", handleNativeComplete);
+    window.addEventListener("kaleido-native-edge-cancel", handleNativeCancel);
+    window.addEventListener("kaleido-native-edge-back", handleNativeComplete);
     return () => {
-      window.clearTimeout(nativeBackTimer);
-      window.cancelAnimationFrame(nativeBackFrame);
-      window.removeEventListener("kaleido-native-edge-back", handleNativeEdgeBack);
+      clearNativeTimers();
+      window.removeEventListener("kaleido-native-edge-start", handleNativeStart);
+      window.removeEventListener("kaleido-native-edge-progress", handleNativeProgress);
+      window.removeEventListener("kaleido-native-edge-complete", handleNativeComplete);
+      window.removeEventListener("kaleido-native-edge-cancel", handleNativeCancel);
+      window.removeEventListener("kaleido-native-edge-back", handleNativeComplete);
     };
   }, [currentView, navigateToHub]);
 

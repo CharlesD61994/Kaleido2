@@ -50,6 +50,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         DispatchQueue.main.async {
             let view = self.ensurePdfView()
             view.frame = self.cgRect(from: frame)
+            self.resetPdfBackTransform()
             let shouldRestoreBeforeShowing = state != nil
             view.isHidden = shouldRestoreBeforeShowing
             view.isUserInteractionEnabled = true
@@ -92,6 +93,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func hide(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             self.pdfView?.isHidden = true
+            self.resetPdfBackTransform()
             self.overlayWindow?.isHidden = true
             call.resolve()
         }
@@ -158,22 +160,91 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc private func handleNativeBackGesture(_ recognizer: UIScreenEdgePanGestureRecognizer) {
-        if recognizer.state == .began {
-            edgeBackTriggered = false
-            return
-        }
-
         let translation = recognizer.translation(in: recognizer.view)
         let velocity = recognizer.velocity(in: recognizer.view)
-        let shouldNavigateBack = translation.x > 44 || velocity.x > 360
-        guard !edgeBackTriggered && shouldNavigateBack else {
-            return
-        }
+        let width = max(recognizer.view?.bounds.width ?? UIScreen.main.bounds.width, 1)
+        let progress = edgeProgress(for: translation.x, width: width)
 
+        switch recognizer.state {
+        case .began:
+            edgeBackTriggered = false
+            dispatchEdgeEvent("kaleido-native-edge-start")
+
+        case .changed:
+            guard !edgeBackTriggered else { return }
+            applyPdfBackProgress(progress)
+            dispatchEdgeEvent("kaleido-native-edge-progress", progress: progress)
+
+            if progress >= 0.56 {
+                completeNativeBackGesture()
+            }
+
+        case .ended, .cancelled, .failed:
+            guard !edgeBackTriggered else { return }
+            let shouldCompleteByDistance = translation.x >= width * 0.24
+            let shouldCompleteByFlick = translation.x >= 18 && velocity.x >= 360
+            if shouldCompleteByDistance || shouldCompleteByFlick {
+                completeNativeBackGesture()
+            } else {
+                animatePdfBack(to: 0)
+                dispatchEdgeEvent("kaleido-native-edge-cancel")
+            }
+
+        default:
+            break
+        }
+    }
+
+    private func completeNativeBackGesture() {
+        guard !edgeBackTriggered else { return }
         edgeBackTriggered = true
-        bridge?.webView?.evaluateJavaScript(
-            "window.dispatchEvent(new CustomEvent('kaleido-native-edge-back'))"
+        animatePdfBack(to: 1)
+        dispatchEdgeEvent("kaleido-native-edge-complete")
+    }
+
+    private func edgeProgress(for translationX: CGFloat, width: CGFloat) -> CGFloat {
+        let rawProgress = max(0, min(1, translationX / width))
+        let easedProgress: CGFloat
+        if rawProgress < 0.16 {
+            easedProgress = rawProgress * 0.7
+        } else {
+            easedProgress = 0.112 + (rawProgress - 0.16) * 0.9
+        }
+        return max(0, min(1, easedProgress))
+    }
+
+    private func applyPdfBackProgress(_ progress: CGFloat) {
+        guard let view = pdfView else { return }
+        let width = max(view.superview?.bounds.width ?? UIScreen.main.bounds.width, 1)
+        view.transform = CGAffineTransform(translationX: width * progress, y: 0)
+        view.alpha = 1 - (0.08 * progress)
+    }
+
+    private func animatePdfBack(to progress: CGFloat) {
+        let timing = UICubicTimingParameters(
+            controlPoint1: CGPoint(x: 0.22, y: 1),
+            controlPoint2: CGPoint(x: 0.36, y: 1)
         )
+        let animator = UIViewPropertyAnimator(duration: 0.24, timingParameters: timing)
+        animator.addAnimations {
+            self.applyPdfBackProgress(progress)
+        }
+        animator.startAnimation()
+    }
+
+    private func resetPdfBackTransform() {
+        pdfView?.transform = .identity
+        pdfView?.alpha = 1
+    }
+
+    private func dispatchEdgeEvent(_ name: String, progress: CGFloat? = nil) {
+        let script: String
+        if let progress = progress {
+            script = "window.dispatchEvent(new CustomEvent('\(name)', { detail: { progress: \(Double(progress)) } }))"
+        } else {
+            script = "window.dispatchEvent(new CustomEvent('\(name)'))"
+        }
+        bridge?.webView?.evaluateJavaScript(script)
     }
 
     private func decodePdfData(_ value: String) -> Data? {
