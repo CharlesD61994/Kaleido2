@@ -106,7 +106,7 @@ class WorkScreenErrorBoundary extends React.Component {
   }
 }
 
-function PatronEditorEdgeZone({ edgeSwipeHandlersRef }) {
+function PatronEditorEdgeZone() {
   return (
     <div
       aria-hidden="true"
@@ -121,22 +121,6 @@ function PatronEditorEdgeZone({ edgeSwipeHandlersRef }) {
         zIndex: 9999,
         touchAction: "none",
         background: "transparent",
-      }}
-      onTouchStart={(event) => {
-        event.stopPropagation();
-        edgeSwipeHandlersRef.current.start?.(event);
-      }}
-      onTouchMove={(event) => {
-        event.stopPropagation();
-        edgeSwipeHandlersRef.current.move?.(event);
-      }}
-      onTouchEnd={(event) => {
-        event.stopPropagation();
-        edgeSwipeHandlersRef.current.end?.(event);
-      }}
-      onTouchCancel={(event) => {
-        event.stopPropagation();
-        edgeSwipeHandlersRef.current.end?.(event);
       }}
     />
   );
@@ -302,7 +286,7 @@ export default function WorkScreens({
       )}
 
       {currentView === VIEWS.PATRON_EDITOR && (
-        <PatronEditorEdgeZone edgeSwipeHandlersRef={edgeSwipeHandlersRef} />
+        <PatronEditorEdgeZone />
       )}
 
       {currentView === VIEWS.PATRON_EDITOR && (
