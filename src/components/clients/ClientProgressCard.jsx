@@ -20,15 +20,16 @@ export default function ClientProgressCard({ color, progress, project, statusLab
       right={
         <div
           style={{
-            color: color.light,
+            color: "#fff",
             fontSize: 15,
             fontWeight: 800,
             fontFamily: "monospace",
-            background: `${color.bg}22`,
-            border: `1px solid ${color.light}22`,
+            background: `linear-gradient(135deg, ${color.bg}, ${color.light})`,
+            border: `1px solid ${color.bg}44`,
             borderRadius: 999,
             padding: "7px 10px",
             flexShrink: 0,
+            textShadow: "0 1px 2px rgba(0,0,0,0.30)",
           }}
         >
           {progress}%
@@ -49,7 +50,7 @@ export default function ClientProgressCard({ color, progress, project, statusLab
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 13 }}>
         <StatTile label="Rangs" value={`${stats.rowsDone}/${stats.totalRows || stats.rowsDone}`} color="var(--k-text)" />
-        <StatTile label="Temps total" value={stats.elapsedTimeLabel} color={color.light} />
+        <StatTile label="Temps total" value={stats.elapsedTimeLabel} color="var(--k-text)" />
         {isCompleted ? <StatTile label="Moyenne" value={stats.averageTimeLabel} color="#22D3EE" /> : null}
         <StatTile label={isCompleted ? "Type" : "Statut"} value={isCompleted ? stats.typeLabel : statusLabel} color={isCompleted ? "#C4B5FD" : "var(--k-text)"} />
       </div>
@@ -66,7 +67,7 @@ export default function ClientProgressCard({ color, progress, project, statusLab
                     <div style={{ color: "var(--k-text-soft)", fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{part.name}</div>
                     <div style={{ color: "var(--k-muted-3)", fontSize: 11, marginTop: 2 }}>{part.rows} rangs</div>
                   </div>
-                  <div style={{ color: color.light, fontSize: 13, fontWeight: 800, fontFamily: "monospace", flexShrink: 0 }}>{formatTimeMs(time)}</div>
+                  <div style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 800, fontFamily: "monospace", flexShrink: 0 }}>{formatTimeMs(time)}</div>
                 </div>
               );
             }) : (

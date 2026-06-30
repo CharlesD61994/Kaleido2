@@ -298,10 +298,12 @@ export default function ClientShareCard({ project, color, onPublishClientProject
               rel="noreferrer"
               style={{
                 display: "block",
-                color: color.light,
+                color: "var(--k-text)",
                 fontSize: 12,
+                fontWeight: 700,
                 overflowWrap: "anywhere",
                 marginBottom: 16,
+                textDecorationColor: `${color.bg}88`,
               }}
             >
               {shareUrl}

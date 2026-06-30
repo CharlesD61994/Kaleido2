@@ -486,13 +486,14 @@ export default function ClientChatPreview({ project, color, publicView = false, 
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <div
               style={{
-                background: shareToken ? `${color.bg}22` : "rgba(251,191,36,0.12)",
-                color: shareToken ? color.light : "#FBBF24",
+                background: shareToken ? `linear-gradient(135deg, ${color.bg}, ${color.light})` : "rgba(251,191,36,0.12)",
+                color: shareToken ? "#fff" : "#FBBF24",
                 borderRadius: 999,
                 padding: "6px 10px",
                 fontSize: 11,
                 fontWeight: 800,
-                border: `1px solid ${shareToken ? `${color.light}22` : "rgba(251,191,36,0.18)"}`,
+                border: `1px solid ${shareToken ? `${color.bg}44` : "rgba(251,191,36,0.18)"}`,
+                textShadow: shareToken ? "0 1px 2px rgba(0,0,0,0.30)" : "none",
               }}
             >
               {shareToken ? "Actif" : "Lien requis"}
