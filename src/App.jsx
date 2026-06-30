@@ -126,6 +126,8 @@ const {
   navigateToHub,
   navigateToLibrary,
   navigateToPatronEditor,
+  navigateToPdfPatronEdit,
+  navigateToPdfPatronImport,
   navigateToPdfViewer,
   navigateToRowCounter,
 } = useAppNavigation({
@@ -153,6 +155,7 @@ setCurrentView(VIEWS.PATRON_EDITOR);
 };
 const handleNewPdfPatron = () => {
 setShowLibraryImportModal(true);
+navigateToPdfPatronImport();
 };
 const {
   cancelClientProjectCreation,
@@ -260,6 +263,8 @@ return (
     navigateToHub,
     navigateToLibrary,
     navigateToPatronEditor,
+    navigateToPdfPatronEdit,
+    navigateToPdfPatronImport,
     navigateToPdfViewer,
     navigateToRowCounter,
   }}

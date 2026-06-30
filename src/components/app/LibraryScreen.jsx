@@ -41,12 +41,15 @@ export function LibraryPreview({
 export default function LibraryScreen({
   activeScreenInteractiveStyle,
   addPatron,
+  currentView,
   database,
   deletePatronFromDB,
   editingPdfPatron,
   handleNewCustomPatron,
   handleNewPdfPatron,
   navigateToHub,
+  navigateToLibrary,
+  navigateToPdfPatronEdit,
   persistPatronImageToIndexedDB,
   photoTarget,
   setCurrentPatron,
@@ -65,6 +68,50 @@ export default function LibraryScreen({
     setShowLibraryImportModal,
   });
 
+  const closePdfPatronPage = () => {
+    setShowLibraryImportModal(false);
+    setEditingPdfPatron(null);
+    navigateToLibrary();
+  };
+
+  const handleCreatePdfPatronPage = async (...args) => {
+    await handleCreatePdfPatron(...args);
+    navigateToLibrary();
+  };
+
+  const handleSavePdfPatronPage = (updates) => {
+    if (!editingPdfPatron) return;
+    updatePatron(editingPdfPatron.id, updates);
+    setEditingPdfPatron(null);
+    navigateToLibrary();
+  };
+
+  if (currentView === VIEWS.PDF_PATRON_IMPORT) {
+    return (
+      <div data-kaleido-screen="true" style={{ ...viewWrapStyle(viewTransition), ...activeScreenInteractiveStyle }}>
+        <ImportPdfModal
+          asPage
+          onClose={closePdfPatronPage}
+          onCreate={handleCreatePdfPatronPage}
+        />
+      </div>
+    );
+  }
+
+  if (currentView === VIEWS.PDF_PATRON_EDIT && editingPdfPatron) {
+    return (
+      <div data-kaleido-screen="true" style={{ ...viewWrapStyle(viewTransition), ...activeScreenInteractiveStyle }}>
+        <EditPdfPatronModal
+          asPage
+          key={`${editingPdfPatron.id}-${(editingPdfPatron.pdfParties || []).length}`}
+          patron={editingPdfPatron}
+          onClose={closePdfPatronPage}
+          onSave={handleSavePdfPatronPage}
+        />
+      </div>
+    );
+  }
+
   return (
     <div data-kaleido-screen="true" style={{ ...viewWrapStyle(viewTransition), ...activeScreenInteractiveStyle }}>
       <LibraryView
@@ -81,6 +128,7 @@ export default function LibraryScreen({
           if (patron) {
             const fresh = (database.patrons || []).find((item) => item.id === patron.id);
             setEditingPdfPatron(fresh ? { ...fresh } : { ...patron });
+            navigateToPdfPatronEdit();
           } else {
             setEditingPdfPatron(null);
           }

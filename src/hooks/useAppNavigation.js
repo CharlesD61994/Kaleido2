@@ -46,6 +46,20 @@ export default function useAppNavigation({
     setCurrentView(VIEWS.PATRON_EDITOR);
   }, [currentView, resetTransitionSoon, setCurrentProject, setCurrentView, setPrevView, setViewTransition]);
 
+  const navigateToPdfPatronImport = useCallback(() => {
+    setPrevView(currentView);
+    setViewTransition("slide-in-right");
+    resetTransitionSoon();
+    setCurrentView(VIEWS.PDF_PATRON_IMPORT);
+  }, [currentView, resetTransitionSoon, setCurrentView, setPrevView, setViewTransition]);
+
+  const navigateToPdfPatronEdit = useCallback(() => {
+    setPrevView(currentView);
+    setViewTransition("slide-in-right");
+    resetTransitionSoon();
+    setCurrentView(VIEWS.PDF_PATRON_EDIT);
+  }, [currentView, resetTransitionSoon, setCurrentView, setPrevView, setViewTransition]);
+
   const navigateToRowCounter = useCallback((project) => {
     if (!project) {
       console.warn("[KALEIDO] navigateToRowCounter ignoré: projet manquant.");
@@ -108,6 +122,8 @@ export default function useAppNavigation({
     navigateToHub,
     navigateToLibrary,
     navigateToPatronEditor,
+    navigateToPdfPatronEdit,
+    navigateToPdfPatronImport,
     navigateToPdfViewer,
     navigateToRowCounter,
   };

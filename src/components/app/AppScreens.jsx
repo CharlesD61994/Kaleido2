@@ -46,6 +46,8 @@ export default function AppScreens({
     navigateToHub,
     navigateToLibrary,
     navigateToPatronEditor,
+    navigateToPdfPatronEdit,
+    navigateToPdfPatronImport,
     navigateToPdfViewer,
     navigateToRowCounter,
   } = navigation;
@@ -146,7 +148,7 @@ export default function AppScreens({
 
       {previewBackdropStyle && <div style={previewBackdropStyle} aria-hidden="true" />}
 
-      {currentView === VIEWS.LIBRARY && (
+      {(currentView === VIEWS.LIBRARY || currentView === VIEWS.PDF_PATRON_IMPORT || currentView === VIEWS.PDF_PATRON_EDIT) && (
         <LibraryScreen
           activeScreenInteractiveStyle={activeScreenInteractiveStyle}
           addPatron={addPatron}
@@ -158,6 +160,10 @@ export default function AppScreens({
           navigateToHub={navigateToHub}
           persistPatronImageToIndexedDB={persistPatronImageToIndexedDB}
           photoTarget={photoTarget}
+          currentView={currentView}
+          navigateToLibrary={navigateToLibrary}
+          navigateToPdfPatronEdit={navigateToPdfPatronEdit}
+          navigateToPdfPatronImport={navigateToPdfPatronImport}
           setCurrentPatron={setCurrentPatron}
           setCurrentView={setCurrentView}
           setEditingPdfPatron={setEditingPdfPatron}

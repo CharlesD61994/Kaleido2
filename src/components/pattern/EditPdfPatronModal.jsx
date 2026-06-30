@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
 import Icon from "../icons/Icon";
 
-export default function EditPdfPatronModal({ patron, onClose, onSave }) {
+export default function EditPdfPatronModal({ asPage = false, patron, onClose, onSave }) {
   const [name, setName] = useState(patron.name || "");
   const [configRangs, setConfigRangs] = useState((patron.pdfParties || []).length > 0 || (patron.total || 0) > 0);
   const [totalRangs, setTotalRangs] = useState(String(patron.total || ""));
@@ -20,6 +20,15 @@ export default function EditPdfPatronModal({ patron, onClose, onSave }) {
   const removePartie = (id) => setParties((prev) => prev.filter((partie) => partie.id !== id));
   const totalFromParties = parties.reduce((sum, partie) => sum + (parseInt(partie.rangs) || 0), 0);
   const total = configRangs ? (parties.length > 0 ? totalFromParties : parseInt(totalRangs) || 0) : 0;
+  const rootStyle = asPage
+    ? { minHeight: "100vh", background: "var(--k-bg)", display: "flex", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }
+    : { position: "fixed", inset: 0, zIndex: 300, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)" };
+  const cardStyle = asPage
+    ? { background: "var(--k-bg)", width: "100%", maxWidth: 430, minHeight: "100vh", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }
+    : { background: "var(--k-surface)", borderRadius: "24px 24px 0 0", width: "100%", maxWidth: 430, height: "min(90vh, calc(100vh - env(safe-area-inset-top, 0px) - 14px))", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid #0891B244" };
+  const headerStyle = asPage
+    ? { flexShrink: 0, position: "relative", padding: "calc(env(safe-area-inset-top, 0px) + 14px) 20px 14px", borderBottom: "1px solid var(--k-border)", background: "var(--k-header-gradient)" }
+    : { flexShrink: 0, position: "relative", padding: "16px 20px 14px", borderBottom: "1px solid var(--k-border)" };
 
   const handleSave = () => {
     const pdfParties = parties
@@ -35,12 +44,18 @@ export default function EditPdfPatronModal({ patron, onClose, onSave }) {
   };
 
   return (
-    <div data-kaleido-modal-backdrop="true" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 300, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)" }}>
-      <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ background: "var(--k-surface)", borderRadius: "24px 24px 0 0", width: "100%", maxWidth: 430, height: "min(90vh, calc(100vh - env(safe-area-inset-top, 0px) - 14px))", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid #0891B244" }}>
-        <div style={{ flexShrink: 0, position: "relative", padding: "16px 20px 14px", borderBottom: "1px solid var(--k-border)" }}>
-          <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 14px" }} />
-          <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: 0, textAlign: "center" }}>Modifier le patron PDF</h3>
-          <button type="button" onClick={onClose} aria-label="Fermer" style={{ position: "absolute", top: 14, right: 14, width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text)", fontSize: 20, lineHeight: 1, cursor: "pointer" }}>x</button>
+    <div data-kaleido-modal-backdrop={asPage ? undefined : "true"} data-kaleido-pdf-patron-page={asPage ? "true" : undefined} onClick={asPage ? undefined : onClose} style={rootStyle}>
+      <div data-kaleido-modal-card={asPage ? undefined : "true"} onClick={(event) => event.stopPropagation()} style={cardStyle}>
+        <div style={headerStyle}>
+          {!asPage ? <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 14px" }} /> : null}
+          <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: 0, textAlign: "center", padding: asPage ? "0 46px" : 0 }}>Modifier le patron PDF</h3>
+          <button data-kaleido-back-button={asPage ? "true" : undefined} type="button" onClick={onClose} aria-label={asPage ? "Retour" : "Fermer"} style={asPage ? { position: "absolute", top: "calc(env(safe-area-inset-top, 0px) + 8px)", left: 20, width: 36, height: 36, borderRadius: 10, border: "1px solid var(--k-control-border)", background: "var(--k-surface-2)", color: "#A78BFA", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } : { position: "absolute", top: 14, right: 14, width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text)", fontSize: 20, lineHeight: 1, cursor: "pointer" }}>
+            {asPage ? (
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            ) : "x"}
+          </button>
         </div>
         <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "18px 20px 20px" }}>
 

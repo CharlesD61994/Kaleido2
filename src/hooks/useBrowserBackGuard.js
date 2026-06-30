@@ -71,7 +71,7 @@ export default function useBrowserBackGuard({
 
       if (view === VIEWS.CLIENT_PAGE) {
         backFromClientPage();
-      } else if (view === VIEWS.PATRON_EDITOR) {
+      } else if (view === VIEWS.PATRON_EDITOR || view === VIEWS.PDF_PATRON_IMPORT || view === VIEWS.PDF_PATRON_EDIT) {
         goLibrary();
       } else if (view === VIEWS.LIBRARY || view === VIEWS.ROW_COUNTER || view === VIEWS.PDF_VIEWER) {
         goHub();
