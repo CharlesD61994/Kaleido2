@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from "./supabaseClient";
 import { getActiveCloudUserId, hasActiveCloudUser } from "./authStore";
 
 const MEDIA_BUCKET = "kaleido-media";
+const MEDIA_UPLOAD_REGISTRY_KEY = "kaleido_media_upload_registry";
 let mediaCloudDisabledReason = "";
 
 const openIndexedDb = (dbName, storeName) => {
@@ -50,6 +51,75 @@ export const getCachedImage = (id) => (id ? mediaMemoryCache.images.get(id) || n
 const getCacheForStore = (storeName) => storeName === "images" ? mediaMemoryCache.images : mediaMemoryCache.pdfs;
 const mediaPath = (storeName, id) => `${getActiveCloudUserId()}/${storeName}/${encodeURIComponent(id)}.txt`;
 const legacyMediaPath = (storeName, id) => `${storeName}/${encodeURIComponent(id)}.txt`;
+
+const canUseLocalStorage = () => {
+  try {
+    return typeof localStorage !== "undefined";
+  } catch {
+    return false;
+  }
+};
+
+const readUploadRegistry = () => {
+  if (!canUseLocalStorage()) return {};
+  try {
+    const raw = localStorage.getItem(MEDIA_UPLOAD_REGISTRY_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeUploadRegistry = (registry) => {
+  if (!canUseLocalStorage()) return;
+  try {
+    localStorage.setItem(MEDIA_UPLOAD_REGISTRY_KEY, JSON.stringify(registry || {}));
+  } catch {
+    // Le registre est seulement une optimisation; la sauvegarde locale reste prioritaire.
+  }
+};
+
+const getRegistryUserKey = () => getActiveCloudUserId() || "legacy";
+
+const getMediaFingerprint = (data) => {
+  if (typeof data !== "string") return "";
+  const middle = Math.max(0, Math.floor(data.length / 2) - 48);
+  return [
+    data.length,
+    data.slice(0, 96),
+    data.slice(middle, middle + 96),
+    data.slice(-96),
+  ].join(":");
+};
+
+const getUploadedMediaFingerprint = (storeName, id) => {
+  if (!id) return "";
+  const registry = readUploadRegistry();
+  return registry?.[getRegistryUserKey()]?.[storeName]?.[id] || "";
+};
+
+const hasUploadedMediaId = (storeName, id) => Boolean(getUploadedMediaFingerprint(storeName, id));
+
+const markUploadedMedia = (storeName, id, data) => {
+  if (!id || typeof data !== "string") return;
+  const registry = readUploadRegistry();
+  const userKey = getRegistryUserKey();
+  registry[userKey] = registry[userKey] || {};
+  registry[userKey][storeName] = registry[userKey][storeName] || {};
+  registry[userKey][storeName][id] = getMediaFingerprint(data);
+  writeUploadRegistry(registry);
+};
+
+const forgetUploadedMedia = (storeName, id) => {
+  if (!id) return;
+  const registry = readUploadRegistry();
+  const userKey = getRegistryUserKey();
+  if (registry?.[userKey]?.[storeName]?.[id]) {
+    delete registry[userKey][storeName][id];
+    writeUploadRegistry(registry);
+  }
+};
 
 const isMissingStorageObject = (error) => {
   const message = String(error?.message || "").toLowerCase();
@@ -141,11 +211,17 @@ const deleteFromStore = async (openDb, storeName, id) => {
   });
 
   getCacheForStore(storeName).delete(id);
+  forgetUploadedMedia(storeName, id);
   return true;
 };
 
 const uploadToCloud = async (storeName, id, data) => {
   if (mediaCloudDisabledReason || !isSupabaseConfigured || !supabase || !hasActiveCloudUser() || !id || typeof data !== "string") return false;
+
+  const fingerprint = getMediaFingerprint(data);
+  if (fingerprint && getUploadedMediaFingerprint(storeName, id) === fingerprint) {
+    return true;
+  }
 
   try {
     const { error } = await supabase.storage
@@ -166,6 +242,7 @@ const uploadToCloud = async (storeName, id, data) => {
       return false;
     }
 
+    markUploadedMedia(storeName, id, data);
     return true;
   } catch (error) {
     if (isMediaNetworkFailure(error)) {
@@ -228,6 +305,7 @@ const loadMedia = async (openDb, storeName, id) => {
     const cloudData = await downloadFromCloud(storeName, id);
     if (typeof cloudData === "string") {
       await putIntoLocalStore(openDb, storeName, id, cloudData);
+      markUploadedMedia(storeName, id, cloudData);
       return cloudData;
     }
 
@@ -289,11 +367,13 @@ export const syncDatabaseMediaToCloud = async (database = {}) => {
   }
 
   for (const pdfId of pdfIds) {
+    if (hasUploadedMediaId("pdfs", pdfId)) continue;
     const data = await getFromStore(pdfDb, "pdfs", pdfId).catch(() => null);
     if (typeof data === "string") await uploadToCloud("pdfs", pdfId, data);
   }
 
   for (const imageId of imageIds) {
+    if (hasUploadedMediaId("images", imageId)) continue;
     const data = await getFromStore(imageDb, "images", imageId).catch(() => null);
     if (typeof data === "string") await uploadToCloud("images", imageId, data);
   }
