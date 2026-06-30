@@ -18,10 +18,14 @@ const makeDefaultEmailDraft = (project, shareUrl) => ({
   body: [
     `Bonjour ${project?.client || ""},`,
     "",
-    "Voici le lien pour suivre l'avancement de votre projet :",
+    "Merci d'encourager un artisan d'ici! C'est un plaisir de réaliser ce projet avec vous.",
+    "",
+    "Vous pouvez suivre son avancement et communiquer facilement avec moi en tout temps à l'aide du lien suivant :",
     shareUrl,
     "",
-    "Merci!",
+    "N'hésitez pas à me poser vos questions tout au long du projet. Il me fera plaisir d'y répondre.",
+    "",
+    "Merci beaucoup!",
   ].join("\n"),
 });
 
