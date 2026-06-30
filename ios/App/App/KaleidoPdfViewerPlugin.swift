@@ -10,6 +10,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "show", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "updateFrame", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setBackProgress", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "hide", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getState", returnType: CAPPluginReturnPromise)
     ]
@@ -96,6 +97,20 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             self.pdfView?.isHidden = true
             self.resetPdfBackTransform()
             self.overlayWindow?.isHidden = true
+            call.resolve()
+        }
+    }
+
+    @objc func setBackProgress(_ call: CAPPluginCall) {
+        let progress = CGFloat(call.getDouble("progress") ?? 0)
+        let animated = call.getBool("animated") ?? false
+
+        DispatchQueue.main.async {
+            if animated {
+                self.animatePdfWindowBack(to: progress)
+            } else {
+                self.applyPdfWindowBackProgress(progress)
+            }
             call.resolve()
         }
     }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { VIEWS } from "../constants/views";
+import { setNativePdfBackProgress } from "../services/nativePdfViewer";
 
 export default function useEdgeSwipeBack({
   currentView,
@@ -79,9 +80,15 @@ export default function useEdgeSwipeBack({
       return false;
     };
 
+    const syncPdfWindowBackProgress = (progress, animated = false) => {
+      if (currentView !== VIEWS.PDF_VIEWER) return;
+      setNativePdfBackProgress({ progress, animated }).catch(() => {});
+    };
+
     const hardResetPreview = () => {
       window.clearTimeout(resetTimer);
       window.clearTimeout(completeTimer);
+      syncPdfWindowBackProgress(0, false);
       setEdgeSwipeDragging(false);
       setEdgeSwipeProgress(0);
       setEdgeSwipeActive(false);
@@ -92,6 +99,7 @@ export default function useEdgeSwipeBack({
       window.clearTimeout(completeTimer);
       setEdgeSwipeDragging(false);
       setEdgeSwipeProgress(0);
+      syncPdfWindowBackProgress(0, animated);
       if (!animated) {
         setEdgeSwipeActive(false);
         return;
@@ -110,6 +118,7 @@ export default function useEdgeSwipeBack({
       tracking = false;
       setEdgeSwipeDragging(false);
       setEdgeSwipeProgress(1);
+      syncPdfWindowBackProgress(1, true);
 
       completeTimer = window.setTimeout(() => {
         if (currentView === VIEWS.PATRON_EDITOR) {
@@ -154,6 +163,7 @@ export default function useEdgeSwipeBack({
       setEdgeSwipeActive(false);
       setEdgeSwipeDragging(false);
       setEdgeSwipeProgress(0);
+      syncPdfWindowBackProgress(0, false);
     };
 
     const onTouchMove = (event) => {
@@ -200,6 +210,7 @@ export default function useEdgeSwipeBack({
       const nextProgress = Math.max(0, Math.min(1, easedProgress));
 
       setEdgeSwipeProgress(nextProgress);
+      syncPdfWindowBackProgress(nextProgress, false);
 
       if (nextProgress >= COMPLETE_THRESHOLD && dy < MAX_DY && !consumed) {
         completeBack();

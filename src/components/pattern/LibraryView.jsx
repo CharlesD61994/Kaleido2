@@ -62,7 +62,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
             <div style={{ fontSize: 13 }}>Crée ou importe un patron avec le bouton +</div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 112px)", rowGap: 16, columnGap: 14, justifyContent: "start", justifyItems: "center", alignItems: "start", width: "100%", maxWidth: 364, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 112px)", rowGap: 16, columnGap: 14, justifyContent: "start", justifyItems: "center", alignItems: "start", width: "100%", maxWidth: 364, margin: "0 auto", transform: "translateX(-4px)" }}>
             {filtered.map((patron, idx) => (
               <div key={patron.id} style={{ animation: `fadeIn 0.3s ease ${idx * 0.04}s both` }}>
                 <ProjectBubble

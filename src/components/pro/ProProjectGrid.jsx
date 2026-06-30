@@ -30,6 +30,7 @@ function GridSection({ projects, unreadProjectIds, onProjectOpen, onMenuOpen, on
         width: "100%",
         maxWidth: 364,
         margin: "0 auto",
+        transform: "translateX(-4px)",
       }}
     >
       {projects.map((project) => (

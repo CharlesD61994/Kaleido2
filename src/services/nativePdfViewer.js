@@ -18,7 +18,7 @@ const callNativePdfViewer = async (method, payload = {}) => {
   }
 
   const result = await NativePdfViewer[method](payload);
-  if (result == null && !["hide", "show", "updateFrame"].includes(method)) {
+  if (result == null && !["hide", "show", "updateFrame", "setBackProgress"].includes(method)) {
     throw new Error(`Le plugin PDF natif n'a pas repondu a ${method}.`);
   }
 
@@ -28,5 +28,6 @@ const callNativePdfViewer = async (method, payload = {}) => {
 export const checkNativePdfAvailability = () => callNativePdfViewer("isAvailable");
 export const showNativePdf = (payload) => callNativePdfViewer("show", payload);
 export const updateNativePdfFrame = (payload) => callNativePdfViewer("updateFrame", payload);
+export const setNativePdfBackProgress = (payload) => callNativePdfViewer("setBackProgress", payload);
 export const hideNativePdf = () => callNativePdfViewer("hide");
 export const getNativePdfState = () => callNativePdfViewer("getState");

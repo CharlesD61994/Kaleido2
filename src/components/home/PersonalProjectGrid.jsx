@@ -19,7 +19,7 @@ function ProjectGridSection({ projects, handleMenuOpen, mode, navigateToPdfViewe
   if (projects.length === 0) return null;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 112px)", rowGap: 16, columnGap: 14, justifyContent: "start", justifyItems: "center", alignItems: "start", width: "100%", maxWidth: 364, margin: "0 auto" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 112px)", rowGap: 16, columnGap: 14, justifyContent: "start", justifyItems: "center", alignItems: "start", width: "100%", maxWidth: 364, margin: "0 auto", transform: "translateX(-4px)" }}>
       {projects.map((project) => (
         <div key={project.id}>
           <ProjectBubble
