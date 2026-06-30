@@ -172,6 +172,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         case .changed:
             guard !edgeBackTriggered else { return }
+            applyPdfBackProgress(progress)
             dispatchEdgeEvent("kaleido-native-edge-progress", progress: progress)
 
             if progress >= 0.56 {
@@ -185,6 +186,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             if shouldCompleteByDistance || shouldCompleteByFlick {
                 completeNativeBackGesture()
             } else {
+                animatePdfBack(to: 0)
                 dispatchEdgeEvent("kaleido-native-edge-cancel")
             }
 
@@ -196,6 +198,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private func completeNativeBackGesture() {
         guard !edgeBackTriggered else { return }
         edgeBackTriggered = true
+        animatePdfBack(to: 1)
         dispatchEdgeEvent("kaleido-native-edge-complete")
     }
 
@@ -213,6 +216,25 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private func resetPdfBackTransform() {
         pdfView?.transform = .identity
         pdfView?.alpha = 1
+    }
+
+    private func applyPdfBackProgress(_ progress: CGFloat) {
+        guard let view = pdfView else { return }
+        let width = max(view.superview?.bounds.width ?? UIScreen.main.bounds.width, 1)
+        view.transform = CGAffineTransform(translationX: width * progress, y: 0)
+        view.alpha = 1 - (0.08 * progress)
+    }
+
+    private func animatePdfBack(to progress: CGFloat) {
+        let timing = UICubicTimingParameters(
+            controlPoint1: CGPoint(x: 0.22, y: 1),
+            controlPoint2: CGPoint(x: 0.36, y: 1)
+        )
+        let animator = UIViewPropertyAnimator(duration: 0.24, timingParameters: timing)
+        animator.addAnimations {
+            self.applyPdfBackProgress(progress)
+        }
+        animator.startAnimation()
     }
 
     private func dispatchEdgeEvent(_ name: String, progress: CGFloat? = nil) {
@@ -328,7 +350,16 @@ final class KaleidoPdfOverlayView: UIView {
             return self
         }
 
-        let hit = super.hitTest(point, with: event)
-        return hit === self ? nil : hit
+        for subview in subviews.reversed() {
+            guard !subview.isHidden, subview.alpha > 0.01, subview.isUserInteractionEnabled else {
+                continue
+            }
+            let convertedPoint = subview.convert(point, from: self)
+            if subview.point(inside: convertedPoint, with: event) {
+                return subview.hitTest(convertedPoint, with: event)
+            }
+        }
+
+        return nil
     }
 }

@@ -25,7 +25,8 @@ const makeDefaultEmailDraft = (project, shareUrl) => ({
     "",
     "N'hésitez pas à me poser vos questions tout au long du projet. Il me fera plaisir d'y répondre.",
     "",
-    "Merci beaucoup!",
+    "Merci beaucoup,",
+    "L'Atelier Kaleido",
   ].join("\n"),
 });
 

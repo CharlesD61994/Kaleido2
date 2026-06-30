@@ -19,6 +19,13 @@ const getViewportFrame = (element) => {
   };
 };
 
+const waitForLayout = () =>
+  new Promise((resolve) => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(resolve);
+    });
+  });
+
 export default function NativePdfViewport({ pdfId, initialState, hidden = false, onUnavailable, onStateChange }) {
   const hostRef = React.useRef(null);
   const activeRef = React.useRef(false);
@@ -74,6 +81,8 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
 
       try {
         await checkNativePdfAvailability();
+        await waitForLayout();
+        if (cancelled || !hostRef.current) return;
         await showNativePdf({
           pdfId,
           data,
