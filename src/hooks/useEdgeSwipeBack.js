@@ -132,7 +132,10 @@ export default function useEdgeSwipeBack({
     };
 
     const completeBack = () => {
-      const backButton = (currentView === VIEWS.PATRON_EDITOR || currentView === VIEWS.PDF_PATRON_IMPORT || currentView === VIEWS.PDF_PATRON_EDIT)
+      const isLibraryBackView = currentView === VIEWS.PATRON_EDITOR
+        || currentView === VIEWS.PDF_PATRON_IMPORT
+        || currentView === VIEWS.PDF_PATRON_EDIT;
+      const backButton = isLibraryBackView
         ? null
         : findVisibleBackButton();
 
@@ -143,8 +146,11 @@ export default function useEdgeSwipeBack({
       syncPdfWindowBackProgress(1, true);
 
       completeTimer = window.setTimeout(() => {
-        if (currentView === VIEWS.PATRON_EDITOR || currentView === VIEWS.PDF_PATRON_IMPORT || currentView === VIEWS.PDF_PATRON_EDIT) {
+        if (isLibraryBackView) {
+          setEdgeSwipeActive(false);
+          setEdgeSwipeProgress(0);
           navigateToLibrary();
+          return;
         } else if (backButton) {
           backButton.click();
         } else if (currentView === VIEWS.CLIENT_PAGE) {
