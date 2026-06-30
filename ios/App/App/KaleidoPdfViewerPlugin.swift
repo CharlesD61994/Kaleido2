@@ -23,6 +23,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private var edgeBackTriggered = false
     private var viewerBaseFrame: CGRect = .zero
     private var pdfInteractionsFrozen = false
+    private var frozenPdfContentOffset: CGPoint?
+    private var frozenPdfScaleFactor: CGFloat?
 
     @objc func isAvailable(_ call: CAPPluginCall) {
         call.resolve([
@@ -168,7 +170,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         controller.view = passthroughView
         let edgePan = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(handleNativeBackGesture(_:)))
         edgePan.edges = .left
-        edgePan.cancelsTouchesInView = false
+        edgePan.cancelsTouchesInView = true
         passthroughView.addGestureRecognizer(edgePan)
 
         let window = UIWindow(windowScene: scene)
@@ -247,8 +249,16 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private func setPdfInteractionsFrozen(_ frozen: Bool) {
         guard pdfInteractionsFrozen != frozen else { return }
         pdfInteractionsFrozen = frozen
+        if frozen {
+            frozenPdfScaleFactor = pdfView?.scaleFactor
+            frozenPdfContentOffset = pdfView.flatMap({ findScrollView(in: $0) })?.contentOffset
+        } else {
+            frozenPdfScaleFactor = nil
+            frozenPdfContentOffset = nil
+        }
         pdfView?.isUserInteractionEnabled = !frozen
         if let scrollView = pdfView.flatMap({ findScrollView(in: $0) }) {
+            scrollView.layer.removeAllAnimations()
             scrollView.isScrollEnabled = !frozen
             scrollView.panGestureRecognizer.isEnabled = !frozen
             scrollView.pinchGestureRecognizer?.isEnabled = !frozen
@@ -265,10 +275,23 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private func applyPdfWindowBackProgress(_ progress: CGFloat) {
         guard viewerBaseFrame.width > 1, viewerBaseFrame.height > 1 else { return }
+        restoreFrozenPdfState()
         let width = max(bridge?.viewController?.view.window?.bounds.width ?? UIScreen.main.bounds.width, 1)
         var frame = viewerBaseFrame
         frame.origin.x = viewerBaseFrame.origin.x + (width * max(0, min(1, progress)))
         overlayWindow?.frame = frame
+    }
+
+    private func restoreFrozenPdfState() {
+        guard pdfInteractionsFrozen, let view = pdfView else { return }
+        if let scale = frozenPdfScaleFactor, view.scaleFactor != scale {
+            view.scaleFactor = max(scale, view.minScaleFactor)
+        }
+        if let offset = frozenPdfContentOffset,
+           let scrollView = findScrollView(in: view),
+           scrollView.contentOffset != offset {
+            scrollView.setContentOffset(offset, animated: false)
+        }
     }
 
     private func animatePdfWindowBack(to progress: CGFloat) {

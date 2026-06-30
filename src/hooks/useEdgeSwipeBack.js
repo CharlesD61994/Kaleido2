@@ -30,6 +30,9 @@ export default function useEdgeSwipeBack({
     let consumed = false;
     let resetTimer = 0;
     let completeTimer = 0;
+    let pdfSyncFrame = 0;
+    let pendingPdfProgress = 0;
+    let pendingPdfAnimated = false;
 
     const isClientPage = currentView === VIEWS.CLIENT_PAGE;
     const EDGE_ZONE = isClientPage ? 54 : 32;
@@ -82,12 +85,31 @@ export default function useEdgeSwipeBack({
 
     const syncPdfWindowBackProgress = (progress, animated = false) => {
       if (currentView !== VIEWS.PDF_VIEWER) return;
-      setNativePdfBackProgress({ progress, animated }).catch(() => {});
+      pendingPdfProgress = progress;
+      pendingPdfAnimated = animated;
+
+      if (animated) {
+        window.cancelAnimationFrame(pdfSyncFrame);
+        pdfSyncFrame = 0;
+        setNativePdfBackProgress({ progress, animated }).catch(() => {});
+        return;
+      }
+
+      if (pdfSyncFrame) return;
+      pdfSyncFrame = window.requestAnimationFrame(() => {
+        pdfSyncFrame = 0;
+        setNativePdfBackProgress({
+          progress: pendingPdfProgress,
+          animated: pendingPdfAnimated,
+        }).catch(() => {});
+      });
     };
 
     const hardResetPreview = () => {
       window.clearTimeout(resetTimer);
       window.clearTimeout(completeTimer);
+      window.cancelAnimationFrame(pdfSyncFrame);
+      pdfSyncFrame = 0;
       syncPdfWindowBackProgress(0, false);
       setEdgeSwipeDragging(false);
       setEdgeSwipeProgress(0);
