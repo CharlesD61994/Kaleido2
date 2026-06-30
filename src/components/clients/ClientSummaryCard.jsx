@@ -1,4 +1,8 @@
+import { getReadableColorText } from "../../constants/colors";
+
 export default function ClientSummaryCard({ project, color, clientInitial, onEditClient, publicView = false }) {
+  const accentTextColor = getReadableColorText(color);
+
   return (
     <section
       style={{
@@ -23,11 +27,12 @@ export default function ClientSummaryCard({ project, color, clientInitial, onEdi
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#fff",
+            color: accentTextColor,
             fontSize: 24,
             fontWeight: 800,
             fontFamily: "'Syne', sans-serif",
             boxShadow: `0 14px 36px ${color.bg}66`,
+            textShadow: accentTextColor === "#fff" ? "0 1px 2px rgba(0,0,0,0.30)" : "none",
             flexShrink: 0,
           }}
         >

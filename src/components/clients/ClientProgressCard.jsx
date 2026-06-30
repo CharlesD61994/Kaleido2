@@ -1,5 +1,6 @@
 import ClientSectionCard from "./ClientSectionCard";
 import { formatTimeMs, getProjectStats } from "../../utils/projectStats";
+import { getReadableColorText } from "../../constants/colors";
 
 function StatTile({ label, value, color }) {
   return (
@@ -13,6 +14,7 @@ function StatTile({ label, value, color }) {
 export default function ClientProgressCard({ color, progress, project, statusLabel }) {
   const stats = getProjectStats(project);
   const isCompleted = project?.status === "termine";
+  const accentTextColor = getReadableColorText(color);
 
   return (
     <ClientSectionCard
@@ -20,7 +22,7 @@ export default function ClientProgressCard({ color, progress, project, statusLab
       right={
         <div
           style={{
-            color: "#fff",
+            color: accentTextColor,
             fontSize: 15,
             fontWeight: 800,
             fontFamily: "monospace",
@@ -29,7 +31,7 @@ export default function ClientProgressCard({ color, progress, project, statusLab
             borderRadius: 999,
             padding: "7px 10px",
             flexShrink: 0,
-            textShadow: "0 1px 2px rgba(0,0,0,0.30)",
+            textShadow: accentTextColor === "#fff" ? "0 1px 2px rgba(0,0,0,0.30)" : "none",
           }}
         >
           {progress}%

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { loadClientMessages, sendClientMessage } from "../../services/clientPortalStore";
 import { isSupabaseConfigured, supabase } from "../../services/supabaseClient";
 import ClientSectionCard from "./ClientSectionCard";
+import { getReadableColorText } from "../../constants/colors";
 
 const formatMessageTime = (value) => {
   if (!value) return "";
@@ -47,6 +48,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
     ? document.querySelector('[data-kaleido-screen="true"][data-kaleido-theme]')?.getAttribute("data-kaleido-theme")
     : undefined;
   const portalTheme = themeMode || inheritedTheme || undefined;
+  const accentTextColor = getReadableColorText(color);
 
   const scrollMessagesToBottom = (target = "all") => {
     const pairs = target === "compact"
@@ -200,7 +202,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
                     maxWidth: expanded ? "86%" : "82%",
                     borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
                     background: mine ? `linear-gradient(135deg, ${color.bg}, ${color.light})` : "var(--k-muted-fill-2)",
-                    color: mine ? "#fff" : "var(--k-text)",
+                    color: mine ? accentTextColor : "var(--k-text)",
                     padding: "10px 12px",
                     fontSize: 13,
                     lineHeight: 1.38,
@@ -238,7 +240,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
                     </button>
                   ) : null}
                   {message.body ? <div>{message.body}</div> : null}
-                  <div style={{ color: mine ? "rgba(255,255,255,0.72)" : "var(--k-muted-3)", fontSize: 10, marginTop: 5 }}>
+                  <div style={{ color: mine ? (accentTextColor === "#fff" ? "rgba(255,255,255,0.72)" : "rgba(31,41,55,0.72)") : "var(--k-muted-3)", fontSize: 10, marginTop: 5 }}>
                     {formatMessageTime(message.created_at)}
                   </div>
                 </div>
@@ -322,7 +324,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
             border: `1px solid ${color.light}33`,
             borderRadius: 14,
             background: `linear-gradient(135deg, ${color.bg}, ${color.light})`,
-            color: "#fff",
+            color: accentTextColor,
             padding: "12px 13px",
             fontSize: 13,
             fontWeight: 800,
@@ -487,13 +489,13 @@ export default function ClientChatPreview({ project, color, publicView = false, 
             <div
               style={{
                 background: shareToken ? `linear-gradient(135deg, ${color.bg}, ${color.light})` : "rgba(251,191,36,0.12)",
-                color: shareToken ? "#fff" : "#FBBF24",
+                color: shareToken ? accentTextColor : "#FBBF24",
                 borderRadius: 999,
                 padding: "6px 10px",
                 fontSize: 11,
                 fontWeight: 800,
                 border: `1px solid ${shareToken ? `${color.bg}44` : "rgba(251,191,36,0.18)"}`,
-                textShadow: shareToken ? "0 1px 2px rgba(0,0,0,0.30)" : "none",
+                textShadow: shareToken && accentTextColor === "#fff" ? "0 1px 2px rgba(0,0,0,0.30)" : "none",
               }}
             >
               {shareToken ? "Actif" : "Lien requis"}
