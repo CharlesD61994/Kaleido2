@@ -261,14 +261,33 @@ export default function useEdgeSwipeBack({
   }, [currentView]);
 
   useEffect(() => {
+    let nativeBackTimer = 0;
+    let nativeBackFrame = 0;
+
     const handleNativeEdgeBack = () => {
       if (currentView === VIEWS.PDF_VIEWER) {
-        navigateToHub();
+        window.clearTimeout(nativeBackTimer);
+        window.cancelAnimationFrame(nativeBackFrame);
+        setEdgeSwipeActive(true);
+        setEdgeSwipeDragging(false);
+        setEdgeSwipeProgress(0);
+        nativeBackFrame = window.requestAnimationFrame(() => {
+          setEdgeSwipeProgress(1);
+        });
+        nativeBackTimer = window.setTimeout(() => {
+          navigateToHub();
+          window.setTimeout(() => {
+            setEdgeSwipeActive(false);
+            setEdgeSwipeProgress(0);
+          }, 80);
+        }, 180);
       }
     };
 
     window.addEventListener("kaleido-native-edge-back", handleNativeEdgeBack);
     return () => {
+      window.clearTimeout(nativeBackTimer);
+      window.cancelAnimationFrame(nativeBackFrame);
       window.removeEventListener("kaleido-native-edge-back", handleNativeEdgeBack);
     };
   }, [currentView, navigateToHub]);
