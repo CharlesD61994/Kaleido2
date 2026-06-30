@@ -134,25 +134,11 @@ export default function LibraryScreen({
           }
         }}
       />
-      {showLibraryImportModal && (
-        <ImportPdfModal
-          onClose={() => setShowLibraryImportModal(false)}
-          onCreate={handleCreatePdfPatron}
-        />
-      )}
       {photoTarget && photoTarget.context === "patron" && (
         <PhotoCropModal
           existingImage={(database.patrons || []).find((patron) => patron.id === photoTarget.id)?.image}
           onClose={() => setPhotoTarget(null)}
           onConfirm={async (imgData) => { await persistPatronImageToIndexedDB(photoTarget.id, imgData); setPhotoTarget(null); }}
-        />
-      )}
-      {editingPdfPatron && (
-        <EditPdfPatronModal
-          key={`${editingPdfPatron.id}-${(editingPdfPatron.pdfParties || []).length}`}
-          patron={editingPdfPatron}
-          onClose={() => setEditingPdfPatron(null)}
-          onSave={(updates) => { updatePatron(editingPdfPatron.id, updates); setEditingPdfPatron(null); }}
         />
       )}
     </div>
