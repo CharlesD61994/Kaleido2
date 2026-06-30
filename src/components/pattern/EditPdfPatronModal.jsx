@@ -35,10 +35,14 @@ export default function EditPdfPatronModal({ patron, onClose, onSave }) {
   };
 
   return (
-    <div data-kaleido-modal-backdrop="true" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 300, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
-      <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ background: "var(--k-surface)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430, maxHeight: "90vh", overflowY: "auto", border: "1px solid #0891B244" }}>
-        <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 20px" }} />
-        <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center" }}>Modifier le patron PDF</h3>
+    <div data-kaleido-modal-backdrop="true" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 300, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)" }}>
+      <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ background: "var(--k-surface)", borderRadius: "24px 24px 0 0", width: "100%", maxWidth: 430, height: "min(90vh, calc(100vh - env(safe-area-inset-top, 0px) - 14px))", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid #0891B244" }}>
+        <div style={{ flexShrink: 0, position: "relative", padding: "16px 20px 14px", borderBottom: "1px solid var(--k-border)" }}>
+          <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 14px" }} />
+          <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: 0, textAlign: "center" }}>Modifier le patron PDF</h3>
+          <button type="button" onClick={onClose} aria-label="Fermer" style={{ position: "absolute", top: 14, right: 14, width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text)", fontSize: 20, lineHeight: 1, cursor: "pointer" }}>x</button>
+        </div>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "18px 20px 20px" }}>
 
         <div style={{ marginBottom: 14 }}>
           <label style={{ color: "#0891B2", fontSize: 11, fontFamily: "monospace", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Nom du patron</label>
@@ -102,7 +106,9 @@ export default function EditPdfPatronModal({ patron, onClose, onSave }) {
           </div>
         ) : null}
 
-        <div style={{ display: "flex", gap: 12 }}>
+        </div>
+
+        <div style={{ flexShrink: 0, display: "flex", gap: 12, padding: "12px 20px calc(env(safe-area-inset-bottom, 0px) + 18px)", borderTop: "1px solid var(--k-border)", background: "var(--k-surface)" }}>
           <button onClick={onClose} style={{ flex: 1, padding: "14px", borderRadius: 14, border: "1px solid var(--k-border)", background: "none", color: "var(--k-muted)", fontSize: 14, cursor: "pointer" }}>Annuler</button>
           <button onClick={handleSave} disabled={!name.trim()} style={{ flex: 1, padding: "14px", borderRadius: 14, border: "none", background: name.trim() ? "linear-gradient(135deg, #0891B2, #22D3EE)" : "var(--k-border-strong)", color: name.trim() ? "#fff" : "var(--k-muted-2)", fontSize: 14, fontWeight: 700, cursor: name.trim() ? "pointer" : "not-allowed" }}>
             Sauvegarder
