@@ -22,6 +22,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private var edgePanRecognizer: UIScreenEdgePanGestureRecognizer?
     private var edgeBackTriggered = false
     private var viewerBaseFrame: CGRect = .zero
+    private var pdfInteractionsFrozen = false
 
     @objc func isAvailable(_ call: CAPPluginCall) {
         call.resolve([
@@ -96,6 +97,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         DispatchQueue.main.async {
             self.pdfView?.isHidden = true
             self.resetPdfBackTransform()
+            self.setPdfInteractionsFrozen(false)
             self.overlayWindow?.isHidden = true
             call.resolve()
         }
@@ -106,10 +108,16 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         let animated = call.getBool("animated") ?? false
 
         DispatchQueue.main.async {
+            if progress > 0 {
+                self.setPdfInteractionsFrozen(true)
+            }
             if animated {
                 self.animatePdfWindowBack(to: progress)
             } else {
                 self.applyPdfWindowBackProgress(progress)
+            }
+            if progress <= 0 {
+                self.unfreezePdfInteractions(after: animated ? 0.24 : 0)
             }
             call.resolve()
         }
@@ -185,16 +193,13 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         case .began:
             edgeBackTriggered = false
             resetPdfBackTransform()
+            setPdfInteractionsFrozen(true)
             dispatchEdgeEvent("kaleido-native-edge-start")
 
         case .changed:
             guard !edgeBackTriggered else { return }
             applyPdfWindowBackProgress(progress)
             dispatchEdgeEvent("kaleido-native-edge-progress", progress: progress)
-
-            if progress >= 0.56 {
-                completeNativeBackGesture()
-            }
 
         case .ended, .cancelled, .failed:
             guard !edgeBackTriggered else { return }
@@ -204,6 +209,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
                 completeNativeBackGesture()
             } else {
                 animatePdfWindowBack(to: 0)
+                unfreezePdfInteractions(after: 0.24)
                 dispatchEdgeEvent("kaleido-native-edge-cancel")
             }
 
@@ -235,6 +241,25 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         pdfView?.alpha = 1
         if viewerBaseFrame.width > 1, viewerBaseFrame.height > 1 {
             overlayWindow?.frame = viewerBaseFrame
+        }
+    }
+
+    private func setPdfInteractionsFrozen(_ frozen: Bool) {
+        guard pdfInteractionsFrozen != frozen else { return }
+        pdfInteractionsFrozen = frozen
+        pdfView?.isUserInteractionEnabled = !frozen
+        if let scrollView = pdfView.flatMap({ findScrollView(in: $0) }) {
+            scrollView.isScrollEnabled = !frozen
+            scrollView.panGestureRecognizer.isEnabled = !frozen
+            scrollView.pinchGestureRecognizer?.isEnabled = !frozen
+        }
+    }
+
+    private func unfreezePdfInteractions(after delay: TimeInterval) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            if self.overlayWindow?.isHidden == false {
+                self.setPdfInteractionsFrozen(false)
+            }
         }
     }
 

@@ -212,7 +212,7 @@ export default function useEdgeSwipeBack({
       setEdgeSwipeProgress(nextProgress);
       syncPdfWindowBackProgress(nextProgress, false);
 
-      if (nextProgress >= COMPLETE_THRESHOLD && dy < MAX_DY && !consumed) {
+      if (currentView !== VIEWS.PDF_VIEWER && nextProgress >= COMPLETE_THRESHOLD && dy < MAX_DY && !consumed) {
         completeBack();
       }
     };
