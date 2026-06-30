@@ -49,7 +49,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         DispatchQueue.main.async {
             let view = self.ensurePdfView()
-            view.frame = self.cgRect(from: frame)
+            self.applyViewerFrame(frame)
             self.resetPdfBackTransform()
             let shouldRestoreBeforeShowing = state != nil
             view.isHidden = shouldRestoreBeforeShowing
@@ -58,13 +58,12 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             view.superview?.bringSubviewToFront(view)
             self.overlayWindow?.isHidden = false
 
-            if self.currentPdfId != pdfId || view.document == nil {
+            let isNewDocument = self.currentPdfId != pdfId || view.document == nil
+            if isNewDocument {
                 view.document = PDFDocument(data: pdfData)
                 self.currentPdfId = pdfId
-                view.autoScales = true
-                view.minScaleFactor = 0.35
-                view.maxScaleFactor = 8.0
             }
+            self.configureScaleBounds(for: view, preserveCurrentScale: !isNewDocument)
 
             print("[KALEIDO] native PDF show id=\(pdfId) frame=\(view.frame) scale=\(view.scaleFactor)")
             self.restoreState(state, in: view) {
@@ -81,10 +80,11 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
 
         DispatchQueue.main.async {
-            self.pdfView?.frame = self.cgRect(from: frame)
+            self.applyViewerFrame(frame)
             if let pdfView = self.pdfView {
                 pdfView.layer.zPosition = 10000
                 pdfView.superview?.bringSubviewToFront(pdfView)
+                self.configureScaleBounds(for: pdfView, preserveCurrentScale: true)
             }
             call.resolve()
         }
@@ -172,7 +172,6 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         case .changed:
             guard !edgeBackTriggered else { return }
-            applyPdfBackProgress(progress)
             dispatchEdgeEvent("kaleido-native-edge-progress", progress: progress)
 
             if progress >= 0.56 {
@@ -186,7 +185,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             if shouldCompleteByDistance || shouldCompleteByFlick {
                 completeNativeBackGesture()
             } else {
-                animatePdfBack(to: 0)
+                resetPdfBackTransform()
                 dispatchEdgeEvent("kaleido-native-edge-cancel")
             }
 
@@ -198,7 +197,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private func completeNativeBackGesture() {
         guard !edgeBackTriggered else { return }
         edgeBackTriggered = true
-        animatePdfBack(to: 1)
+        resetPdfBackTransform()
         dispatchEdgeEvent("kaleido-native-edge-complete")
     }
 
@@ -216,25 +215,6 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private func resetPdfBackTransform() {
         pdfView?.transform = .identity
         pdfView?.alpha = 1
-    }
-
-    private func applyPdfBackProgress(_ progress: CGFloat) {
-        guard let view = pdfView else { return }
-        let width = max(view.superview?.bounds.width ?? UIScreen.main.bounds.width, 1)
-        view.transform = CGAffineTransform(translationX: width * progress, y: 0)
-        view.alpha = 1 - (0.08 * progress)
-    }
-
-    private func animatePdfBack(to progress: CGFloat) {
-        let timing = UICubicTimingParameters(
-            controlPoint1: CGPoint(x: 0.22, y: 1),
-            controlPoint2: CGPoint(x: 0.36, y: 1)
-        )
-        let animator = UIViewPropertyAnimator(duration: 0.24, timingParameters: timing)
-        animator.addAnimations {
-            self.applyPdfBackProgress(progress)
-        }
-        animator.startAnimation()
     }
 
     private func dispatchEdgeEvent(_ name: String, progress: CGFloat? = nil) {
@@ -258,6 +238,33 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         let width = CGFloat(doubleValue(object["width"]))
         let height = CGFloat(doubleValue(object["height"]))
         return CGRect(x: x, y: y, width: width, height: height)
+    }
+
+    private func applyViewerFrame(_ object: JSObject) {
+        let targetFrame = cgRect(from: object).integral
+        guard targetFrame.width > 1, targetFrame.height > 1 else { return }
+
+        overlayWindow?.frame = targetFrame
+        overlayController?.view.frame = CGRect(origin: .zero, size: targetFrame.size)
+        pdfView?.frame = CGRect(origin: .zero, size: targetFrame.size)
+        overlayController?.view.setNeedsLayout()
+        overlayController?.view.layoutIfNeeded()
+        pdfView?.setNeedsLayout()
+        pdfView?.layoutIfNeeded()
+    }
+
+    private func configureScaleBounds(for view: PDFView, preserveCurrentScale: Bool) {
+        let currentScale = view.scaleFactor
+        view.autoScales = true
+        view.layoutIfNeeded()
+        let fittedScale = max(view.scaleFactorForSizeToFit, 0.35)
+        view.minScaleFactor = fittedScale
+        view.maxScaleFactor = max(8.0, fittedScale)
+        if preserveCurrentScale && currentScale >= fittedScale {
+            view.scaleFactor = currentScale
+        } else if view.scaleFactor < fittedScale {
+            view.scaleFactor = fittedScale
+        }
     }
 
     private func doubleValue(_ value: Any?) -> Double {
@@ -309,7 +316,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
             let scaleFactor = self.doubleValue(state["scaleFactor"])
             if scaleFactor > 0 {
-                view.scaleFactor = CGFloat(scaleFactor)
+                self.configureScaleBounds(for: view, preserveCurrentScale: true)
+                view.scaleFactor = max(CGFloat(scaleFactor), view.minScaleFactor)
             }
 
             if let scrollView = self.findScrollView(in: view) {
