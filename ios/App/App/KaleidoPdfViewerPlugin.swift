@@ -364,7 +364,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             width: targetPdfFrame.width,
             height: max(0, targetPdfFrame.origin.y)
         )
-        let pdfTopGap: CGFloat = 4
+        let pdfTopGap: CGFloat = 3
         pdfView?.frame = CGRect(
             x: targetPdfFrame.origin.x,
             y: targetPdfFrame.origin.y + pdfTopGap,
