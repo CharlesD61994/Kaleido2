@@ -364,7 +364,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             width: targetPdfFrame.width,
             height: max(0, targetPdfFrame.origin.y)
         )
-        let pdfTopGap: CGFloat = 14
+        let pdfTopGap: CGFloat = 16
         pdfView?.frame = CGRect(
             x: targetPdfFrame.origin.x,
             y: targetPdfFrame.origin.y + pdfTopGap,
@@ -755,7 +755,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         globalLabel.frame = CGRect(x: circleX, y: top, width: circleSize, height: 18)
         circleView.frame = CGRect(x: circleX, y: globalLabel.frame.maxY + 2, width: circleSize, height: circleSize)
 
-        timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 12, width: 92, height: 20)
+        timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 13, width: 92, height: 20)
         timerMenu.frame = CGRect(x: bounds.width - right - 172, y: timerButton.frame.maxY + 8, width: 172, height: 86)
         timerMenuLabel.frame = CGRect(x: 10, y: 9, width: 152, height: 24)
         timerToggleButton.frame = CGRect(x: 10, y: 43, width: 72, height: 32)
