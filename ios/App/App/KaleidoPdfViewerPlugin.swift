@@ -755,7 +755,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         globalLabel.frame = CGRect(x: circleX, y: top + 27, width: circleSize, height: 18)
         circleView.frame = CGRect(x: circleX, y: globalLabel.frame.maxY + 2, width: circleSize, height: circleSize)
 
-        timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 16, width: 92, height: 20)
+        timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 26, width: 92, height: 20)
         timerMenu.frame = CGRect(x: bounds.width - right - 172, y: timerButton.frame.maxY + 8, width: 172, height: 86)
         timerMenuLabel.frame = CGRect(x: 10, y: 9, width: 152, height: 24)
         timerToggleButton.frame = CGRect(x: 10, y: 43, width: 72, height: 32)
@@ -776,8 +776,8 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.frame = CGRect(x: countLabel.frame.minX - buttonSize - 8, y: controlsY, width: buttonSize, height: buttonSize)
         plusButton.frame = CGRect(x: countLabel.frame.maxX + 8, y: controlsY, width: buttonSize, height: buttonSize)
 
-        clientButton.frame = CGRect(x: circleView.frame.maxX + 10, y: controlsY, width: 36, height: 36)
-        unreadBadge.frame = CGRect(x: clientButton.frame.maxX - 10, y: clientButton.frame.minY - 5, width: 18, height: 16)
+        clientButton.frame = CGRect(x: circleView.frame.maxX + 10, y: controlsY + 3, width: 30, height: 30)
+        unreadBadge.frame = CGRect(x: clientButton.frame.maxX - 9, y: clientButton.frame.minY - 5, width: 17, height: 15)
     }
 
     private func configureRoundButton(_ button: UIButton, title: String, filled: Bool) {
