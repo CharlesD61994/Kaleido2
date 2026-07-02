@@ -69,6 +69,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
                 self.currentPdfId = pdfId
             }
             self.configureScaleBounds(for: view, preserveCurrentScale: !isNewDocument)
+            self.configureScrollViewInsets(for: view)
 
             print("[KALEIDO] native PDF show id=\(pdfId) frame=\(view.frame) scale=\(view.scaleFactor)")
             self.restoreState(state, in: view) {
@@ -90,6 +91,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
                 pdfView.layer.zPosition = 10000
                 pdfView.superview?.bringSubviewToFront(pdfView)
                 self.configureScaleBounds(for: pdfView, preserveCurrentScale: true)
+                self.configureScrollViewInsets(for: pdfView)
             }
             call.resolve()
         }
@@ -144,7 +146,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         view.displayDirection = .vertical
         view.usePageViewController(false)
         view.autoScales = true
-        view.displaysPageBreaks = true
+        view.displaysPageBreaks = false
+        view.pageBreakMargins = .zero
         view.isUserInteractionEnabled = true
         view.layer.zPosition = 10000
 
@@ -342,6 +345,9 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         overlayController?.view.layoutIfNeeded()
         pdfView?.setNeedsLayout()
         pdfView?.layoutIfNeeded()
+        if let pdfView = pdfView {
+            configureScrollViewInsets(for: pdfView)
+        }
     }
 
     private func pixelAlignedFrame(_ rect: CGRect) -> CGRect {
@@ -365,6 +371,14 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         } else if view.scaleFactor < fittedScale {
             view.scaleFactor = fittedScale
         }
+    }
+
+    private func configureScrollViewInsets(for view: PDFView) {
+        guard let scrollView = findScrollView(in: view) else { return }
+        scrollView.contentInset = .zero
+        scrollView.scrollIndicatorInsets = .zero
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.backgroundColor = view.backgroundColor
     }
 
     private func doubleValue(_ value: Any?) -> Double {
