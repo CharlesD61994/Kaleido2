@@ -14,9 +14,12 @@ const CLOUD_REQUEST_TIMEOUT_MS = 5000;
 const CLOUD_ERROR_LOG_INTERVAL_MS = 15000;
 const CLOUD_RETRY_BASE_MS = 3000;
 const CLOUD_RETRY_MAX_MS = 60000;
+const CLOUD_SAVE_DEBOUNCE_MS = 15000;
 
 let cloudUpsertPromise = null;
 let queuedCloudDatabase = null;
+let scheduledCloudDatabase = null;
+let scheduledCloudTimer = null;
 let cloudRetryBlockedUntil = 0;
 let consecutiveCloudFailures = 0;
 let lastCloudErrorLogAt = 0;
@@ -388,6 +391,44 @@ const cloudUpsertDatabase = async (database, options = {}) => {
   return result;
 };
 
+const clearScheduledCloudTimer = () => {
+  if (scheduledCloudTimer && typeof window !== "undefined") {
+    window.clearTimeout(scheduledCloudTimer);
+  }
+  scheduledCloudTimer = null;
+};
+
+const scheduleCloudDatabaseUpsert = (database) => {
+  if (!isSupabaseConfigured || !supabase || !hasActiveCloudUser()) return;
+
+  scheduledCloudDatabase = database;
+
+  if (typeof window === "undefined") {
+    cloudUpsertDatabase(database);
+    return;
+  }
+
+  clearScheduledCloudTimer();
+  scheduledCloudTimer = window.setTimeout(() => {
+    const nextDatabase = scheduledCloudDatabase;
+    scheduledCloudDatabase = null;
+    scheduledCloudTimer = null;
+    if (nextDatabase) cloudUpsertDatabase(nextDatabase);
+  }, CLOUD_SAVE_DEBOUNCE_MS);
+};
+
+export const flushPendingCloudDatabase = async (database, options = {}) => {
+  const { force = false } = options;
+  if (database) scheduledCloudDatabase = database;
+  clearScheduledCloudTimer();
+
+  const nextDatabase = scheduledCloudDatabase;
+  scheduledCloudDatabase = null;
+  if (!nextDatabase) return { ok: true, source: "unchanged" };
+
+  return await cloudUpsertDatabase(nextDatabase, { force });
+};
+
 export const loadCloudDatabase = async () => {
   if (!isSupabaseConfigured || !supabase || !hasActiveCloudUser()) {
     return null;
@@ -451,7 +492,7 @@ export const syncDatabaseWithCloud = async (setDatabase) => {
   const cloud = await loadCloudDatabase();
 
   if (!cloud) {
-    await cloudUpsertDatabase(local);
+    await flushPendingCloudDatabase(local, { force: true });
     syncDatabaseMediaToCloud(local);
     return { ok: true, source: "local-pushed" };
   }
@@ -466,7 +507,7 @@ export const syncDatabaseWithCloud = async (setDatabase) => {
   }
 
   if (localTime >= cloudTime) {
-    await cloudUpsertDatabase(local);
+    await flushPendingCloudDatabase(local, { force: true });
     syncDatabaseMediaToCloud(local);
     return { ok: true, source: "local-pushed" };
   }
@@ -497,7 +538,7 @@ export const saveDatabase = (data, options = {}) => {
 
   if (saved && syncCloud) {
     // On ne bloque jamais l'app sur Supabase. LocalStorage reste la source immédiate.
-    cloudUpsertDatabase(normalized);
+    scheduleCloudDatabaseUpsert(normalized);
   }
 
   return saved;

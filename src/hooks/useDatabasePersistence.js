@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   buildDatabaseFromCloudRow,
+  flushPendingCloudDatabase,
   getDatabaseCloudFingerprint,
   isCloudRowNewerThanLocal,
   loadCloudDatabase,
@@ -60,7 +61,6 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
     }
     if (saveDatabase(database)) {
       lastLocalWriteAtRef.current = Date.now();
-      syncDatabaseMediaToCloud(database);
     }
   }, [cloudReady, database]);
 
@@ -108,6 +108,7 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
     const flushDatabase = () => {
       if (saveDatabase(databaseRef.current)) {
         lastLocalWriteAtRef.current = Date.now();
+        flushPendingCloudDatabase();
         syncDatabaseMediaToCloud(databaseRef.current);
       }
     };
@@ -120,7 +121,7 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
       }
     };
 
-    const syncTimer = setInterval(syncNow, 30000);
+    const syncTimer = setInterval(syncNow, 60000);
     const channel = isSupabaseConfigured && supabase && getActiveCloudUserId()
       ? supabase
         .channel(`kaleido-backups-${getActiveCloudUserId()}-${Date.now()}`)
@@ -140,7 +141,7 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
         )
         .subscribe()
       : null;
-    const pullTimer = setInterval(pullCloudOnly, 10000);
+    const pullTimer = setInterval(pullCloudOnly, 30000);
 
     window.addEventListener("pagehide", flushDatabase);
     window.addEventListener("beforeunload", flushDatabase);
