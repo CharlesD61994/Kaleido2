@@ -336,6 +336,7 @@ export default function WorkScreens({
                 onSaveProgress={(rang, total, elapsed, extra = {}) => saveProjectProgress(currentProject.id, { rang, total, elapsedTime: elapsed, ...extra })}
                 onOpenClientPage={() => navigateToClientPage(currentProject)}
                 unreadClientMessageCount={unreadClientMessageCount}
+                themeMode={themeMode}
               />
             </Suspense>
           </WorkScreenErrorBoundary>

@@ -18,6 +18,8 @@ export default function SettingsModals({
 }) {
   const [cloudStatus, setCloudStatus] = useState(null);
   const [syncingCloud, setSyncingCloud] = useState(false);
+  const [importStatus, setImportStatus] = useState(null);
+  const [importingBackup, setImportingBackup] = useState(false);
   const themeMode = getThemeMode(database);
 
   if (!showSettingsModal) return null;
@@ -137,13 +139,19 @@ export default function SettingsModals({
     const file = event.target.files[0];
     if (!file) return;
 
+    setImportingBackup(true);
+    setImportStatus("Lecture du fichier...");
+
     try {
+      await new Promise((resolve) => window.setTimeout(resolve, 40));
       const text = await file.text();
+      setImportStatus("Analyse de la sauvegarde...");
       const data = JSON.parse(text);
       const sourceDb = data?.database && typeof data.database === "object" ? data.database : data;
 
       const pdfsToRestore = data?.pdfs || sourceDb?.pdfs || {};
       let restoredPdfCount = 0;
+      if (Object.keys(pdfsToRestore).length) setImportStatus("Restauration des PDF...");
       for (const [pdfId, pdfData] of Object.entries(pdfsToRestore)) {
         if (pdfId && typeof pdfData === "string") {
           const saved = await savePdf(pdfId, pdfData);
@@ -153,6 +161,7 @@ export default function SettingsModals({
 
       const imagesToRestore = data?.images || sourceDb?.images || {};
       let restoredImageCount = 0;
+      if (Object.keys(imagesToRestore).length) setImportStatus("Restauration des images...");
       for (const [imageId, imageData] of Object.entries(imagesToRestore)) {
         if (imageId && typeof imageData === "string") {
           const saved = await saveImage(imageId, imageData);
@@ -160,9 +169,11 @@ export default function SettingsModals({
         }
       }
 
+      setImportStatus("Application des donnees...");
       const restoredDb = importDatabase(data);
       onRestoreDatabase(restoredDb);
       event.target.value = "";
+      setImportStatus("Importation terminee.");
       const missingCount = Number(data?.backupMeta?.counts?.missingMedia || 0);
       alert([
         "Donnees restaurees avec succes.",
@@ -174,7 +185,10 @@ export default function SettingsModals({
           : "Aucun media manquant signale dans cette sauvegarde.",
       ].join("\n"));
     } catch (error) {
+      setImportStatus(null);
       alert("Erreur import : " + (error?.message || "fichier invalide"));
+    } finally {
+      setImportingBackup(false);
     }
   };
 
@@ -288,13 +302,18 @@ export default function SettingsModals({
           </div>
         </button>
 
-        <label style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", padding: "16px", borderRadius: 14, background: "linear-gradient(135deg, #05966922, #34D39922)", border: "1px solid #05966944", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }}>
+        <label style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box", padding: "16px", borderRadius: 14, background: "linear-gradient(135deg, #05966922, #34D39922)", border: "1px solid #05966944", cursor: importingBackup ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 14, opacity: importingBackup ? 0.78 : 1 }}>
           <IconBadge name="upload" tone="green" size={24} />
           <div style={{ textAlign: "left" }}>
             <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", marginBottom: 2 }}>Importer mes données</div>
             <div style={{ color: "var(--k-muted-2)", fontSize: 12, fontFamily: "'DM Sans', sans-serif" }}>Charge un fichier <strong style={{ color: "#34D399" }}>.json</strong> pour tout restaurer</div>
           </div>
-          <input type="file" accept=".json,application/json" style={{ display: "none" }} onChange={importBackup} />
+          {importStatus ? (
+            <div style={{ marginLeft: "auto", color: "#34D399", fontSize: 11, fontWeight: 800, fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}>
+              {importStatus}
+            </div>
+          ) : null}
+          <input type="file" accept=".json,application/json" disabled={importingBackup} style={{ display: "none" }} onClick={() => setImportStatus(null)} onChange={importBackup} />
         </label>
       </div>
     </div>
