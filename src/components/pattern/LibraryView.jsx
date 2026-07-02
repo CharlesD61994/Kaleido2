@@ -76,7 +76,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
                     }
                     else onEditPatron(patron);
                   }}
-                  mode="personal"
+                  mode="library"
                 />
               </div>
             ))}
