@@ -13,8 +13,8 @@ import { getActiveCloudUserId } from "../services/authStore";
 import { isSupabaseConfigured, supabase } from "../services/supabaseClient";
 
 export default function useDatabasePersistence(database, databaseRef, setDatabase) {
-  const [cloudReady, setCloudReady] = useState(!isSupabaseConfigured);
-  const skipNextSaveRef = useRef(false);
+  const [cloudReady, setCloudReady] = useState(true);
+  const skipNextSaveRef = useRef(true);
   const lastAppliedCloudRef = useRef("");
   const lastLocalWriteAtRef = useRef(0);
 

@@ -21,11 +21,63 @@ import useKaleidoAuth from "./hooks/useKaleidoAuth";
 import AuthScreen from "./components/auth/AuthScreen";
 import { getThemeMode } from "./styles/theme";
 
+const APP_RESUME_KEY = "kaleido_resume_state";
+const APP_WARM_START_KEY = "kaleido_warm_start_seen";
+
+const canUseLocalStorage = () => {
+  try {
+    return typeof localStorage !== "undefined";
+  } catch {
+    return false;
+  }
+};
+
+const readJSONStorage = (key) => {
+  if (!canUseLocalStorage()) return null;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeJSONStorage = (key, value) => {
+  if (!canUseLocalStorage()) return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // La reprise d'ecran est un confort; la sauvegarde des donnees reste separee.
+  }
+};
+
+const hasWarmStart = () => {
+  if (!canUseLocalStorage()) return false;
+  return localStorage.getItem(APP_WARM_START_KEY) === "1";
+};
+
+const markWarmStart = () => {
+  if (!canUseLocalStorage()) return;
+  try {
+    localStorage.setItem(APP_WARM_START_KEY, "1");
+  } catch {
+    // Rien a faire.
+  }
+};
+
+const findProjectById = (database, projectId) => {
+  if (projectId == null) return null;
+  return [
+    ...(database?.projectsPersonal || []),
+    ...(database?.projectsPro || []),
+  ].find((project) => String(project.id) === String(projectId)) || null;
+};
+
 function KaleidoHub({ auth }) {
   const [currentView, setCurrentView] = useState(VIEWS.HUB);
   const [prevView, setPrevView] = useState(null);
   const [viewTransition, setViewTransition] = useState('none'); // 'slide-in' | 'slide-out' | 'none'
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => !hasWarmStart());
   const [splashFading, setSplashFading] = useState(false);
   const [currentProject, setCurrentProject] = useState(null);
   const [currentPatron, setCurrentPatron] = useState(null);
@@ -39,9 +91,55 @@ function KaleidoHub({ auth }) {
   const [showSelectPatronModal, setShowSelectPatronModal] = useState(false);
   const [editingPdfPatron, setEditingPdfPatron] = useState(null);
   const databaseRef = useRef(database);
+  const didRestoreResumeStateRef = useRef(false);
+  const skipInitialResumeWriteRef = useRef(true);
 
   usePressedFeedback();
-  const { cloudReady } = useDatabasePersistence(database, databaseRef, setDatabase);
+  useDatabasePersistence(database, databaseRef, setDatabase);
+
+  useEffect(() => {
+    if (didRestoreResumeStateRef.current) return;
+    didRestoreResumeStateRef.current = true;
+
+    const resume = readJSONStorage(APP_RESUME_KEY);
+    if (!resume || typeof resume !== "object") return;
+
+    if (resume.mode === "personal" || resume.mode === "pro") {
+      setMode(resume.mode);
+    }
+
+    if (resume.view === VIEWS.LIBRARY) {
+      setCurrentView(VIEWS.LIBRARY);
+      return;
+    }
+
+    if (resume.view === VIEWS.ROW_COUNTER || resume.view === VIEWS.PDF_VIEWER || resume.view === VIEWS.CLIENT_PAGE) {
+      const project = findProjectById(database, resume.projectId);
+      if (!project) return;
+      setCurrentProject(project);
+      setPrevView(resume.prevView || VIEWS.HUB);
+      setCurrentView(resume.view);
+      return;
+    }
+
+    if (resume.view === VIEWS.PATRON_EDITOR) {
+      const patron = (database.patrons || []).find((item) => String(item.id) === String(resume.patronId));
+      if (patron) {
+        setCurrentPatron(patron);
+        setPrevView(VIEWS.LIBRARY);
+        setCurrentView(VIEWS.PATRON_EDITOR);
+        return;
+      }
+
+      const project = findProjectById(database, resume.projectId);
+      if (project) {
+        setCurrentProject(project);
+        setPrevView(VIEWS.HUB);
+        setCurrentView(VIEWS.PATRON_EDITOR);
+      }
+    }
+  }, [database]);
+
   useEffect(() => {
     if (currentProject?.id == null) return;
     const updatedProject = [
@@ -63,10 +161,38 @@ function KaleidoHub({ auth }) {
     }
   }, [database, currentPatron]);
 
+  useEffect(() => {
+    if (skipInitialResumeWriteRef.current) {
+      skipInitialResumeWriteRef.current = false;
+      return;
+    }
+
+    const resumableViews = new Set([
+      VIEWS.HUB,
+      VIEWS.LIBRARY,
+      VIEWS.PATRON_EDITOR,
+      VIEWS.ROW_COUNTER,
+      VIEWS.PDF_VIEWER,
+      VIEWS.CLIENT_PAGE,
+    ]);
+
+    if (!resumableViews.has(currentView)) return;
+
+    writeJSONStorage(APP_RESUME_KEY, {
+      view: currentView,
+      prevView,
+      mode,
+      projectId: currentProject?.id ?? null,
+      patronId: currentPatron?.id ?? null,
+      savedAt: new Date().toISOString(),
+    });
+  }, [currentPatron?.id, currentProject?.id, currentView, mode, prevView]);
+
   // Splash screen effect
   useEffect(() => {
-    const t1 = setTimeout(() => setSplashFading(true), 1800);
-    const t2 = setTimeout(() => setShowSplash(false), 2200);
+    markWarmStart();
+    const t1 = setTimeout(() => setSplashFading(true), 500);
+    const t2 = setTimeout(() => setShowSplash(false), 760);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -213,13 +339,6 @@ const {
   navigateToHub,
   navigateToLibrary,
 });
-// ─── VUE PATRON EDITOR ────────────────────────────────────
-// ─── RENDU CONDITIONNEL ───────────────────────────────────
-// ── Splash Screen ──────────────────────────────────────────────
-if (showSplash || !cloudReady) {
-return <SplashScreen fading={splashFading} themeMode={getThemeMode(database)} />;
-}
-
 const {
   activeScreenInteractiveStyle,
   clientPreviousPreviewStyle,
@@ -236,6 +355,12 @@ const {
   edgeSwipeProgress,
   prevView,
 });
+// ─── VUE PATRON EDITOR ────────────────────────────────────
+// ─── RENDU CONDITIONNEL ───────────────────────────────────
+// ── Splash Screen ──────────────────────────────────────────────
+if (showSplash) {
+return <SplashScreen fading={splashFading} themeMode={getThemeMode(database)} />;
+}
 
 return (
 <AppScreens
