@@ -53,7 +53,7 @@ export default function PdfCounterCard({
           <div style={{ position: "relative", flexShrink: 0, width: circleSize }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
               <div style={{ color: color.bg, fontSize: 13, fontFamily: "'DM Sans', sans-serif", fontWeight: 800 }}>Global</div>
-              <div style={{ position: "relative", width: circleSize, height: circleSize, filter: `drop-shadow(0 0 12px ${color.bg}3F)` }}>
+              <div style={{ position: "relative", width: circleSize, height: circleSize }}>
                 <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
                   <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth={circleStroke} fill="none" />
                   <circle
@@ -66,7 +66,7 @@ export default function PdfCounterCard({
                     strokeDasharray={circleCirc}
                     strokeDashoffset={circleCirc * (1 - pct / 100)}
                     strokeLinecap="round"
-                    style={{ transition: "stroke-dashoffset 0.52s cubic-bezier(0.22, 1, 0.36, 1)", filter: "drop-shadow(0 0 4px currentColor)" }}
+                    style={{ transition: "stroke-dashoffset 0.52s cubic-bezier(0.22, 1, 0.36, 1)" }}
                   />
                 </svg>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
@@ -116,13 +116,13 @@ export default function PdfCounterCard({
                 </button>
                 <span style={{ color: color.bg, fontSize: 14, fontFamily: "monospace", fontWeight: 800, flexShrink: 0 }}>{currentPartie ? `${rangDansPartie}/${totalPartieCourante}` : `${pct}%`}</span>
               </div>
-              <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: barHeight, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}10` }}>
-                <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${localProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${color.bg}55` }} />
+              <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: barHeight, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}18` }}>
+                <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${localProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)" }} />
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}>
                 <button onClick={decrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
                 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
-                <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 3px 10px ${color.bg}55` }}>+</button>
+                <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
               </div>
             </div>
           </div>
