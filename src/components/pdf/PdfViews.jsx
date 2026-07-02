@@ -125,7 +125,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
         ::-webkit-scrollbar{width:0} * { -webkit-tap-highlight-color: transparent; }
       `}</style>
 
-      <div style={{ flexShrink: 0, position: "relative", zIndex: 10, background: "var(--k-bg)", padding: `${IOS_READER_TOP_PADDING} 20px 0 6px` }}>
+      <div style={{ flexShrink: 0, position: "relative", zIndex: 10, background: "var(--k-bg)", padding: `${IOS_READER_TOP_PADDING} 20px 0 6px`, borderBottom: "1px solid var(--k-bg)" }}>
         <WorkProjectHeader
           timeText={formatTime(elapsedTime)}
           isTimerRunning={isTimerRunning}

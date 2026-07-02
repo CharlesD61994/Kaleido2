@@ -140,8 +140,6 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         let view = PDFView(frame: .zero)
         view.backgroundColor = UIColor(red: 0.067, green: 0.067, blue: 0.067, alpha: 1)
-        view.contentScaleFactor = UIScreen.main.scale
-        view.layer.contentsScale = UIScreen.main.scale
         view.displayMode = .singlePageContinuous
         view.displayDirection = .vertical
         view.usePageViewController(false)
@@ -168,7 +166,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         let controller = UIViewController()
         let passthroughView = KaleidoPdfOverlayView(frame: UIScreen.main.bounds)
-        passthroughView.backgroundColor = .clear
+        passthroughView.backgroundColor = UIColor(red: 0.067, green: 0.067, blue: 0.067, alpha: 1)
         controller.view = passthroughView
         let edgePan = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(handleNativeBackGesture(_:)))
         edgePan.edges = .left
@@ -178,7 +176,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         let window = UIWindow(windowScene: scene)
         window.frame = scene.coordinateSpace.bounds
         window.rootViewController = controller
-        window.backgroundColor = .clear
+        window.backgroundColor = UIColor(red: 0.067, green: 0.067, blue: 0.067, alpha: 1)
+        window.isOpaque = true
         window.windowLevel = .normal + 2
         window.isHidden = false
 
@@ -332,7 +331,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     private func applyViewerFrame(_ object: JSObject) {
-        let targetFrame = cgRect(from: object).integral
+        let targetFrame = pixelAlignedFrame(cgRect(from: object))
         guard targetFrame.width > 1, targetFrame.height > 1 else { return }
 
         viewerBaseFrame = targetFrame
@@ -343,6 +342,15 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         overlayController?.view.layoutIfNeeded()
         pdfView?.setNeedsLayout()
         pdfView?.layoutIfNeeded()
+    }
+
+    private func pixelAlignedFrame(_ rect: CGRect) -> CGRect {
+        let scale = UIScreen.main.scale
+        let x = (rect.origin.x * scale).rounded(.toNearestOrAwayFromZero) / scale
+        let y = (rect.origin.y * scale).rounded(.up) / scale
+        let maxX = ((rect.origin.x + rect.width) * scale).rounded(.down) / scale
+        let maxY = ((rect.origin.y + rect.height) * scale).rounded(.down) / scale
+        return CGRect(x: x, y: y, width: max(1, maxX - x), height: max(1, maxY - y))
     }
 
     private func configureScaleBounds(for view: PDFView, preserveCurrentScale: Bool) {
