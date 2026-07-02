@@ -747,12 +747,12 @@ final class KaleidoNativePdfHeaderView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let top = safeAreaInsets.top + 6
+        let top = safeAreaInsets.top + 3
         let left: CGFloat = 6
         let right: CGFloat = 20
         let circleSize: CGFloat = 95
         let circleX = left
-        globalLabel.frame = CGRect(x: circleX, y: top, width: circleSize, height: 18)
+        globalLabel.frame = CGRect(x: circleX, y: top + 4, width: circleSize, height: 18)
         circleView.frame = CGRect(x: circleX, y: globalLabel.frame.maxY + 6, width: circleSize, height: circleSize)
 
         timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 14, width: 92, height: 20)
