@@ -625,7 +625,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         partButton.contentHorizontalAlignment = .left
         partButton.addTarget(self, action: #selector(openPartiePicker), for: .touchUpInside)
 
-        partCountLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
+        partCountLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
         partCountLabel.textAlignment = .right
 
         progressTrack.layer.cornerRadius = 4.5
@@ -640,7 +640,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.addTarget(self, action: #selector(decrement), for: .touchUpInside)
         plusButton.addTarget(self, action: #selector(increment), for: .touchUpInside)
 
-        countLabel.font = KaleidoNativeFont.syne(size: 34, weightValue: 560, fallbackWeight: .medium)
+        countLabel.font = KaleidoNativeFont.syne(size: 34, weightValue: 620, fallbackWeight: .semibold)
         countLabel.textAlignment = .center
         countLabel.textColor = .white
 
@@ -799,7 +799,7 @@ final class KaleidoNativeCircleView: UIView {
         layer.addSublayer(progress)
         currentLabel.textAlignment = .center
         currentLabel.textColor = textColor
-        currentLabel.font = KaleidoNativeFont.syne(size: 34, weightValue: 560, fallbackWeight: .medium)
+        currentLabel.font = KaleidoNativeFont.syne(size: 34, weightValue: 620, fallbackWeight: .semibold)
         totalLabel.textAlignment = .center
         totalLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .bold)
         addSubview(currentLabel)
