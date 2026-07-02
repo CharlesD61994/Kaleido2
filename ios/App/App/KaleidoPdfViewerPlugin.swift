@@ -364,7 +364,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             width: targetPdfFrame.width,
             height: max(0, targetPdfFrame.origin.y)
         )
-        let pdfTopGap: CGFloat = 17
+        let pdfTopGap: CGFloat = 16
         pdfView?.frame = CGRect(
             x: targetPdfFrame.origin.x,
             y: targetPdfFrame.origin.y + pdfTopGap,
@@ -747,7 +747,7 @@ final class KaleidoNativePdfHeaderView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let top = safeAreaInsets.top + 12
+        let top = safeAreaInsets.top + 10
         let left: CGFloat = 6
         let right: CGFloat = 20
         let circleSize: CGFloat = 95
