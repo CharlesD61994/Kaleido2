@@ -595,11 +595,17 @@ final class KaleidoNativePdfHeaderView: UIView {
     private let countLabel = UILabel()
     private let plusButton = UIButton(type: .system)
     private let timerButton = UIButton(type: .system)
+    private let timerMenu = UIView()
+    private let timerMenuLabel = UILabel()
+    private let timerToggleButton = UIButton(type: .system)
+    private let timerResetButton = UIButton(type: .system)
     private let clientButton = UIButton(type: .system)
     private let unreadBadge = UILabel()
 
     private var localProgress: CGFloat = 0
     private var hasClient = false
+    private var isTimerMenuOpen = false
+    private var isTimerRunning = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -613,10 +619,10 @@ final class KaleidoNativePdfHeaderView: UIView {
 
     private func setup() {
         backgroundColor = background
-        clipsToBounds = true
+        clipsToBounds = false
 
         globalLabel.text = "Global"
-        globalLabel.font = KaleidoNativeFont.dmSans(size: 12, weightValue: 760, fallbackWeight: .bold)
+        globalLabel.font = KaleidoNativeFont.dmSans(size: 12.5, weightValue: 760, fallbackWeight: .bold)
         globalLabel.textAlignment = .center
 
         circleView.backgroundColor = .clear
@@ -648,7 +654,18 @@ final class KaleidoNativePdfHeaderView: UIView {
         timerButton.layer.cornerRadius = 10
         timerButton.clipsToBounds = true
         timerButton.contentEdgeInsets = UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
-        timerButton.addTarget(self, action: #selector(toggleTimer), for: .touchUpInside)
+        timerButton.addTarget(self, action: #selector(toggleTimerMenu), for: .touchUpInside)
+
+        timerMenu.layer.cornerRadius = 14
+        timerMenu.clipsToBounds = true
+        timerMenu.isHidden = true
+        timerMenuLabel.textAlignment = .center
+        timerMenuLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 18, weight: .heavy)
+        configureTimerMenuButton(timerToggleButton)
+        configureTimerMenuButton(timerResetButton)
+        timerToggleButton.addTarget(self, action: #selector(toggleTimer), for: .touchUpInside)
+        timerResetButton.addTarget(self, action: #selector(resetTimer), for: .touchUpInside)
+        [timerMenuLabel, timerToggleButton, timerResetButton].forEach(timerMenu.addSubview)
 
         clientButton.layer.cornerRadius = 10
         clientButton.clipsToBounds = true
@@ -663,7 +680,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         unreadBadge.layer.cornerRadius = 8
         unreadBadge.clipsToBounds = true
 
-        [globalLabel, circleView, partButton, partCountLabel, progressTrack, minusButton, countLabel, plusButton, timerButton, clientButton, unreadBadge].forEach(addSubview)
+        [globalLabel, circleView, partButton, partCountLabel, progressTrack, minusButton, countLabel, plusButton, timerButton, timerMenu, clientButton, unreadBadge].forEach(addSubview)
     }
 
     func update(with object: JSObject?) {
@@ -681,6 +698,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         let timeText = (object?["timeText"] as? String) ?? "00:00:00"
         let unread = intValue(object?["unreadClientMessageCount"])
         hasClient = boolValue(object?["hasClient"])
+        isTimerRunning = boolValue(object?["isTimerRunning"])
         localProgress = CGFloat(max(0, min(100, intValue(object?["localProgress"])))) / 100
 
         backgroundColor = background
@@ -699,11 +717,24 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.layer.borderColor = accent.withAlphaComponent(0.55).cgColor
         minusButton.backgroundColor = accent.withAlphaComponent(0.14)
         plusButton.backgroundColor = accent
-        timerButton.setTitle(timeText, for: .normal)
+        UIView.performWithoutAnimation {
+            timerButton.setTitle(timeText, for: .normal)
+            timerMenuLabel.text = timeText
+            timerButton.layoutIfNeeded()
+        }
         timerButton.setTitleColor(textColor, for: .normal)
-        timerButton.backgroundColor = accent.withAlphaComponent(boolValue(object?["isTimerRunning"]) ? 0.34 : 0.22)
+        timerButton.backgroundColor = isTimerRunning ? accent.withAlphaComponent(0.34) : UIColor.white.withAlphaComponent(0.08)
         timerButton.layer.borderWidth = 1
         timerButton.layer.borderColor = accentLight.withAlphaComponent(0.28).cgColor
+        timerMenu.backgroundColor = background
+        timerMenu.layer.borderWidth = 1
+        timerMenu.layer.borderColor = accentLight.withAlphaComponent(0.32).cgColor
+        timerMenuLabel.textColor = textColor
+        timerToggleButton.setTitle(isTimerRunning ? "PAUSE" : "PLAY", for: .normal)
+        timerToggleButton.backgroundColor = isTimerRunning ? UIColor(red: 0.863, green: 0.149, blue: 0.149, alpha: 1) : UIColor(red: 0.02, green: 0.588, blue: 0.412, alpha: 1)
+        timerResetButton.setTitle("RESET", for: .normal)
+        timerResetButton.backgroundColor = UIColor(red: 0.486, green: 0.227, blue: 0.929, alpha: 1)
+        timerMenu.isHidden = !isTimerMenuOpen
 
         clientButton.isHidden = !hasClient
         clientButton.backgroundColor = unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.18) : UIColor.white.withAlphaComponent(0.08)
@@ -725,6 +756,10 @@ final class KaleidoNativePdfHeaderView: UIView {
         circleView.frame = CGRect(x: circleX, y: globalLabel.frame.maxY + 2, width: circleSize, height: circleSize)
 
         timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 6, width: 92, height: 20)
+        timerMenu.frame = CGRect(x: bounds.width - right - 172, y: timerButton.frame.maxY + 8, width: 172, height: 86)
+        timerMenuLabel.frame = CGRect(x: 10, y: 9, width: 152, height: 24)
+        timerToggleButton.frame = CGRect(x: 10, y: 43, width: 72, height: 32)
+        timerResetButton.frame = CGRect(x: 90, y: 43, width: 72, height: 32)
 
         let barX = circleView.frame.maxX + 8
         let barRight = bounds.width - right
@@ -754,6 +789,13 @@ final class KaleidoNativePdfHeaderView: UIView {
         button.setTitleColor(filled ? .white : accent, for: .normal)
     }
 
+    private func configureTimerMenuButton(_ button: UIButton) {
+        button.layer.cornerRadius = 10
+        button.clipsToBounds = true
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = KaleidoNativeFont.dmSans(size: 11, weightValue: 800, fallbackWeight: .heavy)
+    }
+
     private func intValue(_ value: Any?) -> Int {
         if let int = value as? Int { return int }
         if let double = value as? Double { return Int(double) }
@@ -769,7 +811,12 @@ final class KaleidoNativePdfHeaderView: UIView {
 
     @objc private func decrement() { onAction?("decrementRang") }
     @objc private func increment() { onAction?("incrementRang") }
+    @objc private func toggleTimerMenu() {
+        isTimerMenuOpen.toggle()
+        timerMenu.isHidden = !isTimerMenuOpen
+    }
     @objc private func toggleTimer() { onAction?("toggleTimer") }
+    @objc private func resetTimer() { onAction?("resetTimer") }
     @objc private func openClient() { onAction?("openClientPage") }
     @objc private func openPartiePicker() { onAction?("openPartiePicker") }
 }
@@ -799,9 +846,9 @@ final class KaleidoNativeCircleView: UIView {
         layer.addSublayer(progress)
         currentLabel.textAlignment = .center
         currentLabel.textColor = textColor
-        currentLabel.font = KaleidoNativeFont.syne(size: 34, weightValue: 620, fallbackWeight: .semibold)
+        currentLabel.font = KaleidoNativeFont.syne(size: 33, weightValue: 620, fallbackWeight: .semibold)
         totalLabel.textAlignment = .center
-        totalLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .bold)
+        totalLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
         addSubview(currentLabel)
         addSubview(totalLabel)
     }
@@ -837,8 +884,8 @@ final class KaleidoNativeCircleView: UIView {
         progress.transform = CATransform3DMakeRotation(-CGFloat.pi / 2, 0, 0, 1)
         progress.frame = bounds
         track.frame = bounds
-        currentLabel.frame = CGRect(x: 0, y: bounds.midY - 28, width: bounds.width, height: 40)
-        totalLabel.frame = CGRect(x: 0, y: bounds.midY + 8, width: bounds.width, height: 20)
+        currentLabel.frame = CGRect(x: 0, y: bounds.midY - 30, width: bounds.width, height: 39)
+        totalLabel.frame = CGRect(x: 0, y: bounds.midY + 5, width: bounds.width, height: 20)
     }
 }
 
