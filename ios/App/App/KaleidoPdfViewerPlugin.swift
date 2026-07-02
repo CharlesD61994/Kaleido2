@@ -364,7 +364,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             width: targetPdfFrame.width,
             height: max(0, targetPdfFrame.origin.y)
         )
-        let pdfTopGap: CGFloat = 15
+        let pdfTopGap: CGFloat = 6
         pdfView?.frame = CGRect(
             x: targetPdfFrame.origin.x,
             y: targetPdfFrame.origin.y + pdfTopGap,
@@ -667,7 +667,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         timerResetButton.addTarget(self, action: #selector(resetTimer), for: .touchUpInside)
         [timerMenuLabel, timerToggleButton, timerResetButton].forEach(timerMenu.addSubview)
 
-        clientButton.layer.cornerRadius = 10
+        clientButton.layer.cornerRadius = 11
         clientButton.clipsToBounds = true
         clientButton.setImage(UIImage(systemName: "person.fill"), for: .normal)
         clientButton.tintColor = UIColor(red: 0.655, green: 0.545, blue: 0.98, alpha: 1)
@@ -738,7 +738,7 @@ final class KaleidoNativePdfHeaderView: UIView {
 
         clientButton.isHidden = !hasClient
         clientButton.backgroundColor = unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.18) : accent.withAlphaComponent(0.10)
-        clientButton.layer.borderWidth = 1.5
+        clientButton.layer.borderWidth = 1.7
         clientButton.layer.borderColor = (unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.70) : accent.withAlphaComponent(0.48)).cgColor
         unreadBadge.isHidden = !hasClient || unread <= 0
         unreadBadge.text = unread > 9 ? "9+" : "\(unread)"
@@ -776,7 +776,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.frame = CGRect(x: countLabel.frame.minX - buttonSize - 8, y: controlsY, width: buttonSize, height: buttonSize)
         plusButton.frame = CGRect(x: countLabel.frame.maxX + 8, y: controlsY, width: buttonSize, height: buttonSize)
 
-        clientButton.frame = CGRect(x: circleView.frame.maxX + 10, y: controlsY + 3, width: 30, height: 30)
+        clientButton.frame = CGRect(x: circleView.frame.maxX + 10, y: controlsY + 1, width: 34, height: 34)
         unreadBadge.frame = CGRect(x: clientButton.frame.maxX - 9, y: clientButton.frame.minY - 5, width: 17, height: 15)
     }
 
