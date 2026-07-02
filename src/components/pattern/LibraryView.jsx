@@ -54,7 +54,7 @@ export default function LibraryView({ database, onNavigateHub, onEditPatron, onN
         </div>
       </div>
       {/* Grille bulles */}
-      <div style={{ padding: "18px 16px 100px" }}>
+      <div style={{ padding: "10px 16px 100px" }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", color: "var(--k-muted-2)", padding: "60px 20px" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}><IconBadge name="yarn" tone="violet" size={24} badgeSize={52} /></div>
