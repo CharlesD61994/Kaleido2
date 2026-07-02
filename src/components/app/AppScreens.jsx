@@ -196,6 +196,7 @@ export default function AppScreens({
         unreadProjectIds={unreadProjectIds}
         updatePatron={updatePatron}
         updateProject={updateProject}
+        themeMode={themeMode}
         viewWrapStyle={viewWrapStyle}
         viewTransition={viewTransition}
       />

@@ -747,7 +747,7 @@ final class KaleidoNativePdfHeaderView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let top = max(0, safeAreaInsets.top - 8)
+        let top = max(0, safeAreaInsets.top - 12)
         let left: CGFloat = 6
         let right: CGFloat = 20
         let circleSize: CGFloat = 95
