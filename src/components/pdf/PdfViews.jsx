@@ -116,6 +116,36 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     }
   }, [elapsedTime, onSaveProgress, rang, total]);
 
+  const nativeHeaderState = React.useMemo(() => {
+    const localProgress = currentPartie && totalPartieCourante > 0
+      ? Math.round((rangDansPartie / totalPartieCourante) * 100)
+      : pct;
+    return {
+      colorBg: color.bg,
+      colorLight: color.light,
+      currentPartieName: currentPartie?.nom || "Progression",
+      totalPartieCourante,
+      rangDansPartie,
+      rang,
+      total,
+      pct,
+      localProgress,
+      timeText: formatTime(elapsedTime),
+      isTimerRunning,
+      hasClient: Boolean(project?.client),
+      unreadClientMessageCount,
+    };
+  }, [color.bg, color.light, currentPartie?.nom, elapsedTime, formatTime, isTimerRunning, pct, project?.client, rang, rangDansPartie, total, totalPartieCourante, unreadClientMessageCount]);
+
+  const handleNativePdfAction = React.useCallback((action) => {
+    if (action === "decrementRang") decrementRang();
+    if (action === "incrementRang") incrementRang();
+    if (action === "toggleTimer") toggleTimer();
+    if (action === "resetTimer") resetTimer();
+    if (action === "openClientPage" && typeof onOpenClientPage === "function") onOpenClientPage();
+    if (action === "openPartiePicker") setShowPartiePicker(true);
+  }, [decrementRang, incrementRang, onOpenClientPage, resetTimer, toggleTimer]);
+
   const hideNativePdf = showPartiePicker || showFinModal || showNextPartieModal || showPrevPartieModal;
 
   return (
@@ -183,6 +213,8 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
           pdfId={project?.pdfId}
           initialState={project?.pdfViewportState}
           hidden={hideNativePdf}
+          headerState={nativeHeaderState}
+          onAction={handleNativePdfAction}
           onUnavailable={(message) => {
             setNativePdfError(message || "Le lecteur PDF natif iOS n'a pas pu demarrer.");
             setNativePdfUnavailable(true);

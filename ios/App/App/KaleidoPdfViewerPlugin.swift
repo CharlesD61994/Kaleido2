@@ -10,6 +10,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "show", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "updateFrame", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "updateHeader", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setBackProgress", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "hide", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getState", returnType: CAPPluginReturnPromise)
@@ -18,6 +19,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private var pdfView: PDFView?
     private var overlayWindow: UIWindow?
     private var overlayController: UIViewController?
+    private var headerView: KaleidoNativePdfHeaderView?
     private var currentPdfId: String?
     private var edgePanRecognizer: UIScreenEdgePanGestureRecognizer?
     private var edgeBackTriggered = false
@@ -54,6 +56,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         DispatchQueue.main.async {
             let view = self.ensurePdfView()
+            self.updateHeaderView(call.getObject("header"))
             self.applyViewerFrame(frame)
             self.resetPdfBackTransform()
             let shouldRestoreBeforeShowing = state != nil
@@ -93,6 +96,13 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
                 self.configureScaleBounds(for: pdfView, preserveCurrentScale: true)
                 self.configureScrollViewInsets(for: pdfView)
             }
+            call.resolve()
+        }
+    }
+
+    @objc func updateHeader(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.updateHeaderView(call.getObject("header"))
             call.resolve()
         }
     }
@@ -153,6 +163,9 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         overlayController?.view.addSubview(view)
         overlayController?.view.bringSubviewToFront(view)
+        if let headerView = headerView {
+            overlayController?.view.bringSubviewToFront(headerView)
+        }
         pdfView = view
         return view
     }
@@ -334,15 +347,26 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     private func applyViewerFrame(_ object: JSObject) {
-        let targetFrame = pixelAlignedFrame(cgRect(from: object))
-        guard targetFrame.width > 1, targetFrame.height > 1 else { return }
+        let targetPdfFrame = pixelAlignedFrame(cgRect(from: object))
+        guard targetPdfFrame.width > 1, targetPdfFrame.height > 1 else { return }
 
-        viewerBaseFrame = targetFrame
-        overlayWindow?.frame = targetFrame
-        overlayController?.view.frame = CGRect(origin: .zero, size: targetFrame.size)
-        pdfView?.frame = CGRect(origin: .zero, size: targetFrame.size)
+        let sceneBounds = overlayWindow?.windowScene?.coordinateSpace.bounds
+            ?? bridge?.viewController?.view.window?.bounds
+            ?? UIScreen.main.bounds
+        viewerBaseFrame = sceneBounds
+        overlayWindow?.frame = sceneBounds
+        overlayController?.view.frame = CGRect(origin: .zero, size: sceneBounds.size)
+        headerView?.frame = CGRect(
+            x: targetPdfFrame.origin.x,
+            y: 0,
+            width: targetPdfFrame.width,
+            height: max(0, targetPdfFrame.origin.y)
+        )
+        pdfView?.frame = targetPdfFrame
         overlayController?.view.setNeedsLayout()
         overlayController?.view.layoutIfNeeded()
+        headerView?.setNeedsLayout()
+        headerView?.layoutIfNeeded()
         pdfView?.setNeedsLayout()
         pdfView?.layoutIfNeeded()
         if let pdfView = pdfView {
@@ -379,6 +403,28 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         scrollView.scrollIndicatorInsets = .zero
         scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.backgroundColor = view.backgroundColor
+    }
+
+    private func updateHeaderView(_ object: JSObject?) {
+        ensureOverlayWindow()
+        if headerView == nil {
+            let view = KaleidoNativePdfHeaderView(frame: .zero)
+            view.onAction = { [weak self] action in
+                self?.dispatchPdfAction(action)
+            }
+            overlayController?.view.addSubview(view)
+            headerView = view
+        }
+
+        headerView?.update(with: object)
+        if let headerView = headerView {
+            overlayController?.view.bringSubviewToFront(headerView)
+        }
+    }
+
+    private func dispatchPdfAction(_ action: String) {
+        let script = "window.dispatchEvent(new CustomEvent('kaleido-native-pdf-action', { detail: { action: '\(action)' } }))"
+        bridge?.webView?.evaluateJavaScript(script)
     }
 
     private func doubleValue(_ value: Any?) -> Double {
@@ -461,6 +507,279 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
 
         return nil
+    }
+}
+
+private extension UIColor {
+    static func kaleidoHex(_ value: String?) -> UIColor? {
+        guard var hex = value?.trimmingCharacters(in: .whitespacesAndNewlines), !hex.isEmpty else {
+            return nil
+        }
+        if hex.hasPrefix("#") {
+            hex.removeFirst()
+        }
+        guard hex.count == 6, let rgb = Int(hex, radix: 16) else {
+            return nil
+        }
+        return UIColor(
+            red: CGFloat((rgb >> 16) & 0xff) / 255,
+            green: CGFloat((rgb >> 8) & 0xff) / 255,
+            blue: CGFloat(rgb & 0xff) / 255,
+            alpha: 1
+        )
+    }
+}
+
+final class KaleidoNativePdfHeaderView: UIView {
+    var onAction: ((String) -> Void)?
+
+    private let background = UIColor(red: 0.035, green: 0.035, blue: 0.055, alpha: 1)
+    private var accent = UIColor(red: 0.486, green: 0.227, blue: 0.929, alpha: 1)
+    private var accentLight = UIColor(red: 0.655, green: 0.545, blue: 0.98, alpha: 1)
+
+    private let globalLabel = UILabel()
+    private let circleView = KaleidoNativeCircleView()
+    private let partButton = UIButton(type: .system)
+    private let partCountLabel = UILabel()
+    private let progressTrack = UIView()
+    private let progressFill = UIView()
+    private let minusButton = UIButton(type: .system)
+    private let countLabel = UILabel()
+    private let plusButton = UIButton(type: .system)
+    private let timerButton = UIButton(type: .system)
+    private let clientButton = UIButton(type: .system)
+    private let unreadBadge = UILabel()
+
+    private var localProgress: CGFloat = 0
+    private var hasClient = false
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+
+    private func setup() {
+        backgroundColor = background
+        clipsToBounds = true
+
+        globalLabel.text = "Global"
+        globalLabel.font = UIFont.systemFont(ofSize: 13, weight: .bold)
+        globalLabel.textAlignment = .center
+
+        circleView.backgroundColor = .clear
+
+        partButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        partButton.contentHorizontalAlignment = .left
+        partButton.addTarget(self, action: #selector(openPartiePicker), for: .touchUpInside)
+
+        partCountLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .bold)
+        partCountLabel.textAlignment = .right
+
+        progressTrack.layer.cornerRadius = 4.5
+        progressTrack.clipsToBounds = true
+        progressTrack.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        progressFill.layer.cornerRadius = 4.5
+        progressFill.clipsToBounds = true
+        progressTrack.addSubview(progressFill)
+
+        configureRoundButton(minusButton, title: "-", filled: false)
+        configureRoundButton(plusButton, title: "+", filled: true)
+        minusButton.addTarget(self, action: #selector(decrement), for: .touchUpInside)
+        plusButton.addTarget(self, action: #selector(increment), for: .touchUpInside)
+
+        countLabel.font = UIFont(name: "Syne-Bold", size: 32) ?? UIFont.systemFont(ofSize: 32, weight: .bold)
+        countLabel.textAlignment = .center
+        countLabel.textColor = .white
+
+        timerButton.titleLabel?.font = UIFont.monospacedDigitSystemFont(ofSize: 12, weight: .heavy)
+        timerButton.layer.cornerRadius = 10
+        timerButton.clipsToBounds = true
+        timerButton.contentEdgeInsets = UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
+        timerButton.addTarget(self, action: #selector(toggleTimer), for: .touchUpInside)
+
+        clientButton.layer.cornerRadius = 10
+        clientButton.clipsToBounds = true
+        clientButton.setImage(UIImage(systemName: "person.fill"), for: .normal)
+        clientButton.tintColor = UIColor(red: 0.655, green: 0.545, blue: 0.98, alpha: 1)
+        clientButton.addTarget(self, action: #selector(openClient), for: .touchUpInside)
+
+        unreadBadge.font = UIFont.systemFont(ofSize: 9, weight: .heavy)
+        unreadBadge.textColor = .white
+        unreadBadge.backgroundColor = UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 1)
+        unreadBadge.textAlignment = .center
+        unreadBadge.layer.cornerRadius = 8
+        unreadBadge.clipsToBounds = true
+
+        [globalLabel, circleView, partButton, partCountLabel, progressTrack, minusButton, countLabel, plusButton, timerButton, clientButton, unreadBadge].forEach(addSubview)
+    }
+
+    func update(with object: JSObject?) {
+        accent = UIColor.kaleidoHex(object?["colorBg"] as? String) ?? accent
+        accentLight = UIColor.kaleidoHex(object?["colorLight"] as? String) ?? accentLight
+        let partName = (object?["currentPartieName"] as? String) ?? "Progression"
+        let rang = intValue(object?["rang"])
+        let total = intValue(object?["total"])
+        let partRang = intValue(object?["rangDansPartie"])
+        let partTotal = intValue(object?["totalPartieCourante"])
+        let pct = max(0, min(100, intValue(object?["pct"])))
+        let timeText = (object?["timeText"] as? String) ?? "00:00:00"
+        let unread = intValue(object?["unreadClientMessageCount"])
+        hasClient = boolValue(object?["hasClient"])
+        localProgress = CGFloat(max(0, min(100, intValue(object?["localProgress"])))) / 100
+
+        globalLabel.textColor = accent
+        circleView.update(accent: accent, accentLight: accentLight, current: rang, total: total, percent: CGFloat(pct) / 100)
+        partButton.setTitle(partName, for: .normal)
+        partButton.setTitleColor(accent, for: .normal)
+        partCountLabel.text = partTotal > 0 ? "\(partRang)/\(partTotal)" : "\(pct)%"
+        partCountLabel.textColor = accent
+        countLabel.text = partTotal > 0 ? "\(partRang)" : "\(rang)"
+        progressFill.backgroundColor = accent
+
+        minusButton.setTitleColor(accent, for: .normal)
+        minusButton.layer.borderColor = accent.withAlphaComponent(0.55).cgColor
+        minusButton.backgroundColor = accent.withAlphaComponent(0.14)
+        plusButton.backgroundColor = accent
+        timerButton.setTitle(timeText, for: .normal)
+        timerButton.setTitleColor(.white, for: .normal)
+        timerButton.backgroundColor = accent.withAlphaComponent(boolValue(object?["isTimerRunning"]) ? 0.34 : 0.22)
+        timerButton.layer.borderWidth = 1
+        timerButton.layer.borderColor = accentLight.withAlphaComponent(0.28).cgColor
+
+        clientButton.isHidden = !hasClient
+        clientButton.backgroundColor = unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.18) : UIColor.white.withAlphaComponent(0.08)
+        clientButton.layer.borderWidth = 1
+        clientButton.layer.borderColor = (unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.58) : UIColor.white.withAlphaComponent(0.15)).cgColor
+        unreadBadge.isHidden = !hasClient || unread <= 0
+        unreadBadge.text = unread > 9 ? "9+" : "\(unread)"
+        setNeedsLayout()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let top = max(44, safeAreaInsets.top + 14)
+        let left: CGFloat = 6
+        let right: CGFloat = 20
+        let circleSize: CGFloat = 95
+        let circleX = left + 7
+        globalLabel.frame = CGRect(x: circleX, y: top + 4, width: circleSize, height: 18)
+        circleView.frame = CGRect(x: circleX, y: globalLabel.frame.maxY + 2, width: circleSize, height: circleSize)
+
+        timerButton.frame = CGRect(x: bounds.width - right - 92, y: top, width: 92, height: 22)
+
+        let barX = circleView.frame.maxX + 8
+        let barRight = bounds.width - right
+        let barY = circleView.frame.minY + 47
+        partButton.frame = CGRect(x: barX, y: barY - 31, width: max(60, barRight - barX - 54), height: 26)
+        partCountLabel.frame = CGRect(x: barRight - 52, y: barY - 31, width: 52, height: 26)
+        progressTrack.frame = CGRect(x: barX, y: barY, width: max(20, barRight - barX), height: 9)
+        progressFill.frame = CGRect(x: 0, y: 0, width: progressTrack.bounds.width * localProgress, height: progressTrack.bounds.height)
+
+        let buttonSize: CGFloat = 40
+        let controlsY = progressTrack.frame.maxY + 13
+        let centerX = barX + (progressTrack.frame.width / 2)
+        countLabel.frame = CGRect(x: centerX - 20, y: controlsY + 2, width: 40, height: 36)
+        minusButton.frame = CGRect(x: countLabel.frame.minX - buttonSize - 8, y: controlsY, width: buttonSize, height: buttonSize)
+        plusButton.frame = CGRect(x: countLabel.frame.maxX + 8, y: controlsY, width: buttonSize, height: buttonSize)
+
+        clientButton.frame = CGRect(x: circleView.frame.maxX + 10, y: controlsY, width: 36, height: 36)
+        unreadBadge.frame = CGRect(x: clientButton.frame.maxX - 10, y: clientButton.frame.minY - 5, width: 18, height: 16)
+    }
+
+    private func configureRoundButton(_ button: UIButton, title: String, filled: Bool) {
+        button.setTitle(title, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+        button.layer.cornerRadius = 20
+        button.clipsToBounds = true
+        button.layer.borderWidth = filled ? 0 : 1.5
+        button.setTitleColor(filled ? .white : accent, for: .normal)
+    }
+
+    private func intValue(_ value: Any?) -> Int {
+        if let int = value as? Int { return int }
+        if let double = value as? Double { return Int(double) }
+        if let number = value as? NSNumber { return number.intValue }
+        return 0
+    }
+
+    private func boolValue(_ value: Any?) -> Bool {
+        if let bool = value as? Bool { return bool }
+        if let number = value as? NSNumber { return number.boolValue }
+        return false
+    }
+
+    @objc private func decrement() { onAction?("decrementRang") }
+    @objc private func increment() { onAction?("incrementRang") }
+    @objc private func toggleTimer() { onAction?("toggleTimer") }
+    @objc private func openClient() { onAction?("openClientPage") }
+    @objc private func openPartiePicker() { onAction?("openPartiePicker") }
+}
+
+final class KaleidoNativeCircleView: UIView {
+    private let track = CAShapeLayer()
+    private let progress = CAShapeLayer()
+    private let currentLabel = UILabel()
+    private let totalLabel = UILabel()
+    private var accent = UIColor(red: 0.486, green: 0.227, blue: 0.929, alpha: 1)
+    private var percent: CGFloat = 0
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+
+    private func setup() {
+        layer.addSublayer(track)
+        layer.addSublayer(progress)
+        currentLabel.textAlignment = .center
+        currentLabel.textColor = .white
+        currentLabel.font = UIFont(name: "Syne-Bold", size: 32) ?? UIFont.systemFont(ofSize: 32, weight: .bold)
+        totalLabel.textAlignment = .center
+        totalLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .bold)
+        addSubview(currentLabel)
+        addSubview(totalLabel)
+    }
+
+    func update(accent: UIColor, accentLight: UIColor, current: Int, total: Int, percent: CGFloat) {
+        self.accent = accent
+        self.percent = max(0, min(1, percent))
+        currentLabel.text = "\(current)"
+        totalLabel.text = "/ \(total > 0 ? "\(total)" : "-")"
+        totalLabel.textColor = accent
+        progress.strokeColor = accent.cgColor
+        setNeedsLayout()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let rect = bounds.insetBy(dx: 7, dy: 7)
+        let path = UIBezierPath(ovalIn: rect)
+        track.path = path.cgPath
+        track.fillColor = UIColor.clear.cgColor
+        track.strokeColor = UIColor.white.withAlphaComponent(0.12).cgColor
+        track.lineWidth = 6
+        progress.path = path.cgPath
+        progress.fillColor = UIColor.clear.cgColor
+        progress.strokeColor = accent.cgColor
+        progress.lineWidth = 6
+        progress.lineCap = .round
+        progress.strokeStart = 0
+        progress.strokeEnd = percent
+        progress.transform = CATransform3DMakeRotation(-CGFloat.pi / 2, 0, 0, 1)
+        progress.frame = bounds
+        track.frame = bounds
+        currentLabel.frame = CGRect(x: 0, y: bounds.midY - 24, width: bounds.width, height: 34)
+        totalLabel.frame = CGRect(x: 0, y: bounds.midY + 8, width: bounds.width, height: 20)
     }
 }
 

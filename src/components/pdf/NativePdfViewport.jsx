@@ -7,6 +7,7 @@ import {
   isNativePdfViewerTarget,
   showNativePdf,
   updateNativePdfFrame,
+  updateNativePdfHeader,
 } from "../../services/nativePdfViewer";
 
 const getViewportFrame = (element) => {
@@ -26,11 +27,12 @@ const waitForLayout = () =>
     });
   });
 
-export default function NativePdfViewport({ pdfId, initialState, hidden = false, onUnavailable, onStateChange }) {
+export default function NativePdfViewport({ pdfId, initialState, hidden = false, headerState = null, onAction, onUnavailable, onStateChange }) {
   const hostRef = React.useRef(null);
   const activeRef = React.useRef(false);
   const onUnavailableRef = React.useRef(onUnavailable);
   const onStateChangeRef = React.useRef(onStateChange);
+  const onActionRef = React.useRef(onAction);
   const initialStateRef = React.useRef(initialState);
   const lastSavedStateRef = React.useRef("");
   const [nativeError, setNativeError] = React.useState("");
@@ -42,6 +44,10 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
   React.useEffect(() => {
     onStateChangeRef.current = onStateChange;
   }, [onStateChange]);
+
+  React.useEffect(() => {
+    onActionRef.current = onAction;
+  }, [onAction]);
 
   const saveState = React.useCallback(async () => {
     if (!activeRef.current) return;
@@ -87,6 +93,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
           pdfId,
           data,
           frame: getViewportFrame(hostRef.current),
+          header: headerState || null,
           state: initialStateRef.current || null,
         });
         activeRef.current = true;
@@ -109,6 +116,23 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
       });
     };
   }, [hidden, pdfId, saveState]);
+
+  React.useEffect(() => {
+    if (!isNativePdfViewerTarget() || hidden || !pdfId || !headerState) return undefined;
+    updateNativePdfHeader({ header: headerState }).catch(() => {});
+    return undefined;
+  }, [headerState, hidden, pdfId]);
+
+  React.useEffect(() => {
+    const handleNativeAction = (event) => {
+      const action = event?.detail?.action;
+      if (action && typeof onActionRef.current === "function") {
+        onActionRef.current(action);
+      }
+    };
+    window.addEventListener("kaleido-native-pdf-action", handleNativeAction);
+    return () => window.removeEventListener("kaleido-native-pdf-action", handleNativeAction);
+  }, []);
 
   React.useEffect(() => {
     if (!isNativePdfViewerTarget() || hidden || !pdfId || !hostRef.current) return undefined;
