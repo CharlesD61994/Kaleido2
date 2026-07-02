@@ -640,7 +640,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.addTarget(self, action: #selector(decrement), for: .touchUpInside)
         plusButton.addTarget(self, action: #selector(increment), for: .touchUpInside)
 
-        countLabel.font = KaleidoNativeFont.syne(size: 30, weightValue: 700, fallbackWeight: .bold)
+        countLabel.font = KaleidoNativeFont.syne(size: 30, weightValue: 650, fallbackWeight: .semibold)
         countLabel.textAlignment = .center
         countLabel.textColor = .white
 
@@ -799,7 +799,7 @@ final class KaleidoNativeCircleView: UIView {
         layer.addSublayer(progress)
         currentLabel.textAlignment = .center
         currentLabel.textColor = textColor
-        currentLabel.font = KaleidoNativeFont.syne(size: 30, weightValue: 700, fallbackWeight: .bold)
+        currentLabel.font = KaleidoNativeFont.syne(size: 30, weightValue: 650, fallbackWeight: .semibold)
         totalLabel.textAlignment = .center
         totalLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .bold)
         addSubview(currentLabel)
