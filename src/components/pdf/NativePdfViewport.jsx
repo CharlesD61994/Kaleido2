@@ -49,8 +49,9 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
     onActionRef.current = onAction;
   }, [onAction]);
 
-  const saveState = React.useCallback(async () => {
+  const saveState = React.useCallback(async ({ force = false } = {}) => {
     if (!activeRef.current) return;
+    if (!force && document.visibilityState && document.visibilityState !== "visible") return;
     try {
       const state = await getNativePdfState();
       if (state && typeof onStateChangeRef.current === "function") {
@@ -119,6 +120,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
 
   React.useEffect(() => {
     if (!isNativePdfViewerTarget() || hidden || !pdfId || !headerState) return undefined;
+    if (document.visibilityState && document.visibilityState !== "visible") return undefined;
     updateNativePdfHeader({ header: headerState }).catch(() => {});
     return undefined;
   }, [headerState, hidden, pdfId]);
@@ -140,6 +142,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
     let frameHandle = 0;
     const updateFrame = () => {
       if (!hostRef.current) return;
+      if (document.visibilityState && document.visibilityState !== "visible") return;
       window.cancelAnimationFrame(frameHandle);
       frameHandle = window.requestAnimationFrame(() => {
         updateNativePdfFrame({ frame: getViewportFrame(hostRef.current) }).catch(() => {});
@@ -164,7 +167,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
 
   React.useEffect(() => {
     if (!hidden) return undefined;
-    saveState().finally(() => {
+    saveState({ force: true }).finally(() => {
       activeRef.current = false;
       hideNativePdf();
     });
@@ -173,7 +176,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
 
   React.useEffect(() => {
     const saveWhenLeaving = () => {
-      saveState();
+      saveState({ force: true });
     };
 
     document.addEventListener("visibilitychange", saveWhenLeaving);
@@ -187,6 +190,7 @@ export default function NativePdfViewport({ pdfId, initialState, hidden = false,
   React.useEffect(() => {
     if (hidden || !pdfId) return undefined;
     const interval = window.setInterval(() => {
+      if (document.visibilityState && document.visibilityState !== "visible") return;
       saveState();
     }, 1800);
     return () => window.clearInterval(interval);

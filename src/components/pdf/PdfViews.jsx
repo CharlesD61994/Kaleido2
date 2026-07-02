@@ -116,11 +116,22 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     }
   }, [elapsedTime, onSaveProgress, rang, total]);
 
+  const nativeThemeMode = typeof document !== "undefined"
+    ? document.documentElement.getAttribute("data-kaleido-theme")
+      || document.querySelector("[data-kaleido-theme]")?.getAttribute("data-kaleido-theme")
+      || "light"
+    : "light";
+
   const nativeHeaderState = React.useMemo(() => {
     const localProgress = currentPartie && totalPartieCourante > 0
       ? Math.round((rangDansPartie / totalPartieCourante) * 100)
       : pct;
+    const isLightTheme = nativeThemeMode !== "dark";
     return {
+      themeMode: nativeThemeMode,
+      backgroundColor: isLightTheme ? "#F7F4FB" : "#0D0D1A",
+      textColor: isLightTheme ? "#14111F" : "#FFFFFF",
+      trackColor: isLightTheme ? "#E5E0EA" : "#242432",
       colorBg: color.bg,
       colorLight: color.light,
       currentPartieName: currentPartie?.nom || "Progression",
@@ -135,7 +146,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
       hasClient: Boolean(project?.client),
       unreadClientMessageCount,
     };
-  }, [color.bg, color.light, currentPartie?.nom, elapsedTime, formatTime, isTimerRunning, pct, project?.client, rang, rangDansPartie, total, totalPartieCourante, unreadClientMessageCount]);
+  }, [color.bg, color.light, currentPartie?.nom, elapsedTime, formatTime, isTimerRunning, nativeThemeMode, pct, project?.client, rang, rangDansPartie, total, totalPartieCourante, unreadClientMessageCount]);
 
   const handleNativePdfAction = React.useCallback((action) => {
     if (action === "decrementRang") decrementRang();

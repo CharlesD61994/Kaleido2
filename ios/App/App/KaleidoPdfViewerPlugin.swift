@@ -21,6 +21,7 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
     private var overlayController: UIViewController?
     private var headerView: KaleidoNativePdfHeaderView?
     private var currentPdfId: String?
+    private var currentNativeBackground = UIColor(red: 0.067, green: 0.067, blue: 0.067, alpha: 1)
     private var edgePanRecognizer: UIScreenEdgePanGestureRecognizer?
     private var edgeBackTriggered = false
     private var viewerBaseFrame: CGRect = .zero
@@ -362,7 +363,13 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
             width: targetPdfFrame.width,
             height: max(0, targetPdfFrame.origin.y)
         )
-        pdfView?.frame = targetPdfFrame
+        let pdfTopGap: CGFloat = 18
+        pdfView?.frame = CGRect(
+            x: targetPdfFrame.origin.x,
+            y: targetPdfFrame.origin.y + pdfTopGap,
+            width: targetPdfFrame.width,
+            height: max(1, targetPdfFrame.height - pdfTopGap)
+        )
         overlayController?.view.setNeedsLayout()
         overlayController?.view.layoutIfNeeded()
         headerView?.setNeedsLayout()
@@ -417,6 +424,13 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
 
         headerView?.update(with: object)
+        currentNativeBackground = headerView?.currentBackgroundColor ?? currentNativeBackground
+        overlayWindow?.backgroundColor = currentNativeBackground
+        overlayController?.view.backgroundColor = currentNativeBackground
+        pdfView?.backgroundColor = currentNativeBackground
+        if let pdfView = pdfView {
+            configureScrollViewInsets(for: pdfView)
+        }
         if let headerView = headerView {
             overlayController?.view.bringSubviewToFront(headerView)
         }
@@ -532,8 +546,13 @@ private extension UIColor {
 
 final class KaleidoNativePdfHeaderView: UIView {
     var onAction: ((String) -> Void)?
+    var currentBackgroundColor: UIColor {
+        background
+    }
 
-    private let background = UIColor(red: 0.035, green: 0.035, blue: 0.055, alpha: 1)
+    private var background = UIColor(red: 0.035, green: 0.035, blue: 0.055, alpha: 1)
+    private var textColor = UIColor.white
+    private var trackColor = UIColor.white.withAlphaComponent(0.12)
     private var accent = UIColor(red: 0.486, green: 0.227, blue: 0.929, alpha: 1)
     private var accentLight = UIColor(red: 0.655, green: 0.545, blue: 0.98, alpha: 1)
 
@@ -568,12 +587,12 @@ final class KaleidoNativePdfHeaderView: UIView {
         clipsToBounds = true
 
         globalLabel.text = "Global"
-        globalLabel.font = UIFont.systemFont(ofSize: 13, weight: .bold)
+        globalLabel.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         globalLabel.textAlignment = .center
 
         circleView.backgroundColor = .clear
 
-        partButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        partButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         partButton.contentHorizontalAlignment = .left
         partButton.addTarget(self, action: #selector(openPartiePicker), for: .touchUpInside)
 
@@ -582,7 +601,7 @@ final class KaleidoNativePdfHeaderView: UIView {
 
         progressTrack.layer.cornerRadius = 4.5
         progressTrack.clipsToBounds = true
-        progressTrack.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        progressTrack.backgroundColor = trackColor
         progressFill.layer.cornerRadius = 4.5
         progressFill.clipsToBounds = true
         progressTrack.addSubview(progressFill)
@@ -592,7 +611,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.addTarget(self, action: #selector(decrement), for: .touchUpInside)
         plusButton.addTarget(self, action: #selector(increment), for: .touchUpInside)
 
-        countLabel.font = UIFont(name: "Syne-Bold", size: 32) ?? UIFont.systemFont(ofSize: 32, weight: .bold)
+        countLabel.font = UIFont(name: "Syne-Bold", size: 30) ?? UIFont.systemFont(ofSize: 30, weight: .bold)
         countLabel.textAlignment = .center
         countLabel.textColor = .white
 
@@ -619,6 +638,9 @@ final class KaleidoNativePdfHeaderView: UIView {
     }
 
     func update(with object: JSObject?) {
+        background = UIColor.kaleidoHex(object?["backgroundColor"] as? String) ?? background
+        textColor = UIColor.kaleidoHex(object?["textColor"] as? String) ?? textColor
+        trackColor = UIColor.kaleidoHex(object?["trackColor"] as? String) ?? trackColor
         accent = UIColor.kaleidoHex(object?["colorBg"] as? String) ?? accent
         accentLight = UIColor.kaleidoHex(object?["colorLight"] as? String) ?? accentLight
         let partName = (object?["currentPartieName"] as? String) ?? "Progression"
@@ -632,13 +654,16 @@ final class KaleidoNativePdfHeaderView: UIView {
         hasClient = boolValue(object?["hasClient"])
         localProgress = CGFloat(max(0, min(100, intValue(object?["localProgress"])))) / 100
 
+        backgroundColor = background
+        progressTrack.backgroundColor = trackColor
         globalLabel.textColor = accent
-        circleView.update(accent: accent, accentLight: accentLight, current: rang, total: total, percent: CGFloat(pct) / 100)
+        circleView.update(accent: accent, accentLight: accentLight, textColor: textColor, trackColor: trackColor, current: rang, total: total, percent: CGFloat(pct) / 100)
         partButton.setTitle(partName, for: .normal)
         partButton.setTitleColor(accent, for: .normal)
         partCountLabel.text = partTotal > 0 ? "\(partRang)/\(partTotal)" : "\(pct)%"
         partCountLabel.textColor = accent
         countLabel.text = partTotal > 0 ? "\(partRang)" : "\(rang)"
+        countLabel.textColor = textColor
         progressFill.backgroundColor = accent
 
         minusButton.setTitleColor(accent, for: .normal)
@@ -646,7 +671,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.backgroundColor = accent.withAlphaComponent(0.14)
         plusButton.backgroundColor = accent
         timerButton.setTitle(timeText, for: .normal)
-        timerButton.setTitleColor(.white, for: .normal)
+        timerButton.setTitleColor(textColor, for: .normal)
         timerButton.backgroundColor = accent.withAlphaComponent(boolValue(object?["isTimerRunning"]) ? 0.34 : 0.22)
         timerButton.layer.borderWidth = 1
         timerButton.layer.borderColor = accentLight.withAlphaComponent(0.28).cgColor
@@ -726,6 +751,8 @@ final class KaleidoNativeCircleView: UIView {
     private let currentLabel = UILabel()
     private let totalLabel = UILabel()
     private var accent = UIColor(red: 0.486, green: 0.227, blue: 0.929, alpha: 1)
+    private var textColor = UIColor.white
+    private var trackColor = UIColor.white.withAlphaComponent(0.12)
     private var percent: CGFloat = 0
 
     override init(frame: CGRect) {
@@ -742,18 +769,21 @@ final class KaleidoNativeCircleView: UIView {
         layer.addSublayer(track)
         layer.addSublayer(progress)
         currentLabel.textAlignment = .center
-        currentLabel.textColor = .white
-        currentLabel.font = UIFont(name: "Syne-Bold", size: 32) ?? UIFont.systemFont(ofSize: 32, weight: .bold)
+        currentLabel.textColor = textColor
+        currentLabel.font = UIFont(name: "Syne-Bold", size: 30) ?? UIFont.systemFont(ofSize: 30, weight: .bold)
         totalLabel.textAlignment = .center
         totalLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .bold)
         addSubview(currentLabel)
         addSubview(totalLabel)
     }
 
-    func update(accent: UIColor, accentLight: UIColor, current: Int, total: Int, percent: CGFloat) {
+    func update(accent: UIColor, accentLight: UIColor, textColor: UIColor, trackColor: UIColor, current: Int, total: Int, percent: CGFloat) {
         self.accent = accent
+        self.textColor = textColor
+        self.trackColor = trackColor
         self.percent = max(0, min(1, percent))
         currentLabel.text = "\(current)"
+        currentLabel.textColor = textColor
         totalLabel.text = "/ \(total > 0 ? "\(total)" : "-")"
         totalLabel.textColor = accent
         progress.strokeColor = accent.cgColor
@@ -766,7 +796,7 @@ final class KaleidoNativeCircleView: UIView {
         let path = UIBezierPath(ovalIn: rect)
         track.path = path.cgPath
         track.fillColor = UIColor.clear.cgColor
-        track.strokeColor = UIColor.white.withAlphaComponent(0.12).cgColor
+        track.strokeColor = trackColor.cgColor
         track.lineWidth = 6
         progress.path = path.cgPath
         progress.fillColor = UIColor.clear.cgColor
