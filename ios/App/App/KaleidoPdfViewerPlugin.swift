@@ -752,8 +752,8 @@ final class KaleidoNativePdfHeaderView: UIView {
         let right: CGFloat = 20
         let circleSize: CGFloat = 95
         let circleX = left
-        globalLabel.frame = CGRect(x: circleX, y: top + 4, width: circleSize, height: 18)
-        circleView.frame = CGRect(x: circleX, y: globalLabel.frame.maxY + 6, width: circleSize, height: circleSize)
+        globalLabel.frame = CGRect(x: circleX, y: top + 31, width: circleSize, height: 18)
+        circleView.frame = CGRect(x: circleX, y: globalLabel.frame.maxY + 2, width: circleSize, height: circleSize)
 
         timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 14, width: 92, height: 20)
         timerMenu.frame = CGRect(x: bounds.width - right - 172, y: timerButton.frame.maxY + 8, width: 172, height: 86)
@@ -763,7 +763,7 @@ final class KaleidoNativePdfHeaderView: UIView {
 
         let barX = circleView.frame.maxX + 8
         let barRight = bounds.width - right
-        let barY = circleView.frame.minY + 47
+        let barY = top + 75
         partButton.frame = CGRect(x: barX, y: barY - 31, width: max(60, barRight - barX - 54), height: 26)
         partCountLabel.frame = CGRect(x: barRight - 52, y: barY - 31, width: 52, height: 26)
         progressTrack.frame = CGRect(x: barX, y: barY, width: max(20, barRight - barX), height: 9)
