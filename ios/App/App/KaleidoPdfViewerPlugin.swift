@@ -640,7 +640,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.addTarget(self, action: #selector(decrement), for: .touchUpInside)
         plusButton.addTarget(self, action: #selector(increment), for: .touchUpInside)
 
-        countLabel.font = KaleidoNativeFont.syne(size: 32, weightValue: 560, fallbackWeight: .medium)
+        countLabel.font = KaleidoNativeFont.syne(size: 34, weightValue: 560, fallbackWeight: .medium)
         countLabel.textAlignment = .center
         countLabel.textColor = .white
 
@@ -737,7 +737,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         let buttonSize: CGFloat = 40
         let controlsY = progressTrack.frame.maxY + 13
         let centerX = barX + (progressTrack.frame.width / 2)
-        countLabel.frame = CGRect(x: centerX - 22, y: controlsY + 1, width: 44, height: 38)
+        countLabel.frame = CGRect(x: centerX - 24, y: controlsY - 1, width: 48, height: 42)
         minusButton.frame = CGRect(x: countLabel.frame.minX - buttonSize - 8, y: controlsY, width: buttonSize, height: buttonSize)
         plusButton.frame = CGRect(x: countLabel.frame.maxX + 8, y: controlsY, width: buttonSize, height: buttonSize)
 
@@ -799,7 +799,7 @@ final class KaleidoNativeCircleView: UIView {
         layer.addSublayer(progress)
         currentLabel.textAlignment = .center
         currentLabel.textColor = textColor
-        currentLabel.font = KaleidoNativeFont.syne(size: 32, weightValue: 560, fallbackWeight: .medium)
+        currentLabel.font = KaleidoNativeFont.syne(size: 34, weightValue: 560, fallbackWeight: .medium)
         totalLabel.textAlignment = .center
         totalLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .bold)
         addSubview(currentLabel)
@@ -837,7 +837,7 @@ final class KaleidoNativeCircleView: UIView {
         progress.transform = CATransform3DMakeRotation(-CGFloat.pi / 2, 0, 0, 1)
         progress.frame = bounds
         track.frame = bounds
-        currentLabel.frame = CGRect(x: 0, y: bounds.midY - 26, width: bounds.width, height: 36)
+        currentLabel.frame = CGRect(x: 0, y: bounds.midY - 28, width: bounds.width, height: 40)
         totalLabel.frame = CGRect(x: 0, y: bounds.midY + 8, width: bounds.width, height: 20)
     }
 }
