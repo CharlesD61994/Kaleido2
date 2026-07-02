@@ -22,6 +22,44 @@ export default function SettingsModals({
 
   if (!showSettingsModal) return null;
 
+  const downloadBackupFile = async (content, fileName) => {
+    const blob = new Blob([content], { type: "application/json" });
+    const file = typeof File !== "undefined"
+      ? new File([blob], fileName, { type: "application/json" })
+      : null;
+
+    const shareApi = typeof navigator !== "undefined" ? navigator : null;
+    if (
+      file
+      && shareApi?.canShare?.({ files: [file] })
+      && shareApi?.share
+    ) {
+      try {
+        await shareApi.share({
+          files: [file],
+          title: "Sauvegarde Kaleido",
+          text: "Sauvegarde JSON Kaleido",
+        });
+        return "shared";
+      } catch (error) {
+        if (error?.name === "AbortError") return "cancelled";
+      }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.style.display = "none";
+    document.body.appendChild(anchor);
+    anchor.click();
+    window.setTimeout(() => {
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+    }, 1200);
+    return "downloaded";
+  };
+
   const exportBackup = async () => {
     try {
       const allProjects = [...(database.projectsPersonal || []), ...(database.projectsPro || [])];
@@ -78,18 +116,8 @@ export default function SettingsModals({
       };
 
       const fullExport = JSON.stringify({ ...database, pdfs, images, backupMeta });
-      const blob = new Blob([fullExport], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `kaleido-backup-${new Date().toISOString().split("T")[0]}.json`;
-      anchor.style.display = "none";
-      document.body.appendChild(anchor);
-      anchor.click();
-      window.setTimeout(() => {
-        document.body.removeChild(anchor);
-        URL.revokeObjectURL(url);
-      }, 1200);
+      const fileName = `kaleido-backup-${new Date().toISOString().split("T")[0]}.json`;
+      await downloadBackupFile(fullExport, fileName);
 
       window.setTimeout(() => {
         alert([

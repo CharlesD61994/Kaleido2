@@ -43,9 +43,11 @@ export default function ClientSummaryCard({ project, color, clientInitial, onEdi
           <div style={{ color: "var(--k-text)", fontSize: 21, fontWeight: 800, fontFamily: "'Syne', sans-serif", lineHeight: 1.06, overflowWrap: "anywhere" }}>
             {project?.client || "Client sans nom"}
           </div>
-          <div style={{ color: "var(--k-muted)", fontSize: 13, marginTop: 5, overflowWrap: "anywhere" }}>
-            {project?.email || "Aucun courriel"}
-          </div>
+          {!publicView && (
+            <div style={{ color: "var(--k-muted)", fontSize: 13, marginTop: 5, overflowWrap: "anywhere" }}>
+              {project?.email || "Aucun courriel"}
+            </div>
+          )}
         </div>
 
         {!publicView && (
