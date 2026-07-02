@@ -1,4 +1,5 @@
 import Capacitor
+import CoreText
 import PDFKit
 import UIKit
 
@@ -544,6 +545,34 @@ private extension UIColor {
     }
 }
 
+private enum KaleidoNativeFont {
+    private static let variationAttribute = UIFontDescriptor.AttributeName(kCTFontVariationAttribute as String)
+
+    static func dmSans(size: CGFloat, weightValue: CGFloat = 700, fallbackWeight: UIFont.Weight = .bold) -> UIFont {
+        variableFont(name: "DMSans-9ptRegular", size: size, weightValue: weightValue, fallbackWeight: fallbackWeight)
+    }
+
+    static func syne(size: CGFloat, weightValue: CGFloat = 700, fallbackWeight: UIFont.Weight = .bold) -> UIFont {
+        variableFont(name: "Syne-Regular", size: size, weightValue: weightValue, fallbackWeight: fallbackWeight)
+    }
+
+    private static func variableFont(name: String, size: CGFloat, weightValue: CGFloat, fallbackWeight: UIFont.Weight) -> UIFont {
+        guard UIFont(name: name, size: size) != nil else {
+            return UIFont.systemFont(ofSize: size, weight: fallbackWeight)
+        }
+
+        let descriptor = UIFontDescriptor(fontAttributes: [
+            .name: name,
+            variationAttribute: [axis("wght"): weightValue],
+        ])
+        return UIFont(descriptor: descriptor, size: size)
+    }
+
+    private static func axis(_ tag: String) -> Int {
+        tag.utf8.reduce(0) { ($0 << 8) + Int($1) }
+    }
+}
+
 final class KaleidoNativePdfHeaderView: UIView {
     var onAction: ((String) -> Void)?
     var currentBackgroundColor: UIColor {
@@ -587,12 +616,12 @@ final class KaleidoNativePdfHeaderView: UIView {
         clipsToBounds = true
 
         globalLabel.text = "Global"
-        globalLabel.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        globalLabel.font = KaleidoNativeFont.dmSans(size: 13, weightValue: 800, fallbackWeight: .heavy)
         globalLabel.textAlignment = .center
 
         circleView.backgroundColor = .clear
 
-        partButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        partButton.titleLabel?.font = KaleidoNativeFont.dmSans(size: 16, weightValue: 800, fallbackWeight: .heavy)
         partButton.contentHorizontalAlignment = .left
         partButton.addTarget(self, action: #selector(openPartiePicker), for: .touchUpInside)
 
@@ -611,7 +640,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.addTarget(self, action: #selector(decrement), for: .touchUpInside)
         plusButton.addTarget(self, action: #selector(increment), for: .touchUpInside)
 
-        countLabel.font = UIFont(name: "Syne-Bold", size: 30) ?? UIFont.systemFont(ofSize: 30, weight: .bold)
+        countLabel.font = KaleidoNativeFont.syne(size: 30, weightValue: 700, fallbackWeight: .bold)
         countLabel.textAlignment = .center
         countLabel.textColor = .white
 
@@ -718,7 +747,7 @@ final class KaleidoNativePdfHeaderView: UIView {
 
     private func configureRoundButton(_ button: UIButton, title: String, filled: Bool) {
         button.setTitle(title, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+        button.titleLabel?.font = KaleidoNativeFont.dmSans(size: 22, weightValue: 800, fallbackWeight: .heavy)
         button.layer.cornerRadius = 20
         button.clipsToBounds = true
         button.layer.borderWidth = filled ? 0 : 1.5
@@ -770,7 +799,7 @@ final class KaleidoNativeCircleView: UIView {
         layer.addSublayer(progress)
         currentLabel.textAlignment = .center
         currentLabel.textColor = textColor
-        currentLabel.font = UIFont(name: "Syne-Bold", size: 30) ?? UIFont.systemFont(ofSize: 30, weight: .bold)
+        currentLabel.font = KaleidoNativeFont.syne(size: 30, weightValue: 700, fallbackWeight: .bold)
         totalLabel.textAlignment = .center
         totalLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .bold)
         addSubview(currentLabel)
