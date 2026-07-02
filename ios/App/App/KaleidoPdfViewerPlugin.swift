@@ -616,16 +616,16 @@ final class KaleidoNativePdfHeaderView: UIView {
         clipsToBounds = true
 
         globalLabel.text = "Global"
-        globalLabel.font = KaleidoNativeFont.dmSans(size: 13, weightValue: 800, fallbackWeight: .heavy)
+        globalLabel.font = KaleidoNativeFont.dmSans(size: 12, weightValue: 760, fallbackWeight: .bold)
         globalLabel.textAlignment = .center
 
         circleView.backgroundColor = .clear
 
-        partButton.titleLabel?.font = KaleidoNativeFont.dmSans(size: 16, weightValue: 800, fallbackWeight: .heavy)
+        partButton.titleLabel?.font = KaleidoNativeFont.dmSans(size: 16, weightValue: 700, fallbackWeight: .bold)
         partButton.contentHorizontalAlignment = .left
         partButton.addTarget(self, action: #selector(openPartiePicker), for: .touchUpInside)
 
-        partCountLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .bold)
+        partCountLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
         partCountLabel.textAlignment = .right
 
         progressTrack.layer.cornerRadius = 4.5
