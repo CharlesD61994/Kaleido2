@@ -546,7 +546,7 @@ private extension UIColor {
 }
 
 private enum KaleidoNativeFont {
-    private static let variationAttribute = UIFontDescriptor.AttributeName(kCTFontVariationAttribute as String)
+    private static let variationAttribute = UIFontDescriptor.AttributeName(rawValue: kCTFontVariationAttribute as String)
 
     static func dmSans(size: CGFloat, weightValue: CGFloat = 700, fallbackWeight: UIFont.Weight = .bold) -> UIFont {
         variableFont(name: "DMSans-9ptRegular", size: size, weightValue: weightValue, fallbackWeight: fallbackWeight)
