@@ -631,7 +631,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         partButton.contentHorizontalAlignment = .left
         partButton.addTarget(self, action: #selector(openPartiePicker), for: .touchUpInside)
 
-        partCountLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13.5, weight: .semibold)
+        partCountLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 13.5, weight: .medium)
         partCountLabel.textAlignment = .right
 
         progressTrack.layer.cornerRadius = 4.5
@@ -737,9 +737,9 @@ final class KaleidoNativePdfHeaderView: UIView {
         timerMenu.isHidden = !isTimerMenuOpen
 
         clientButton.isHidden = !hasClient
-        clientButton.backgroundColor = unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.18) : UIColor.white.withAlphaComponent(0.08)
-        clientButton.layer.borderWidth = 1
-        clientButton.layer.borderColor = (unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.58) : UIColor.white.withAlphaComponent(0.15)).cgColor
+        clientButton.backgroundColor = unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.18) : accent.withAlphaComponent(0.10)
+        clientButton.layer.borderWidth = 1.5
+        clientButton.layer.borderColor = (unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.70) : accent.withAlphaComponent(0.48)).cgColor
         unreadBadge.isHidden = !hasClient || unread <= 0
         unreadBadge.text = unread > 9 ? "9+" : "\(unread)"
         setNeedsLayout()
@@ -755,7 +755,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         globalLabel.frame = CGRect(x: circleX, y: top + 27, width: circleSize, height: 18)
         circleView.frame = CGRect(x: circleX, y: globalLabel.frame.maxY + 2, width: circleSize, height: circleSize)
 
-        timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 14, width: 92, height: 20)
+        timerButton.frame = CGRect(x: bounds.width - right - 92, y: top + 16, width: 92, height: 20)
         timerMenu.frame = CGRect(x: bounds.width - right - 172, y: timerButton.frame.maxY + 8, width: 172, height: 86)
         timerMenuLabel.frame = CGRect(x: 10, y: 9, width: 152, height: 24)
         timerToggleButton.frame = CGRect(x: 10, y: 43, width: 72, height: 32)
