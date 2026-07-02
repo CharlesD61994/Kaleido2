@@ -747,7 +747,7 @@ final class KaleidoNativePdfHeaderView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let top = safeAreaInsets.top + 12
+        let top = safeAreaInsets.top + 6
         let left: CGFloat = 6
         let right: CGFloat = 20
         let circleSize: CGFloat = 95
@@ -770,7 +770,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         progressFill.frame = CGRect(x: 0, y: 0, width: progressTrack.bounds.width * localProgress, height: progressTrack.bounds.height)
 
         let buttonSize: CGFloat = 40
-        let controlsY = progressTrack.frame.maxY + 13
+        let controlsY = progressTrack.frame.maxY + 11
         let centerX = barX + (progressTrack.frame.width / 2)
         countLabel.frame = CGRect(x: centerX - 24, y: controlsY - 1, width: 48, height: 42)
         minusButton.frame = CGRect(x: countLabel.frame.minX - buttonSize - 8, y: controlsY, width: buttonSize, height: buttonSize)
