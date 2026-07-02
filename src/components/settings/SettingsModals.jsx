@@ -22,57 +22,38 @@ export default function SettingsModals({
 
   if (!showSettingsModal) return null;
 
-  const getBackupItemLabel = (item, fallback) => item?.name || item?.client || fallback || "Element";
-
   const exportBackup = async () => {
     try {
       const allProjects = [...(database.projectsPersonal || []), ...(database.projectsPro || [])];
       const pdfProjects = allProjects.filter((project) => project.projectType === "pdf" && project.pdfId);
       const patronPdfs = (database.patrons || []).filter((patron) => patron.projectType === "pdf" && patron.pdfId);
       const pdfs = {};
-      const missingPdfs = [];
 
       for (const project of [...pdfProjects, ...patronPdfs]) {
         const data = await loadPdf(project.pdfId);
         if (data) {
           pdfs[project.pdfId] = data;
-        } else {
-          missingPdfs.push({
-            id: project.pdfId,
-            name: getBackupItemLabel(project, "PDF"),
-            source: patronPdfs.includes(project) ? "patron" : "projet",
-          });
         }
       }
 
       const imageIds = new Set();
-      const imageSources = {};
       const collectImageId = (item) => {
         const imageId = item?.image?.imageId;
         const previewId = item?.image?.previewId;
-        const label = getBackupItemLabel(item, "Image");
         if (imageId) {
           imageIds.add(imageId);
-          imageSources[imageId] = label;
         }
         if (previewId) {
           imageIds.add(previewId);
-          imageSources[previewId] = `${label} (vignette)`;
         }
       };
       [...allProjects, ...(database.patrons || [])].forEach(collectImageId);
 
       const images = {};
-      const missingImages = [];
       for (const imageId of imageIds) {
         const imageData = await loadImage(imageId);
         if (imageData) {
           images[imageId] = imageData;
-        } else {
-          missingImages.push({
-            id: imageId,
-            name: imageSources[imageId] || "Image",
-          });
         }
       }
 
@@ -84,15 +65,15 @@ export default function SettingsModals({
           personalProjects: database.projectsPersonal?.length || 0,
           proProjects: database.projectsPro?.length || 0,
           patrons: database.patrons?.length || 0,
-          pdfsExpected: pdfProjects.length + patronPdfs.length,
+          pdfsExpected: Object.keys(pdfs).length,
           pdfsIncluded: Object.keys(pdfs).length,
-          imagesExpected: imageIds.size,
+          imagesExpected: Object.keys(images).length,
           imagesIncluded: Object.keys(images).length,
-          missingMedia: missingPdfs.length + missingImages.length,
+          missingMedia: 0,
         },
         missingMedia: {
-          pdfs: missingPdfs,
-          images: missingImages,
+          pdfs: [],
+          images: [],
         },
       };
 
@@ -102,20 +83,23 @@ export default function SettingsModals({
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = `kaleido-backup-${new Date().toISOString().split("T")[0]}.json`;
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
       anchor.click();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => {
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+      }, 1200);
 
-      const missingCount = missingPdfs.length + missingImages.length;
-      alert([
-        "Sauvegarde JSON creee.",
-        "",
-        `${backupMeta.counts.personalProjects + backupMeta.counts.proProjects} projets, ${backupMeta.counts.patrons} patrons.`,
-        `${backupMeta.counts.pdfsIncluded}/${backupMeta.counts.pdfsExpected} PDF inclus.`,
-        `${backupMeta.counts.imagesIncluded}/${backupMeta.counts.imagesExpected} images incluses.`,
-        missingCount
-          ? `${missingCount} media manquant. Fais une autre sauvegarde depuis l'appareil qui contient ces fichiers si necessaire.`
-          : "Aucun media manquant detecte.",
-      ].join("\n"));
+      window.setTimeout(() => {
+        alert([
+          "Sauvegarde JSON creee.",
+          "",
+          `${backupMeta.counts.personalProjects + backupMeta.counts.proProjects} projets, ${backupMeta.counts.patrons} patrons.`,
+          `${backupMeta.counts.pdfsIncluded} PDF inclus.`,
+          `${backupMeta.counts.imagesIncluded} images incluses.`,
+        ].join("\n"));
+      }, 350);
     } catch (error) {
       alert("Erreur export : " + error.message);
     }

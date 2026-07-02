@@ -41,7 +41,6 @@ export default function ClientChatPreview({ project, color, publicView = false, 
   const [attachment, setAttachment] = useState(null);
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const fileInputRef = useRef(null);
   const compactMessagesRef = useRef(null);
   const fullscreenMessagesRef = useRef(null);
   const inheritedTheme = typeof document !== "undefined"
@@ -306,14 +305,12 @@ export default function ClientChatPreview({ project, color, publicView = false, 
       <div style={{ display: "grid", gridTemplateColumns: publicView ? "1fr" : "auto 1fr", gap: 10 }}>
         {!publicView ? (
           <>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={choosePhoto} style={{ display: "none" }} />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              style={{ border: "1px solid var(--k-client-secondary-border)", borderRadius: 14, background: "var(--k-client-secondary-bg)", color: "var(--k-client-secondary-color)", padding: "12px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer" }}
+            <label
+              style={{ border: "1px solid var(--k-client-secondary-border)", borderRadius: 14, background: "var(--k-client-secondary-bg)", color: "var(--k-client-secondary-color)", padding: "12px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", minWidth: 0 }}
             >
               Photo
-            </button>
+              <input type="file" accept="image/*" onChange={choosePhoto} style={{ display: "none" }} />
+            </label>
           </>
         ) : null}
         <button
@@ -364,7 +361,17 @@ export default function ClientChatPreview({ project, color, publicView = false, 
         }}
       >
         {renderMessages(expanded)}
-        <div style={{ display: "grid", gap: 12, padding: expanded ? "0 16px 16px" : 0 }}>
+        <div
+          style={{
+            display: "grid",
+            gap: 12,
+            padding: expanded
+              ? "0 max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px))"
+              : 0,
+            boxSizing: "border-box",
+            minWidth: 0,
+          }}
+        >
           {renderComposer()}
         </div>
       </div>
@@ -483,7 +490,6 @@ export default function ClientChatPreview({ project, color, publicView = false, 
     <>
       <ClientSectionCard
         title="Messages"
-        subtitle={publicView ? "Ecrivez ici si vous avez une question." : "Conversation liee au lien client."}
         right={
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <div

@@ -14,8 +14,9 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
     continuesFromPrevious: index > 0 && partie.continuesFromPrevious === true,
   })));
   const [colorPickerPartie, setColorPickerPartie] = useState(null);
+  const getRandomColorIdx = () => Math.floor(Math.random() * KALEIDOSCOPE_COLORS.length);
 
-  const addPartie = () => setParties((prev) => [...prev, { id: Date.now(), nom: "", rangs: "", colorIdx: prev.length % KALEIDOSCOPE_COLORS.length, continuesFromPrevious: false }]);
+  const addPartie = () => setParties((prev) => [...prev, { id: Date.now(), nom: "", rangs: "", colorIdx: getRandomColorIdx(), continuesFromPrevious: false }]);
   const updatePartie = (id, field, value) => setParties((prev) => prev.map((partie) => (partie.id === id ? { ...partie, [field]: value } : partie)));
   const removePartie = (id) => setParties((prev) => prev.filter((partie) => partie.id !== id));
   const totalFromParties = parties.reduce((sum, partie) => sum + (parseInt(partie.rangs) || 0), 0);

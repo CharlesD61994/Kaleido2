@@ -140,6 +140,8 @@ public class KaleidoPdfViewerPlugin: CAPPlugin, CAPBridgedPlugin {
 
         let view = PDFView(frame: .zero)
         view.backgroundColor = UIColor(red: 0.067, green: 0.067, blue: 0.067, alpha: 1)
+        view.contentScaleFactor = UIScreen.main.scale
+        view.layer.contentsScale = UIScreen.main.scale
         view.displayMode = .singlePageContinuous
         view.displayDirection = .vertical
         view.usePageViewController(false)

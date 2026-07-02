@@ -92,7 +92,7 @@ export default function PublicClientPage({ project }) {
         <ClientPageHeader project={project} color={color} publicView />
         <ClientSummaryCard project={project} color={color} clientInitial={clientInitial} publicView />
 
-        <ClientSectionCard title="Informations client" subtitle="Informations liées à votre projet.">
+        <ClientSectionCard title="Informations client">
           <ClientInfoRow label="Nom" value={project?.client} />
           <ClientInfoRow label="Projet associé" value={project?.name} />
         </ClientSectionCard>

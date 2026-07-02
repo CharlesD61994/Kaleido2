@@ -56,7 +56,6 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
 
         <ClientSectionCard
           title="Informations client"
-          subtitle="Données utilisées pour le suivi du projet et le futur espace client."
         >
           <ClientInfoRow label="Nom" value={project?.client} />
           <ClientInfoRow label="Courriel" value={project?.email} />
