@@ -49,8 +49,8 @@
 	<string>UIStatusBarStyleLightContent</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Fonts/DMSans.ttf</string>
-		<string>Fonts/Syne.ttf</string>
+		<string>DMSans.ttf</string>
+		<string>Syne.ttf</string>
 	</array>
 </dict>
 </plist>
