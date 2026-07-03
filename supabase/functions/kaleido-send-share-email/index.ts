@@ -20,18 +20,18 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ ok: false, reason: "Methode non supportee." }, 405);
+    return jsonResponse({ ok: false, reason: "Méthode non supportée." });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const serviceRoleKey = getServiceRoleKey();
   if (!supabaseUrl || !serviceRoleKey) {
-    return jsonResponse({ ok: false, reason: "Secrets Supabase manquants." }, 500);
+    return jsonResponse({ ok: false, reason: "Secrets Supabase manquants." });
   }
 
   const { shareToken } = await req.json().catch(() => ({}));
   if (!shareToken) {
-    return jsonResponse({ ok: false, reason: "Lien client incomplet." }, 400);
+    return jsonResponse({ ok: false, reason: "Lien client incomplet." });
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     .maybeSingle<ClientProjectRow>();
 
   if (projectError || !projectRow?.project_json) {
-    return jsonResponse({ ok: false, reason: projectError?.message || "Fiche client introuvable." }, 404);
+    return jsonResponse({ ok: false, reason: projectError?.message || "Fiche client introuvable." });
   }
 
   const project = projectRow.project_json;
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
     return jsonResponse({
       ...emailResult,
       missing: "client_email",
-    }, 502);
+    });
   }
 
   return jsonResponse({ ok: true });
