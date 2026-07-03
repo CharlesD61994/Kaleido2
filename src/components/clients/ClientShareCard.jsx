@@ -101,7 +101,7 @@ export default function ClientShareCard({ project, color, onPublishClientProject
             flexShrink: 0,
           }}
         >
-          {hasLink ? "Pret" : "A publier"}
+          {hasLink ? "Prêt" : "À publier"}
         </div>
       }
     >
