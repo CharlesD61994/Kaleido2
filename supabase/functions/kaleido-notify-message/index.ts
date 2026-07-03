@@ -30,7 +30,7 @@ const escapeHtml = (value: string) => value
 const excerpt = (message: ClientMessage) => {
   const body = String(message.body || "").trim();
   if (body) return body.length > 220 ? `${body.slice(0, 217)}...` : body;
-  return message.attachment_url ? "Photo envoyee" : "Nouveau message";
+  return message.attachment_url ? "Photo envoyée" : "Nouveau message";
 };
 
 Deno.serve(async (req) => {
@@ -87,15 +87,15 @@ Deno.serve(async (req) => {
 
   if (message.sender === "owner") {
     if (projectRow.client_message_emails_enabled === false) {
-      return jsonResponse({ ok: true, skipped: true, reason: "Notifications message desactivees par le client." });
+      return jsonResponse({ ok: true, skipped: true, reason: "Notifications message désactivées par le client." });
     }
 
     recipient = String(project.email || "").trim();
     subject = `Nouveau message pour ${projectName}`;
-    text = `Bonjour ${clientName},\n\nVous avez recu un nouveau message au sujet de votre projet ${projectName}.\n\n${messageExcerpt}\n\nConsulter la fiche client : ${shareUrl}\n\nL'Atelier Kaleido`;
+    text = `Bonjour ${clientName},\n\nVous avez reçu un nouveau message au sujet de votre projet ${projectName}.\n\n${messageExcerpt}\n\nConsulter la fiche client : ${shareUrl}\n\nL'Atelier Kaleido`;
     html = `
       <p>Bonjour ${escapeHtml(clientName)},</p>
-      <p>Vous avez recu un nouveau message au sujet de votre projet <strong>${escapeHtml(projectName)}</strong>.</p>
+      <p>Vous avez reçu un nouveau message au sujet de votre projet <strong>${escapeHtml(projectName)}</strong>.</p>
       <blockquote style="border-left:3px solid #8B5CF6;padding-left:12px;color:#4B5563;">${escapeHtml(messageExcerpt)}</blockquote>
       <p><a href="${shareUrl}">Ouvrir la fiche client</a></p>
       <p>L'Atelier Kaleido</p>
@@ -111,9 +111,9 @@ Deno.serve(async (req) => {
 
     recipient = ownerEmail.trim();
     subject = `Nouveau message client - ${projectName}`;
-    text = `${clientName} a envoye un message pour ${projectName}.\n\n${messageExcerpt}\n\nFiche client : ${shareUrl}`;
+    text = `${clientName} a envoyé un message pour ${projectName}.\n\n${messageExcerpt}\n\nFiche client : ${shareUrl}`;
     html = `
-      <p><strong>${escapeHtml(clientName)}</strong> a envoye un message pour <strong>${escapeHtml(projectName)}</strong>.</p>
+      <p><strong>${escapeHtml(clientName)}</strong> a envoyé un message pour <strong>${escapeHtml(projectName)}</strong>.</p>
       <blockquote style="border-left:3px solid #8B5CF6;padding-left:12px;color:#4B5563;">${escapeHtml(messageExcerpt)}</blockquote>
       <p><a href="${shareUrl}">Ouvrir la fiche client</a></p>
     `;

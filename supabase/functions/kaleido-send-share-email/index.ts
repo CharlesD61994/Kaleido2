@@ -54,12 +54,12 @@ Deno.serve(async (req) => {
   const text = [
     `Bonjour ${clientName},`,
     "",
-    "Merci d'encourager un artisan d'ici! C'est un plaisir de realiser ce projet avec vous.",
+    "Merci d'encourager un artisan d'ici! C'est un plaisir de réaliser ce projet avec vous.",
     "",
-    "Vous pouvez suivre son avancement et communiquer facilement avec moi en tout temps a l'aide du lien suivant :",
+    "Vous pouvez suivre son avancement et communiquer facilement avec moi en tout temps à l'aide du lien suivant :",
     shareUrl,
     "",
-    "N'hesitez pas a me poser vos questions tout au long du projet. Il me fera plaisir d'y repondre.",
+    "N'hésitez pas à me poser vos questions tout au long du projet. Il me fera plaisir d'y répondre.",
     "",
     "Merci beaucoup,",
     "L'Atelier Kaleido",
@@ -67,10 +67,10 @@ Deno.serve(async (req) => {
 
   const html = `
     <p>Bonjour ${escapeHtml(clientName)},</p>
-    <p>Merci d'encourager un artisan d'ici! C'est un plaisir de realiser ce projet avec vous.</p>
-    <p>Vous pouvez suivre son avancement et communiquer facilement avec moi en tout temps a l'aide du lien suivant :</p>
+    <p>Merci d'encourager un artisan d'ici! C'est un plaisir de réaliser ce projet avec vous.</p>
+    <p>Vous pouvez suivre son avancement et communiquer facilement avec moi en tout temps à l'aide du lien suivant :</p>
     <p><a href="${shareUrl}">Ouvrir la fiche client</a></p>
-    <p>N'hesitez pas a me poser vos questions tout au long du projet. Il me fera plaisir d'y repondre.</p>
+    <p>N'hésitez pas à me poser vos questions tout au long du projet. Il me fera plaisir d'y répondre.</p>
     <p>Merci beaucoup,<br/>L'Atelier Kaleido</p>
   `;
 

@@ -56,11 +56,11 @@ Deno.serve(async () => {
     const clientName = String(project.client || "client");
     const projectName = String(project.name || "projet");
     const shareUrl = `${getPublicClientOrigin()}/client/${row.share_token}`;
-    const subject = `Votre projet ${projectName} a avance`;
-    const text = `Bonjour ${clientName},\n\nVotre projet ${projectName} a avance aujourd'hui. Il est maintenant rendu a ${progress}%.\n\nVous pouvez consulter le suivi ici : ${shareUrl}\n\nMerci beaucoup,\nL'Atelier Kaleido`;
+    const subject = `Votre projet ${projectName} a avancé`;
+    const text = `Bonjour ${clientName},\n\nVotre projet ${projectName} a avancé aujourd'hui. Il est maintenant rendu à ${progress}%.\n\nVous pouvez consulter le suivi ici : ${shareUrl}\n\nMerci beaucoup,\nL'Atelier Kaleido`;
     const html = `
       <p>Bonjour ${escapeHtml(clientName)},</p>
-      <p>Votre projet <strong>${escapeHtml(projectName)}</strong> a avance aujourd'hui.</p>
+      <p>Votre projet <strong>${escapeHtml(projectName)}</strong> a avancé aujourd'hui.</p>
       <p>Avancement actuel : <strong>${progress}%</strong></p>
       <p><a href="${shareUrl}">Consulter le suivi du projet</a></p>
       <p>Merci beaucoup,<br/>L'Atelier Kaleido</p>
