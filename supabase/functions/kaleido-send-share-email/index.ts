@@ -2,9 +2,12 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders, getPublicClientOrigin, getServiceRoleKey, jsonResponse, sendResendEmail } from "../_shared/cors.ts";
 
 const PROJECTS_TABLE = "kaleido_client_projects";
+const BACKUPS_TABLE = "kaleido_backups";
 
 type ClientProjectRow = {
   share_token: string;
+  owner_key: string;
+  project_id: string | null;
   project_json: Record<string, unknown> | null;
 };
 
@@ -13,6 +16,27 @@ const escapeHtml = (value: string) => value
   .replaceAll("<", "&lt;")
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;");
+
+const findProjectEmailInBackup = async (
+  supabase: ReturnType<typeof createClient>,
+  ownerKey: string,
+  projectId: string | null,
+) => {
+  if (!ownerKey || !projectId) return "";
+
+  const { data } = await supabase
+    .from(BACKUPS_TABLE)
+    .select("database_json")
+    .eq("user_key", ownerKey)
+    .maybeSingle<{ database_json: Record<string, unknown> | null }>();
+
+  const projectsPro = Array.isArray(data?.database_json?.projectsPro)
+    ? data.database_json.projectsPro
+    : [];
+  const project = projectsPro.find((candidate) => String(candidate?.id) === String(projectId));
+
+  return String(project?.email || "").trim();
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -37,7 +61,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
   const { data: projectRow, error: projectError } = await supabase
     .from(PROJECTS_TABLE)
-    .select("share_token, project_json")
+    .select("share_token, owner_key, project_id, project_json")
     .eq("share_token", shareToken)
     .maybeSingle<ClientProjectRow>();
 
@@ -46,7 +70,15 @@ Deno.serve(async (req) => {
   }
 
   const project = projectRow.project_json;
-  const recipient = String(project.email || clientEmail || "").trim();
+  const backupEmail = await findProjectEmailInBackup(supabase, projectRow.owner_key, projectRow.project_id);
+  const recipient = String(project.email || clientEmail || backupEmail || "").trim();
+  if (!project.email && recipient) {
+    project.email = recipient;
+    await supabase
+      .from(PROJECTS_TABLE)
+      .update({ project_json: project })
+      .eq("share_token", shareToken);
+  }
   const clientName = String(project.client || "client");
   const projectName = String(project.name || "projet");
   const shareUrl = `${getPublicClientOrigin()}/client/${shareToken}`;
