@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     return jsonResponse({ ok: false, reason: "Secrets Supabase manquants." });
   }
 
-  const { shareToken, clientEmail } = await req.json().catch(() => ({}));
+  const { shareToken, clientEmail, recipientEmail } = await req.json().catch(() => ({}));
   if (!shareToken) {
     return jsonResponse({ ok: false, reason: "Lien client incomplet." });
   }
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
 
   const project = projectRow.project_json;
   const backupEmail = await findProjectEmailInBackup(supabase, projectRow.owner_key, projectRow.project_id);
-  const recipient = String(project.email || clientEmail || backupEmail || "").trim();
+  const recipient = String(recipientEmail || clientEmail || project.email || backupEmail || "").trim();
   if (!project.email && recipient) {
     project.email = recipient;
     await supabase
@@ -111,6 +111,12 @@ Deno.serve(async (req) => {
     return jsonResponse({
       ...emailResult,
       missing: "client_email",
+      debug: {
+        receivedRecipientEmail: Boolean(String(recipientEmail || "").trim()),
+        receivedClientEmail: Boolean(String(clientEmail || "").trim()),
+        projectEmail: Boolean(String(project.email || "").trim()),
+        backupEmail: Boolean(String(backupEmail || "").trim()),
+      },
     });
   }
 

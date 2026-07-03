@@ -329,9 +329,15 @@ export const sendClientShareEmail = async (shareToken, clientEmail = "") => {
   let data = null;
   let error = null;
 
+  const cleanClientEmail = String(clientEmail || "").trim();
+
   try {
     const result = await supabase.functions.invoke("kaleido-send-share-email", {
-      body: { shareToken, clientEmail: String(clientEmail || "").trim() },
+      body: {
+        shareToken,
+        clientEmail: cleanClientEmail,
+        recipientEmail: cleanClientEmail,
+      },
     });
     data = result.data;
     error = result.error;
