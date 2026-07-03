@@ -60,6 +60,14 @@ const isOwnershipPolicyError = (error) => {
     || message.includes("permission denied");
 };
 
+const isMissingNotificationColumnError = (error) => {
+  const message = String(error?.message || error?.details || "").toLowerCase();
+  return error?.code === "42703"
+    || message.includes("client_message_emails_enabled")
+    || message.includes("client_progress_emails_enabled")
+    || message.includes("progress_changed_at");
+};
+
 const getResolvedOwnerKey = async () => {
   const activeOwnerKey = getActiveCloudUserId();
   if (activeOwnerKey) return activeOwnerKey;
@@ -82,6 +90,10 @@ export const buildClientProjectPayload = (project = {}, tokenOverride = "") => {
   const token = tokenOverride || ensureClientShareToken(project);
   const progress = computeProgress(project);
   const updatedAt = new Date().toISOString();
+  const notificationPreferences = {
+    messageEmails: project.notificationPreferences?.messageEmails !== false,
+    progressEmails: project.notificationPreferences?.progressEmails !== false,
+  };
 
   return {
     shareToken: token,
@@ -101,6 +113,7 @@ export const buildClientProjectPayload = (project = {}, tokenOverride = "") => {
       completedAt: project.completedAt || null,
       progress,
       status: project.status || "en_cours",
+      notificationPreferences,
       updatedAt,
     },
     updatedAt,
@@ -119,20 +132,42 @@ export const publishClientProject = async (project = {}) => {
   let error = null;
 
   try {
+    const upsertPayload = {
+      share_token: payload.shareToken,
+      owner_key: ownerKey,
+      project_id: String(project.id || ""),
+      project_json: payload.project,
+      client_message_emails_enabled: payload.project.notificationPreferences.messageEmails,
+      client_progress_emails_enabled: payload.project.notificationPreferences.progressEmails,
+      progress_changed_at: payload.project.progress > 0 ? payload.updatedAt : null,
+      updated_at: payload.updatedAt,
+    };
+
     const result = await withTimeout(
       supabase
         .from(CLIENT_PROJECTS_TABLE)
-        .upsert({
-          share_token: payload.shareToken,
-          owner_key: ownerKey,
-          project_id: String(project.id || ""),
-          project_json: payload.project,
-          updated_at: payload.updatedAt,
-        }, {
+        .upsert(upsertPayload, {
           onConflict: "share_token",
         })
     );
     error = result.error;
+
+    if (isMissingNotificationColumnError(error)) {
+      const legacyResult = await withTimeout(
+        supabase
+          .from(CLIENT_PROJECTS_TABLE)
+          .upsert({
+            share_token: payload.shareToken,
+            owner_key: ownerKey,
+            project_id: String(project.id || ""),
+            project_json: payload.project,
+            updated_at: payload.updatedAt,
+          }, {
+            onConflict: "share_token",
+          })
+      );
+      error = legacyResult.error;
+    }
   } catch (publishError) {
     return { ok: false, error: publishError, reason: publishError.message || "La fiche client n'a pas pu etre publiee." };
   }
@@ -177,13 +212,26 @@ export const loadClientProjectByToken = async (token) => {
     const result = await withTimeout(
       supabase
         .from(CLIENT_PROJECTS_TABLE)
-        .select("project_json, owner_key, updated_at")
+        .select("project_json, owner_key, updated_at, client_message_emails_enabled, client_progress_emails_enabled")
         .eq("share_token", token)
         .maybeSingle(),
       "La fiche client prend trop de temps a charger."
     );
     data = result.data;
     error = result.error;
+
+    if (isMissingNotificationColumnError(error)) {
+      const legacyResult = await withTimeout(
+        supabase
+          .from(CLIENT_PROJECTS_TABLE)
+          .select("project_json, owner_key, updated_at")
+          .eq("share_token", token)
+          .maybeSingle(),
+        "La fiche client prend trop de temps a charger."
+      );
+      data = legacyResult.data;
+      error = legacyResult.error;
+    }
   } catch (loadError) {
     return { ok: false, error: loadError, reason: loadError.message || "La fiche client est impossible a charger." };
   }
@@ -200,6 +248,11 @@ export const loadClientProjectByToken = async (token) => {
     ok: true,
     project: {
       ...data.project_json,
+      notificationPreferences: {
+        ...(data.project_json?.notificationPreferences || {}),
+        messageEmails: data.client_message_emails_enabled !== false,
+        progressEmails: data.client_progress_emails_enabled !== false,
+      },
       clientShareToken: token,
       ownerKey: data.owner_key || "",
       updatedAt: data.updated_at || data.project_json.updatedAt,
@@ -228,6 +281,52 @@ export const loadClientMessages = async (shareToken) => {
   }
 
   return { ok: true, messages: data || [] };
+};
+
+export const updateClientNotificationPreferences = async (shareToken, preferences = {}) => {
+  if (!isSupabaseConfigured || !supabase) {
+    return { ok: false, reason: "Supabase n'est pas configure." };
+  }
+
+  if (!shareToken) {
+    return { ok: false, reason: "Lien client incomplet." };
+  }
+
+  const cleanPreferences = {
+    messageEmails: preferences.messageEmails !== false,
+    progressEmails: preferences.progressEmails !== false,
+  };
+
+  const { data, error } = await supabase.functions.invoke("kaleido-client-preferences", {
+    body: {
+      shareToken,
+      preferences: cleanPreferences,
+    },
+  });
+
+  if (error || data?.ok === false) {
+    return {
+      ok: false,
+      error,
+      reason: data?.reason || error?.message || "Les preferences n'ont pas pu etre sauvegardees.",
+    };
+  }
+
+  return { ok: true, preferences: data?.preferences || cleanPreferences };
+};
+
+const notifyMessageEmail = (messageId) => {
+  if (!messageId || !isSupabaseConfigured || !supabase) return;
+
+  supabase.functions.invoke("kaleido-notify-message", {
+    body: { messageId },
+  }).then(({ data, error }) => {
+    if (error || data?.ok === false) {
+      console.warn("[KALEIDO] email notification indisponible:", data?.reason || error?.message || error);
+    }
+  }).catch((error) => {
+    console.warn("[KALEIDO] email notification exception:", error?.message || error);
+  });
 };
 
 export const loadLatestClientMessageMap = async (shareTokens = []) => {
@@ -331,6 +430,8 @@ export const sendClientMessage = async ({
   if (error) {
     return { ok: false, error, reason: error.message || "Le message n'a pas pu être envoyé." };
   }
+
+  notifyMessageEmail(data?.id);
 
   return { ok: true, message: data };
 };

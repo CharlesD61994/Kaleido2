@@ -7,17 +7,23 @@ import ClientPageHeader from "./components/clients/ClientPageHeader";
 import ClientProgressCard from "./components/clients/ClientProgressCard";
 import ClientSectionCard from "./components/clients/ClientSectionCard";
 import ClientSummaryCard from "./components/clients/ClientSummaryCard";
+import ClientNotificationPreferences from "./components/clients/ClientNotificationPreferences";
 import { THEME_CSS } from "./styles/theme";
 
 export default function PublicClientPage({ project }) {
+  const [localProject, setLocalProject] = useState(project);
   const [themeMode, setThemeMode] = useState(() => {
     if (typeof window === "undefined") return "dark";
     return window.localStorage.getItem("kaleido-client-theme") === "light" ? "light" : "dark";
   });
-  const progress = computeProgress(project);
-  const color = KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
-  const statusLabel = project?.status === "termine" ? "Terminé" : "En cours";
-  const clientInitial = (project?.client || "?").trim().charAt(0).toUpperCase() || "?";
+  const progress = computeProgress(localProject);
+  const color = KALEIDOSCOPE_COLORS[(localProject?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
+  const statusLabel = localProject?.status === "termine" ? "Terminé" : "En cours";
+  const clientInitial = (localProject?.client || "?").trim().charAt(0).toUpperCase() || "?";
+
+  useEffect(() => {
+    setLocalProject(project);
+  }, [project]);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -89,16 +95,25 @@ export default function PublicClientPage({ project }) {
       </button>
 
       <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", padding: "18px 20px 28px" }}>
-        <ClientPageHeader project={project} color={color} publicView />
-        <ClientSummaryCard project={project} color={color} clientInitial={clientInitial} publicView />
+        <ClientPageHeader project={localProject} color={color} publicView />
+        <ClientSummaryCard project={localProject} color={color} clientInitial={clientInitial} publicView />
 
         <ClientSectionCard title="Informations client">
-          <ClientInfoRow label="Nom" value={project?.client} />
-          <ClientInfoRow label="Projet associé" value={project?.name} />
+          <ClientInfoRow label="Nom" value={localProject?.client} />
+          <ClientInfoRow label="Projet associé" value={localProject?.name} />
         </ClientSectionCard>
 
-        <ClientProgressCard color={color} progress={progress} project={project} statusLabel={statusLabel} />
-        <ClientChatPreview project={project} color={color} publicView themeMode={themeMode} />
+        <ClientProgressCard color={color} progress={progress} project={localProject} statusLabel={statusLabel} />
+        <ClientNotificationPreferences
+          project={localProject}
+          onPreferencesChange={(preferences) => {
+            setLocalProject((current) => ({
+              ...(current || {}),
+              notificationPreferences: preferences,
+            }));
+          }}
+        />
+        <ClientChatPreview project={localProject} color={color} publicView themeMode={themeMode} />
       </div>
     </main>
   );
