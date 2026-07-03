@@ -76,7 +76,7 @@ export default function ClientShareCard({ project, color, onPublishClientProject
 
     setIsSendingEmail(true);
     setStatus("");
-    const result = await sendClientShareEmail(project?.clientShareToken);
+    const result = await sendClientShareEmail(project?.clientShareToken, project?.email);
     setIsSendingEmail(false);
 
     if (!result.ok) {

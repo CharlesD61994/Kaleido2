@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     return jsonResponse({ ok: false, reason: "Secrets Supabase manquants." });
   }
 
-  const { shareToken } = await req.json().catch(() => ({}));
+  const { shareToken, clientEmail } = await req.json().catch(() => ({}));
   if (!shareToken) {
     return jsonResponse({ ok: false, reason: "Lien client incomplet." });
   }
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
   }
 
   const project = projectRow.project_json;
-  const recipient = String(project.email || "").trim();
+  const recipient = String(project.email || clientEmail || "").trim();
   const clientName = String(project.client || "client");
   const projectName = String(project.name || "projet");
   const shareUrl = `${getPublicClientOrigin()}/client/${shareToken}`;

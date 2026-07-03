@@ -317,7 +317,7 @@ export const updateClientNotificationPreferences = async (shareToken, preference
   return { ok: true, preferences: data?.preferences || cleanPreferences };
 };
 
-export const sendClientShareEmail = async (shareToken) => {
+export const sendClientShareEmail = async (shareToken, clientEmail = "") => {
   if (!isSupabaseConfigured || !supabase) {
     return { ok: false, reason: "Supabase n'est pas configure." };
   }
@@ -331,7 +331,7 @@ export const sendClientShareEmail = async (shareToken) => {
 
   try {
     const result = await supabase.functions.invoke("kaleido-send-share-email", {
-      body: { shareToken },
+      body: { shareToken, clientEmail: String(clientEmail || "").trim() },
     });
     data = result.data;
     error = result.error;
@@ -341,7 +341,7 @@ export const sendClientShareEmail = async (shareToken) => {
 
   if (error || data?.ok === false) {
     const contextReason = data?.missing === "client_email"
-      ? "Aucun courriel client n'est associe a cette fiche. Ajoute un courriel au client, puis mets le lien a jour."
+      ? "Aucun courriel client n'est associé à cette fiche. Ajoute un courriel au client, puis mets le lien à jour."
       : "";
 
     return {
