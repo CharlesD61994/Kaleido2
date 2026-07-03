@@ -77,6 +77,7 @@ export default function AppScreens({
     saveProjectProgress,
     updatePatron,
     updateProject,
+    updateProProject,
   } = records;
 
   const {
