@@ -326,15 +326,28 @@ export const sendClientShareEmail = async (shareToken) => {
     return { ok: false, reason: "Le lien client n'est pas encore publie." };
   }
 
-  const { data, error } = await supabase.functions.invoke("kaleido-send-share-email", {
-    body: { shareToken },
-  });
+  let data = null;
+  let error = null;
+
+  try {
+    const result = await supabase.functions.invoke("kaleido-send-share-email", {
+      body: { shareToken },
+    });
+    data = result.data;
+    error = result.error;
+  } catch (invokeError) {
+    error = invokeError;
+  }
 
   if (error || data?.ok === false) {
+    const contextReason = data?.missing === "client_email"
+      ? "Aucun courriel client n'est associe a cette fiche. Ajoute un courriel au client, puis mets le lien a jour."
+      : "";
+
     return {
       ok: false,
       error,
-      reason: data?.reason || error?.message || "Le courriel n'a pas pu etre envoye.",
+      reason: contextReason || data?.reason || error?.context?.error || error?.message || "Le courriel n'a pas pu etre envoye.",
     };
   }
 

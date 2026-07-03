@@ -58,6 +58,11 @@ export default function ClientShareCard({ project, color, onPublishClientProject
   const sendShareEmail = async () => {
     if (!hasLink || isSendingEmail) return;
 
+    if (!String(project?.email || "").trim()) {
+      setStatus("Ajoute un courriel au client, puis mets le lien à jour.");
+      return;
+    }
+
     if (project?.shareEmailSentAt) {
       const alreadySent = new Date(project.shareEmailSentAt);
       const sentLabel = Number.isNaN(alreadySent.getTime())
