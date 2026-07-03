@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
   if (!emailResult.ok) {
     return jsonResponse({
       ...emailResult,
-      missing: "client_email",
+      missing: emailResult.code === "missing_recipient" ? "client_email" : undefined,
       debug: {
         receivedRecipientEmail: Boolean(String(recipientEmail || "").trim()),
         receivedClientEmail: Boolean(String(clientEmail || "").trim()),
