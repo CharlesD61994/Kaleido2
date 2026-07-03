@@ -121,7 +121,11 @@ Deno.serve(async (req) => {
 
   const emailResult = await sendResendEmail({ to: recipient, subject, html, text });
   if (!emailResult.ok) {
-    return jsonResponse(emailResult, 502);
+    return jsonResponse({
+      ...emailResult,
+      sender: message.sender,
+      missing: message.sender === "owner" ? "client_email" : "owner_email",
+    }, 502);
   }
 
   await supabase

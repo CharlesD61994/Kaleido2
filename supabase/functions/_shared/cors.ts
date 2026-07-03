@@ -51,7 +51,7 @@ export const sendResendEmail = async ({
   }
 
   if (!to) {
-    return { ok: false, reason: "Aucun destinataire." };
+    return { ok: false, reason: "Aucun destinataire.", code: "missing_recipient" };
   }
 
   const response = await fetch("https://api.resend.com/emails", {

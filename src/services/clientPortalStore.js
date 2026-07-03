@@ -102,6 +102,7 @@ export const buildClientProjectPayload = (project = {}, tokenOverride = "") => {
       clientShareToken: token,
       name: project.name || "Projet",
       client: project.client || "",
+      email: project.email || "",
       colorIdx: Number(project.colorIdx) || 0,
       projectType: project.projectType || "custom",
       rang: Number(project.rang) || 0,
