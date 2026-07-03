@@ -267,6 +267,7 @@ export default function WorkScreens({
   unreadProjectIds,
   updatePatron,
   updateProject,
+  updateProProject,
   themeMode,
   viewWrapStyle,
   viewTransition,
@@ -353,6 +354,7 @@ export default function WorkScreens({
                 onEditClient={openClientEditor}
                 onMarkMessagesRead={markClientMessagesRead}
                 onPublishClientProject={publishClientProjectRecord}
+                onShareEmailSent={(sentAt) => updateProProject?.(currentProject.id, { shareEmailSentAt: sentAt })}
                 unreadClientMessageCount={unreadClientMessageCount}
               />
             </Suspense>

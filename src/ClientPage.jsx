@@ -11,7 +11,7 @@ import ClientSummaryCard from "./components/clients/ClientSummaryCard";
 import { THEME_CSS } from "./styles/theme";
 import { IOS_TOP_PADDING } from "./styles/layout";
 
-export default function ClientPage({ project, onBack, onEditClient, onMarkMessagesRead, onPublishClientProject, unreadClientMessageCount = 0 }) {
+export default function ClientPage({ project, onBack, onEditClient, onMarkMessagesRead, onPublishClientProject, onShareEmailSent, unreadClientMessageCount = 0 }) {
   const progress = computeProgress(project);
   const color = KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
   const statusLabel = project?.status === "termine" ? "Terminé" : "En cours";
@@ -52,7 +52,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
         <ClientPageHeader project={project} color={color} onBack={onBack} publicView={false} />
         <ClientSummaryCard project={project} color={color} clientInitial={clientInitial} onEditClient={onEditClient} publicView={false} />
 
-        <ClientShareCard project={project} color={color} onPublishClientProject={onPublishClientProject} />
+        <ClientShareCard project={project} color={color} onPublishClientProject={onPublishClientProject} onShareEmailSent={onShareEmailSent} />
 
         <ClientSectionCard
           title="Informations client"

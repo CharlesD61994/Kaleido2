@@ -112,6 +112,7 @@ export const buildClientProjectPayload = (project = {}, tokenOverride = "") => {
       parties: project.parties || [],
       pdfParties: project.pdfParties || [],
       completedAt: project.completedAt || null,
+      shareEmailSentAt: project.shareEmailSentAt || null,
       progress,
       status: project.status || "en_cours",
       notificationPreferences,

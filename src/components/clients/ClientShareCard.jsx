@@ -13,7 +13,7 @@ const copyToClipboard = async (text) => {
   }
 };
 
-export default function ClientShareCard({ project, color, onPublishClientProject }) {
+export default function ClientShareCard({ project, color, onPublishClientProject, onShareEmailSent }) {
   const [status, setStatus] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -58,6 +58,17 @@ export default function ClientShareCard({ project, color, onPublishClientProject
   const sendShareEmail = async () => {
     if (!hasLink || isSendingEmail) return;
 
+    if (project?.shareEmailSentAt) {
+      const alreadySent = new Date(project.shareEmailSentAt);
+      const sentLabel = Number.isNaN(alreadySent.getTime())
+        ? "déjà"
+        : alreadySent.toLocaleString("fr-CA", { dateStyle: "medium", timeStyle: "short" });
+      const shouldSendAgain = window.confirm(
+        `Le courriel a déjà été envoyé (${sentLabel}).\n\nVeux-tu vraiment l'envoyer une autre fois?`
+      );
+      if (!shouldSendAgain) return;
+    }
+
     setIsSendingEmail(true);
     setStatus("");
     const result = await sendClientShareEmail(project?.clientShareToken);
@@ -68,6 +79,8 @@ export default function ClientShareCard({ project, color, onPublishClientProject
       return;
     }
 
+    const sentAt = new Date().toISOString();
+    onShareEmailSent?.(sentAt);
     setStatus("Courriel envoye au client.");
   };
 
@@ -132,7 +145,7 @@ export default function ClientShareCard({ project, color, onPublishClientProject
               boxShadow: `0 12px 28px ${color.bg}44`,
             }}
           >
-            {isPublishing ? "Publication..." : hasLink ? "Mettre a jour" : "Publier le lien"}
+            {isPublishing ? "Publication..." : hasLink ? "Mettre à jour" : "Publier le lien"}
           </button>
 
           {hasLink ? (
