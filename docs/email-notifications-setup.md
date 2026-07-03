@@ -30,14 +30,17 @@ Les fonctions ajoutees sont :
 supabase/functions/kaleido-notify-message
 supabase/functions/kaleido-client-preferences
 supabase/functions/kaleido-daily-progress-email
+supabase/functions/kaleido-send-share-email
 ```
 
 Les deux premieres activent les courriels de messages et les preferences client.
 La troisieme sert au resume quotidien d'avancement; elle devra etre planifiee dans Supabase apres les tests.
+La derniere envoie automatiquement le courriel initial avec le lien de la fiche client.
 
 ## 4. Comportement attendu
 
 - Client ecrit un message : le tricoteur recoit un courriel.
 - Tricoteur ecrit un message : le client recoit un courriel si ses notifications message sont activees.
+- Tricoteur appuie sur Envoyer le courriel : le client recoit le lien de sa fiche client.
 - Le client peut desactiver les courriels de nouveaux messages et le resume quotidien directement sur sa fiche.
 - Le resume quotidien est prepare, mais il ne part pas tant que la fonction planifiee n'est pas activee.

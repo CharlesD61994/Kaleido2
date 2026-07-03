@@ -316,6 +316,30 @@ export const updateClientNotificationPreferences = async (shareToken, preference
   return { ok: true, preferences: data?.preferences || cleanPreferences };
 };
 
+export const sendClientShareEmail = async (shareToken) => {
+  if (!isSupabaseConfigured || !supabase) {
+    return { ok: false, reason: "Supabase n'est pas configure." };
+  }
+
+  if (!shareToken) {
+    return { ok: false, reason: "Le lien client n'est pas encore publie." };
+  }
+
+  const { data, error } = await supabase.functions.invoke("kaleido-send-share-email", {
+    body: { shareToken },
+  });
+
+  if (error || data?.ok === false) {
+    return {
+      ok: false,
+      error,
+      reason: data?.reason || error?.message || "Le courriel n'a pas pu etre envoye.",
+    };
+  }
+
+  return { ok: true };
+};
+
 const notifyMessageEmail = (messageId) => {
   if (!messageId || !isSupabaseConfigured || !supabase) return;
 
