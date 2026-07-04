@@ -9,6 +9,7 @@ type ClientProjectRow = {
   client_progress_emails_enabled: boolean | null;
   progress_changed_at: string | null;
   last_progress_email_sent_at: string | null;
+  progress_email_claimed_at: string | null;
   last_notified_progress: number | null;
 };
 
@@ -28,7 +29,7 @@ Deno.serve(async () => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
   const { data: rows, error } = await supabase
     .from(PROJECTS_TABLE)
-    .select("share_token, project_json, client_progress_emails_enabled, progress_changed_at, last_progress_email_sent_at, last_notified_progress")
+    .select("share_token, project_json, client_progress_emails_enabled, progress_changed_at, last_progress_email_sent_at, progress_email_claimed_at, last_notified_progress")
     .eq("client_progress_emails_enabled", true)
     .not("progress_changed_at", "is", null)
     .limit(200);
@@ -47,8 +48,25 @@ Deno.serve(async () => {
     const lastProgress = Number(row.last_notified_progress || 0);
     const progressChangedAt = Date.parse(row.progress_changed_at || "");
     const lastSentAt = Date.parse(row.last_progress_email_sent_at || "");
+    const claimedAt = Date.parse(row.progress_email_claimed_at || "");
 
-    if (!email || !progressChangedAt || progress <= lastProgress || (lastSentAt && progressChangedAt <= lastSentAt)) {
+    if (!email || !progressChangedAt || progress <= lastProgress || (lastSentAt && progressChangedAt <= lastSentAt) || (claimedAt && progressChangedAt <= claimedAt)) {
+      skipped += 1;
+      continue;
+    }
+
+    const claimAt = new Date().toISOString();
+    const { data: claimedRows, error: claimError } = await supabase
+      .from(PROJECTS_TABLE)
+      .update({ progress_email_claimed_at: claimAt })
+      .eq("share_token", row.share_token)
+      .eq("progress_changed_at", row.progress_changed_at)
+      .lt("last_notified_progress", progress)
+      .or(`last_progress_email_sent_at.is.null,last_progress_email_sent_at.lt.${row.progress_changed_at}`)
+      .or(`progress_email_claimed_at.is.null,progress_email_claimed_at.lt.${row.progress_changed_at}`)
+      .select("share_token");
+
+    if (claimError || !claimedRows?.length) {
       skipped += 1;
       continue;
     }
@@ -68,6 +86,11 @@ Deno.serve(async () => {
 
     const emailResult = await sendResendEmail({ to: email, subject, html, text });
     if (!emailResult.ok) {
+      await supabase
+        .from(PROJECTS_TABLE)
+        .update({ progress_email_claimed_at: null })
+        .eq("share_token", row.share_token)
+        .eq("progress_email_claimed_at", claimAt);
       skipped += 1;
       continue;
     }
