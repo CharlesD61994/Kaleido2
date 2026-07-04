@@ -3,16 +3,21 @@ import PhotoCropModal from "./components/modals/PhotoCropModal";
 import CompleteProjectModal from "./components/projects/CompleteProjectModal";
 import { ContextMenu, DeleteModal, RenameModal } from "./components/projects/ProjectMenu";
 import ProjectStatsModal from "./components/projects/ProjectStatsModal";
+import FolderCreateModal from "./components/folders/FolderCreateModal";
+import FolderView from "./components/folders/FolderView";
 import ProProjectGrid from "./components/pro/ProProjectGrid";
 import ProStats from "./components/pro/ProStats";
 import ProToolbar from "./components/pro/ProToolbar";
 import { FLOATING_ACTION_BOTTOM } from "./styles/layout";
+import { FOLDER_SECTIONS, getFolders } from "./services/folderStore";
 
 const isProjectCompleted = (project) => (
   project?.status === "termine"
 );
 
 export default function AppPro({
+  database = {},
+  folderRecords,
   projectsPro = [],
   onProjectOpen,
   onCreateProProject,
@@ -35,6 +40,12 @@ export default function AppPro({
   const [photoTarget, setPhotoTarget] = useState(null);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("Tous");
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [activeFolderId, setActiveFolderId] = useState(null);
+  const [menuFolder, setMenuFolder] = useState(null);
+  const [renameFolder, setRenameFolder] = useState(null);
+  const [deleteFolder, setDeleteFolder] = useState(null);
 
   const projects = useMemo(() => (
     [...(projectsPro || [])]
@@ -76,32 +87,74 @@ export default function AppPro({
     });
   }, [projects, search, activeFilter]);
 
-  const handleMenuOpen = (project, e) => {
+  const folders = getFolders(database, FOLDER_SECTIONS.PRO);
+  const activeFolder = folders.find((folder) => folder.id === activeFolderId) || null;
+
+  if (activeFolder) {
+    const folderProjects = projects.filter((project) => project.folderId === activeFolder.id);
+    return (
+      <>
+        <FolderView
+          folder={activeFolder}
+          items={folderProjects}
+          mode="pro"
+          onBack={() => setActiveFolderId(null)}
+          onItemOpen={onProjectOpen}
+          onItemMenuOpen={handleMenuOpen}
+        />
+        <ContextMenu
+          project={menuProject}
+          position={menuPos}
+          onClose={() => setMenuProject(null)}
+          onRename={() => { setRenameProject(menuProject); setMenuProject(null); }}
+          onDelete={() => { setDeleteProject(menuProject); setMenuProject(null); }}
+          onChangePhoto={() => { setPhotoTarget(menuProject); setMenuProject(null); }}
+          onEditClient={handleEditClient}
+          onComplete={() => { setCompleteProject(menuProject); setMenuProject(null); }}
+          onRestore={() => {
+            if (menuProject && typeof onRestoreProProject === "function") {
+              onRestoreProProject(menuProject.id, { status: "en_cours", completedAt: null });
+            }
+            setMenuProject(null);
+          }}
+          onChangeColor={(idx) => {
+            if (menuProject && typeof onChangeProProjectColor === "function") {
+              onChangeProProjectColor(menuProject.id, idx);
+            }
+          }}
+        />
+        <RenameModal project={renameProject} onConfirm={handleRename} onClose={() => setRenameProject(null)} />
+        <DeleteModal project={deleteProject} onConfirm={handleDelete} onClose={() => setDeleteProject(null)} />
+      </>
+    );
+  }
+
+  function handleMenuOpen(project, e) {
     const rect = e.currentTarget.getBoundingClientRect();
     setMenuPos({ x: rect.right, y: rect.bottom });
     setMenuProject(project);
-  };
+  }
 
-  const handleRename = (newName) => {
+  function handleRename(newName) {
     if (renameProject && typeof onRenameProProject === "function") {
       onRenameProProject(renameProject.id, newName);
     }
     setRenameProject(null);
-  };
+  }
 
-  const handleDelete = () => {
+  function handleDelete() {
     if (deleteProject && typeof onDeleteProProject === "function") {
       onDeleteProProject(deleteProject.id);
     }
     setDeleteProject(null);
-  };
+  }
 
-  const handleEditClient = () => {
+  function handleEditClient() {
     if (menuProject && typeof onEditProProjectClient === "function") {
       onEditProProjectClient(menuProject);
     }
     setMenuProject(null);
-  };
+  }
 
   return (
     <>
@@ -109,11 +162,25 @@ export default function AppPro({
         <ProStats projectCount={projects.length} totalRangs={totalRangs} completedCount={completedCount} />
         <ProToolbar search={search} activeFilter={activeFilter} onSearchChange={setSearch} onFilterChange={setActiveFilter} />
       </div>
-      <ProProjectGrid projects={filteredProjects} unreadProjectIds={unreadProjectIds} onProjectOpen={onProjectOpen} onMenuOpen={handleMenuOpen} onCompletedProjectOpen={setStatsProject} />
+      <ProProjectGrid
+        projects={filteredProjects}
+        folders={folders}
+        allProjects={projects}
+        unreadProjectIds={unreadProjectIds}
+        onFolderOpen={(folder) => setActiveFolderId(folder.id)}
+        onFolderMenuOpen={(folder, event) => {
+          const rect = event.currentTarget.getBoundingClientRect();
+          setMenuPos({ x: rect.right, y: rect.bottom });
+          setMenuFolder(folder);
+        }}
+        onProjectOpen={onProjectOpen}
+        onMenuOpen={handleMenuOpen}
+        onCompletedProjectOpen={setStatsProject}
+      />
 
       <div style={{ position: "fixed", bottom: FLOATING_ACTION_BOTTOM, right: "calc(50% - 184px)", zIndex: 50 }}>
         <button
-          onClick={onCreateProProject}
+          onClick={() => setShowCreateMenu(true)}
           style={{
             width: 56,
             height: 56,
@@ -132,6 +199,30 @@ export default function AppPro({
           +
         </button>
       </div>
+
+      {showCreateMenu && (
+        <div data-kaleido-modal-backdrop="true" onClick={() => setShowCreateMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 200, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430 }}>
+            <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 24px" }} />
+            <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center" }}>Nouveau</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <button onClick={() => { setShowCreateMenu(false); onCreateProProject?.(); }} style={{ padding: "18px 20px", borderRadius: 16, background: "linear-gradient(135deg, #05966922, #34D39922)", border: "1px solid #05966944", cursor: "pointer", textAlign: "left", color: "var(--k-text)", fontWeight: 800, fontSize: 16 }}>Créer un projet client</button>
+              <button onClick={() => { setShowCreateMenu(false); setShowFolderModal(true); }} style={{ padding: "18px 20px", borderRadius: 16, background: "linear-gradient(135deg, #A78BFA22, #F472B622)", border: "1px solid #A78BFA44", cursor: "pointer", textAlign: "left", color: "var(--k-text)", fontWeight: 800, fontSize: 16 }}>Créer un dossier</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showFolderModal && (
+        <FolderCreateModal
+          sectionLabel="Professionnel"
+          onClose={() => setShowFolderModal(false)}
+          onCreate={(name) => {
+            folderRecords?.createFolder({ name, section: FOLDER_SECTIONS.PRO, colorIdx: Math.floor(Math.random() * 12) });
+            setShowFolderModal(false);
+          }}
+        />
+      )}
 
       <ContextMenu
         project={menuProject}
@@ -154,9 +245,14 @@ export default function AppPro({
           }
         }}
       />
+      <ContextMenu project={menuFolder} position={menuPos} onClose={() => setMenuFolder(null)}
+        onRename={() => { setRenameFolder(menuFolder); setMenuFolder(null); }}
+        onDelete={() => { setDeleteFolder(menuFolder); setMenuFolder(null); }} />
 
       <RenameModal project={renameProject} onConfirm={handleRename} onClose={() => setRenameProject(null)} />
       <DeleteModal project={deleteProject} onConfirm={handleDelete} onClose={() => setDeleteProject(null)} />
+      <RenameModal project={renameFolder} onConfirm={(name) => { folderRecords?.renameFolder(renameFolder.id, name); setRenameFolder(null); }} onClose={() => setRenameFolder(null)} />
+      <DeleteModal project={deleteFolder} onConfirm={() => { folderRecords?.deleteFolder(deleteFolder.id); setDeleteFolder(null); }} onClose={() => setDeleteFolder(null)} />
       <CompleteProjectModal
         project={completeProject}
         onClose={() => setCompleteProject(null)}

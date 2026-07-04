@@ -15,6 +15,7 @@ import usePhotoManagement from "./hooks/usePhotoManagement";
 import useEdgeSwipePreviewStyles from "./hooks/useEdgeSwipePreviewStyles";
 import useProjectRecords from "./hooks/useProjectRecords";
 import usePatronRecords from "./hooks/usePatronRecords";
+import useFolderRecords from "./hooks/useFolderRecords";
 import ClientPortalRoute from "./ClientPortalRoute";
 import { getClientPortalTokenFromLocation } from "./services/clientPortalStore";
 import useKaleidoAuth from "./hooks/useKaleidoAuth";
@@ -246,6 +247,9 @@ const {
   database,
   setDatabase,
 });
+const folderRecords = useFolderRecords({
+  setDatabase,
+});
 const {
   navigateBackFromClientPage,
   navigateToClientPage,
@@ -442,6 +446,7 @@ return (
     updatePatron,
     updateProject,
     updateProProject,
+    folderRecords,
   }}
   photo={{
     persistPatronImageToIndexedDB,

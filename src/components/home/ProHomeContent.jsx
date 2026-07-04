@@ -15,12 +15,14 @@ export default function ProHomeContent({
   const { setCreationMode, setShowNewMenu } = modals;
   const { navigateToClientPage, navigateToPdfViewer, navigateToRowCounter } = navigation;
   const { persistProjectImageToIndexedDB } = photo;
-  const { deleteProProjectFromDB, updateProProject } = records;
+  const { deleteProProjectFromDB, updateProProject, folderRecords } = records;
 
   return (
     <Suspense fallback={null}>
       <AppPro
         projectsPro={database.projectsPro || []}
+        database={database}
+        folderRecords={folderRecords}
         unreadProjectIds={unreadProjectIds}
         onCreateProProject={() => {
           setCreationMode("pro");

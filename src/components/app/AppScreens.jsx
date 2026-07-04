@@ -78,6 +78,7 @@ export default function AppScreens({
     updatePatron,
     updateProject,
     updateProProject,
+    folderRecords,
   } = records;
 
   const {
@@ -135,6 +136,7 @@ export default function AppScreens({
         <LibraryPreview
           database={database}
           deletePatronFromDB={deletePatronFromDB}
+          folderRecords={folderRecords}
           handleNewCustomPatron={handleNewCustomPatron}
           handleNewPdfPatron={handleNewPdfPatron}
           inactivePreviewContentStyle={inactivePreviewContentStyle}
@@ -172,6 +174,7 @@ export default function AppScreens({
           setShowLibraryImportModal={setShowLibraryImportModal}
           showLibraryImportModal={showLibraryImportModal}
           updatePatron={updatePatron}
+          folderRecords={folderRecords}
           viewWrapStyle={viewWrapStyle}
           viewTransition={viewTransition}
         />

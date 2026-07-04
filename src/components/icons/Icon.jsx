@@ -105,6 +105,13 @@ export default function Icon({ name, size = 20, stroke = 1.9, color = "currentCo
           <path d="M14 3.5V8h4" />
         </svg>
       );
+    case "folder":
+      return (
+        <svg {...common}>
+          <path d="M3.8 7.5A2.5 2.5 0 0 1 6.3 5h4.1l1.8 2.1h5.5a2.5 2.5 0 0 1 2.5 2.5v7.9a2.5 2.5 0 0 1-2.5 2.5H6.3a2.5 2.5 0 0 1-2.5-2.5Z" />
+          <path d="M4 9.4h16" />
+        </svg>
+      );
     case "checkCircle":
       return (
         <svg {...common}>

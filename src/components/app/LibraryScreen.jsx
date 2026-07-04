@@ -11,6 +11,7 @@ export function LibraryPreview({
   handleNewCustomPatron,
   handleNewPdfPatron,
   inactivePreviewContentStyle,
+  folderRecords,
   navigateToHub,
   previewLibraryStyle,
   setCurrentPatron,
@@ -31,6 +32,7 @@ export function LibraryPreview({
           onRenamePatron={(id, name) => updatePatron(id, { name })}
           onChangePatronColor={(id, idx) => updatePatron(id, { colorIdx: idx })}
           onChangePatronPhoto={(id) => setPhotoTarget({ id, context: "patron" })}
+          folderRecords={folderRecords}
           setEditingPdfPatron={() => {}}
         />
       </div>
@@ -45,6 +47,7 @@ export default function LibraryScreen({
   database,
   deletePatronFromDB,
   editingPdfPatron,
+  folderRecords,
   handleNewCustomPatron,
   handleNewPdfPatron,
   navigateToHub,
@@ -124,6 +127,7 @@ export default function LibraryScreen({
         onRenamePatron={(id, name) => updatePatron(id, { name })}
         onChangePatronColor={(id, idx) => updatePatron(id, { colorIdx: idx })}
         onChangePatronPhoto={(id) => setPhotoTarget({ id, context: "patron" })}
+        folderRecords={folderRecords}
         setEditingPdfPatron={(patron) => {
           if (patron) {
             const fresh = (database.patrons || []).find((item) => item.id === patron.id);
