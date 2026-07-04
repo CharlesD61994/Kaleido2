@@ -1,5 +1,4 @@
 import ProBubble from "./ProBubble";
-import FolderBubble from "../folders/FolderBubble";
 
 const isProjectCompleted = (project) => (
   project?.status === "termine"
@@ -15,8 +14,8 @@ function SectionTitle({ children }) {
   );
 }
 
-function GridSection({ projects, folders = [], allProjects = [], unreadProjectIds, onFolderOpen, onFolderMenuOpen, onProjectOpen, onMenuOpen, onCompletedProjectOpen, completed = false }) {
-  if (projects.length === 0 && folders.length === 0) return null;
+function GridSection({ projects, unreadProjectIds, onProjectOpen, onMenuOpen, onCompletedProjectOpen, completed = false }) {
+  if (projects.length === 0) return null;
 
   return (
     <div
@@ -34,15 +33,6 @@ function GridSection({ projects, folders = [], allProjects = [], unreadProjectId
         transform: "translateX(-4px)",
       }}
     >
-      {folders.map((folder) => (
-        <FolderBubble
-          key={folder.id}
-          folder={folder}
-          count={allProjects.filter((project) => project.folderId === folder.id).length}
-          onOpen={onFolderOpen}
-          onMenuOpen={onFolderMenuOpen}
-        />
-      ))}
       {projects.map((project) => (
         <div key={project.id || project.name}>
           <ProBubble
@@ -57,21 +47,20 @@ function GridSection({ projects, folders = [], allProjects = [], unreadProjectId
   );
 }
 
-export default function ProProjectGrid({ projects, folders = [], allProjects = [], unreadProjectIds, onFolderOpen, onFolderMenuOpen, onProjectOpen, onMenuOpen, onCompletedProjectOpen }) {
-  const rootProjects = projects.filter((project) => !project.folderId);
-  const activeProjects = rootProjects.filter((project) => !isProjectCompleted(project));
-  const completedProjects = rootProjects.filter(isProjectCompleted);
+export default function ProProjectGrid({ projects, unreadProjectIds, onProjectOpen, onMenuOpen, onCompletedProjectOpen }) {
+  const activeProjects = projects.filter((project) => !isProjectCompleted(project));
+  const completedProjects = projects.filter(isProjectCompleted);
 
   return (
     <div style={{ padding: "18px 16px 116px" }}>
       <style>{`[data-kaleido-no-press="true"], [data-kaleido-no-press="true"]:active, [data-kaleido-no-press="true"]:focus, [data-kaleido-no-press="true"]:focus-visible { outline: none !important; box-shadow: none !important; -webkit-tap-highlight-color: transparent !important; }`}</style>
-      {rootProjects.length === 0 && folders.length === 0 ? (
+      {projects.length === 0 ? (
         <div style={{ textAlign: "center", color: "var(--k-muted-2)", padding: "40px 0", fontSize: 14 }}>
           Aucun projet trouvé
         </div>
       ) : (
         <>
-          <GridSection projects={activeProjects} folders={folders} allProjects={allProjects} unreadProjectIds={unreadProjectIds} onFolderOpen={onFolderOpen} onFolderMenuOpen={onFolderMenuOpen} onProjectOpen={onProjectOpen} onMenuOpen={onMenuOpen} />
+          <GridSection projects={activeProjects} unreadProjectIds={unreadProjectIds} onProjectOpen={onProjectOpen} onMenuOpen={onMenuOpen} />
           {completedProjects.length > 0 && <SectionTitle>Patrons terminés</SectionTitle>}
           <GridSection projects={completedProjects} unreadProjectIds={unreadProjectIds} onProjectOpen={onProjectOpen} onMenuOpen={onMenuOpen} onCompletedProjectOpen={onCompletedProjectOpen} completed />
         </>

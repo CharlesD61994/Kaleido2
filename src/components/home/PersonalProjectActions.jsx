@@ -30,6 +30,7 @@ export default function PersonalProjectActions({
 }) {
   const [completeProject, setCompleteProject] = React.useState(null);
   const [showActionMenu, setShowActionMenu] = React.useState(false);
+
   const confirmCompleteProject = () => {
     if (!completeProject) return;
     updateProject(completeProject.id, {
@@ -57,9 +58,11 @@ export default function PersonalProjectActions({
               <button onClick={() => { setShowActionMenu(false); handleNewProject(); }} style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 20px", borderRadius: 16, background: "linear-gradient(135deg, #05966922, #34D39922)", border: "1px solid #05966944", cursor: "pointer", textAlign: "left" }}>
                 <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 800 }}>Créer un projet</div>
               </button>
-              <button onClick={() => { setShowActionMenu(false); onCreateFolder?.(); }} style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 20px", borderRadius: 16, background: "linear-gradient(135deg, #A78BFA22, #F472B622)", border: "1px solid #A78BFA44", cursor: "pointer", textAlign: "left" }}>
-                <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 800 }}>Créer un dossier</div>
-              </button>
+              {onCreateFolder && (
+                <button onClick={() => { setShowActionMenu(false); onCreateFolder(); }} style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 20px", borderRadius: 16, background: "linear-gradient(135deg, #A78BFA22, #F472B622)", border: "1px solid #A78BFA44", cursor: "pointer", textAlign: "left" }}>
+                  <div style={{ color: "var(--k-text)", fontSize: 16, fontWeight: 800 }}>Créer un dossier</div>
+                </button>
+              )}
             </div>
           </div>
         </div>
