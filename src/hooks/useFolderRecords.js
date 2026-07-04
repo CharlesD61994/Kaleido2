@@ -1,4 +1,4 @@
-import { createFolderRecord, deleteFolderRecord, makeFolder, renameFolderRecord } from "../services/folderStore";
+import { createFolderRecord, deleteFolderRecord, makeFolder, moveItemToFolderRecord, renameFolderRecord } from "../services/folderStore";
 
 export default function useFolderRecords({ setDatabase }) {
   const createFolder = ({ name, section, colorIdx }) => {
@@ -15,9 +15,14 @@ export default function useFolderRecords({ setDatabase }) {
     deleteFolderRecord(setDatabase, folderId);
   };
 
+  const moveItemToFolder = ({ section, itemId, folderId }) => {
+    moveItemToFolderRecord(setDatabase, { section, itemId, folderId });
+  };
+
   return {
     createFolder,
     deleteFolder,
+    moveItemToFolder,
     renameFolder,
   };
 }

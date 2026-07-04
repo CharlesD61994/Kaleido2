@@ -23,6 +23,10 @@ export default function PersonalProjectActions({
   setRenameProject,
   updateProject,
   onCreateFolder,
+  folders = [],
+  onMoveToFolder,
+  onRemoveFromFolder,
+  showFloatingAction = true,
 }) {
   const [completeProject, setCompleteProject] = React.useState(null);
   const [showActionMenu, setShowActionMenu] = React.useState(false);
@@ -38,11 +42,13 @@ export default function PersonalProjectActions({
 
   return (
     <>
-      <div style={{ position: "fixed", bottom: FLOATING_ACTION_BOTTOM, right: "calc(50% - 184px)", zIndex: 50 }}>
-        <button onClick={() => setShowActionMenu(true)} style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #7C3AED, #EC4899)", border: "none", cursor: "pointer", fontSize: 28, color: "#fff", boxShadow: "0 4px 20px #7C3AED88", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
-      </div>
+      {showFloatingAction && (
+        <div style={{ position: "fixed", bottom: FLOATING_ACTION_BOTTOM, right: "calc(50% - 184px)", zIndex: 50 }}>
+          <button onClick={() => setShowActionMenu(true)} style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #7C3AED, #EC4899)", border: "none", cursor: "pointer", fontSize: 28, color: "#fff", boxShadow: "0 4px 20px #7C3AED88", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+        </div>
+      )}
 
-      {showActionMenu && (
+      {showFloatingAction && showActionMenu && (
         <div data-kaleido-modal-backdrop="true" onClick={() => setShowActionMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 200, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430 }}>
             <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 24px" }} />
@@ -82,6 +88,16 @@ export default function PersonalProjectActions({
         }}
         onRestore={() => {
           updateProject(menuProject.id, { status: "en_cours", completedAt: null });
+          setMenuProject(null);
+        }}
+        folders={folders}
+        folderSectionLabel="Personnel"
+        onMoveToFolder={(folderId) => {
+          onMoveToFolder?.(menuProject.id, folderId);
+          setMenuProject(null);
+        }}
+        onRemoveFromFolder={() => {
+          onRemoveFromFolder?.(menuProject.id);
           setMenuProject(null);
         }}
       />

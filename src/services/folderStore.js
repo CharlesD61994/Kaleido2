@@ -66,3 +66,33 @@ export const deleteFolderRecord = (setDatabase, folderId) => {
     return nextDb;
   });
 };
+
+export const moveItemToFolderRecord = (setDatabase, { section, itemId, folderId = null }) => {
+  if (!section || itemId == null) return;
+
+  const collectionBySection = {
+    [FOLDER_SECTIONS.PERSONAL]: "projectsPersonal",
+    [FOLDER_SECTIONS.PRO]: "projectsPro",
+    [FOLDER_SECTIONS.LIBRARY]: "patrons",
+  };
+
+  const collectionKey = collectionBySection[section];
+  if (!collectionKey) return;
+
+  setDatabase((prev) => {
+    const targetFolder = folderId
+      ? asArray(prev?.folders).find((folder) => folder.id === folderId && folder.section === section)
+      : null;
+
+    if (folderId && !targetFolder) return prev;
+
+    const nextDb = {
+      ...prev,
+      [collectionKey]: asArray(prev?.[collectionKey]).map((item) => (
+        item?.id === itemId ? { ...item, folderId: folderId || null } : item
+      )),
+    };
+    saveDatabase(nextDb);
+    return nextDb;
+  });
+};

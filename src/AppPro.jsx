@@ -89,6 +89,9 @@ export default function AppPro({
 
   const folders = getFolders(database, FOLDER_SECTIONS.PRO);
   const activeFolder = folders.find((folder) => folder.id === activeFolderId) || null;
+  const moveProProjectToFolder = (projectId, folderId) => {
+    folderRecords?.moveItemToFolder({ section: FOLDER_SECTIONS.PRO, itemId: projectId, folderId });
+  };
 
   if (activeFolder) {
     const folderProjects = projects.filter((project) => project.folderId === activeFolder.id);
@@ -121,6 +124,16 @@ export default function AppPro({
             if (menuProject && typeof onChangeProProjectColor === "function") {
               onChangeProProjectColor(menuProject.id, idx);
             }
+          }}
+          folders={folders}
+          folderSectionLabel="Professionnel"
+          onMoveToFolder={(folderId) => {
+            moveProProjectToFolder(menuProject.id, folderId);
+            setMenuProject(null);
+          }}
+          onRemoveFromFolder={() => {
+            moveProProjectToFolder(menuProject.id, null);
+            setMenuProject(null);
           }}
         />
         <RenameModal project={renameProject} onConfirm={handleRename} onClose={() => setRenameProject(null)} />
@@ -243,6 +256,16 @@ export default function AppPro({
           if (menuProject && typeof onChangeProProjectColor === "function") {
             onChangeProProjectColor(menuProject.id, idx);
           }
+        }}
+        folders={folders}
+        folderSectionLabel="Professionnel"
+        onMoveToFolder={(folderId) => {
+          moveProProjectToFolder(menuProject.id, folderId);
+          setMenuProject(null);
+        }}
+        onRemoveFromFolder={() => {
+          moveProProjectToFolder(menuProject.id, null);
+          setMenuProject(null);
         }}
       />
       <ContextMenu project={menuFolder} position={menuPos} onClose={() => setMenuFolder(null)}

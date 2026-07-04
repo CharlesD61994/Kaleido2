@@ -78,6 +78,7 @@ export const getDefaultDatabase = () => ({
   ],
   projectsPro: [],
   patrons: [],
+  folders: [],
   settings: { lastProjectId: 3, lastPatronId: 0 },
 });
 
@@ -166,10 +167,14 @@ export const normalizeDatabase = (input) => {
 
   const projectsProRaw = Array.isArray(raw.projectsPro) ? raw.projectsPro : [];
   const patronsRaw = Array.isArray(raw.patrons) ? raw.patrons : [];
+  const foldersRaw = Array.isArray(raw.folders) ? raw.folders : [];
 
   const projectsPersonal = projectsPersonalRaw.map(stripHeavyMediaFields);
   const projectsPro = projectsProRaw.map(stripHeavyMediaFields);
   const patrons = patronsRaw.map(stripHeavyMediaFields);
+  const folders = foldersRaw
+    .filter((folder) => folder && typeof folder === "object" && folder.id && folder.section)
+    .map((folder) => ({ ...folder }));
 
   const rawSettings = raw.settings && typeof raw.settings === "object" ? raw.settings : {};
   const lastProjectId = computeLastProjectId(
@@ -186,6 +191,7 @@ export const normalizeDatabase = (input) => {
     projectsPersonal,
     projectsPro,
     patrons,
+    folders,
     settings: {
       ...rawSettings,
       lastProjectId,

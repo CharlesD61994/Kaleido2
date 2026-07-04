@@ -44,6 +44,9 @@ export default function LibraryView({
   const folderPatrons = activeFolder ? patrons.filter((patron) => patron.folderId === activeFolder.id) : [];
   const filtered = rootPatrons.filter((patron) => !term || patron.name.toLowerCase().includes(term));
   const visibleFolders = folders.filter((folder) => !term || folder.name.toLowerCase().includes(term));
+  const movePatronToFolder = (patronId, folderId) => {
+    folderRecords?.moveItemToFolder({ section: FOLDER_SECTIONS.LIBRARY, itemId: patronId, folderId });
+  };
 
   const openPatron = (patron) => {
     if (patron.projectType === "pdf") {
@@ -72,7 +75,17 @@ export default function LibraryView({
         onRename={() => { setRenamePatron(menuPatron); setMenuPatron(null); }}
         onDelete={() => { setDeletePatron(menuPatron); setMenuPatron(null); }}
         onChangePhoto={() => { onChangePatronPhoto(menuPatron.id); setMenuPatron(null); }}
-        onChangeColor={(idx) => onChangePatronColor(menuPatron.id, idx)} />
+        onChangeColor={(idx) => onChangePatronColor(menuPatron.id, idx)}
+        folders={folders}
+        folderSectionLabel="Bibliothèque"
+        onMoveToFolder={(folderId) => {
+          movePatronToFolder(menuPatron.id, folderId);
+          setMenuPatron(null);
+        }}
+        onRemoveFromFolder={() => {
+          movePatronToFolder(menuPatron.id, null);
+          setMenuPatron(null);
+        }} />
       <RenameModal project={renamePatron} onConfirm={(name) => { onRenamePatron(renamePatron.id, name); setRenamePatron(null); }} onClose={() => setRenamePatron(null)} />
       <DeleteModal project={deletePatron} onConfirm={() => { onDeletePatron(deletePatron.id); setDeletePatron(null); }} onClose={() => setDeletePatron(null)} />
     </>

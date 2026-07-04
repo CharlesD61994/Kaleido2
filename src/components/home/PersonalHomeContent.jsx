@@ -57,20 +57,48 @@ export default function PersonalHomeContent({
   const [deleteFolder, setDeleteFolder] = React.useState(null);
   const folders = getFolders(database, FOLDER_SECTIONS.PERSONAL);
   const activeFolder = folders.find((folder) => folder.id === activeFolderId) || null;
+  const movePersonalProjectToFolder = (projectId, folderId) => {
+    folderRecords?.moveItemToFolder({ section: FOLDER_SECTIONS.PERSONAL, itemId: projectId, folderId });
+  };
 
   if (activeFolder) {
     const folderItems = (projects || []).filter((project) => project.folderId === activeFolder.id);
     return (
-      <FolderView
-        folder={activeFolder}
-        items={folderItems}
-        mode={mode}
-        onBack={() => setActiveFolderId(null)}
-        onItemMenuOpen={handleMenuOpen}
-        onItemOpen={(selectedProject) => {
-          selectedProject.projectType === "pdf" ? navigateToPdfViewer(selectedProject) : navigateToRowCounter(selectedProject);
-        }}
-      />
+      <>
+        <FolderView
+          folder={activeFolder}
+          items={folderItems}
+          mode={mode}
+          onBack={() => setActiveFolderId(null)}
+          onItemMenuOpen={handleMenuOpen}
+          onItemOpen={(selectedProject) => {
+            selectedProject.projectType === "pdf" ? navigateToPdfViewer(selectedProject) : navigateToRowCounter(selectedProject);
+          }}
+        />
+        <PersonalProjectActions
+          database={database}
+          deleteProject={deleteProject}
+          handleDelete={handleDelete}
+          handleNewProject={handleNewProject}
+          handleRename={handleRename}
+          menuPos={menuPos}
+          menuProject={menuProject}
+          persistPatronImageToIndexedDB={persistPatronImageToIndexedDB}
+          persistProjectImageToIndexedDB={persistProjectImageToIndexedDB}
+          photoTarget={photoTarget}
+          projects={projects}
+          renameProject={renameProject}
+          setDeleteProject={setDeleteProject}
+          setMenuProject={setMenuProject}
+          setPhotoTarget={setPhotoTarget}
+          setRenameProject={setRenameProject}
+          updateProject={updateProject}
+          folders={folders}
+          onMoveToFolder={movePersonalProjectToFolder}
+          onRemoveFromFolder={(projectId) => movePersonalProjectToFolder(projectId, null)}
+          showFloatingAction={false}
+        />
+      </>
     );
   }
 
@@ -120,6 +148,9 @@ export default function PersonalHomeContent({
         setRenameProject={setRenameProject}
         updateProject={updateProject}
         onCreateFolder={() => setShowFolderModal(true)}
+        folders={folders}
+        onMoveToFolder={movePersonalProjectToFolder}
+        onRemoveFromFolder={(projectId) => movePersonalProjectToFolder(projectId, null)}
       />
       <ProjectStatsModal project={statsProject} onClose={() => setStatsProject(null)} />
       <ContextMenu project={menuFolder} position={folderMenuPos} onClose={() => setMenuFolder(null)}
