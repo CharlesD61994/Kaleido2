@@ -16,7 +16,7 @@ Dans Supabase, va dans Edge Functions > Secrets et ajoute :
 RESEND_API_KEY=ta_cle_resend
 KALEIDO_EMAIL_FROM=Kaleido <suivi@atelierkaleido.ca>
 KALEIDO_OWNER_EMAIL=ton_courriel_a_toi
-PUBLIC_CLIENT_ORIGIN=https://kaleido3.vercel.app
+PUBLIC_CLIENT_ORIGIN=https://app.atelierkaleido.ca
 ```
 
 Pour tester avec Resend sans domaine verifie, garde `onboarding@resend.dev`. Pour envoyer aux clients, utilise le domaine verifie: `Kaleido <suivi@atelierkaleido.ca>`.

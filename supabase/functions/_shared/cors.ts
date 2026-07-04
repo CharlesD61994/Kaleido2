@@ -29,7 +29,7 @@ export const getServiceRoleKey = () => {
 export const getPublicClientOrigin = () => (
   Deno.env.get("PUBLIC_CLIENT_ORIGIN")
   || Deno.env.get("VITE_PUBLIC_CLIENT_ORIGIN")
-  || "https://kaleido3.vercel.app"
+  || "https://app.atelierkaleido.ca"
 );
 
 export const sendResendEmail = async ({
