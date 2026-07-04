@@ -14,12 +14,12 @@ Dans Supabase, va dans Edge Functions > Secrets et ajoute :
 
 ```text
 RESEND_API_KEY=ta_cle_resend
-KALEIDO_EMAIL_FROM=Kaleido <onboarding@resend.dev>
+KALEIDO_EMAIL_FROM=Kaleido <suivi@atelierkaleido.ca>
 KALEIDO_OWNER_EMAIL=ton_courriel_a_toi
 PUBLIC_CLIENT_ORIGIN=https://kaleido3.vercel.app
 ```
 
-Pour tester avec Resend sans domaine verifie, garde `onboarding@resend.dev`.
+Pour tester avec Resend sans domaine verifie, garde `onboarding@resend.dev`. Pour envoyer aux clients, utilise le domaine verifie: `Kaleido <suivi@atelierkaleido.ca>`.
 Quand tu auras un domaine verifie, remplace `KALEIDO_EMAIL_FROM` par une adresse a toi.
 
 ## 3. Fonctions Edge a deployer

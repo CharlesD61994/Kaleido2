@@ -44,7 +44,7 @@ export const sendResendEmail = async ({
   text: string;
 }) => {
   const apiKey = Deno.env.get("RESEND_API_KEY");
-  const from = Deno.env.get("KALEIDO_EMAIL_FROM") || "Kaleido <onboarding@resend.dev>";
+  const from = Deno.env.get("KALEIDO_EMAIL_FROM") || "Kaleido <suivi@atelierkaleido.ca>";
 
   if (!apiKey) {
     return { ok: false, reason: "RESEND_API_KEY manquant." };
