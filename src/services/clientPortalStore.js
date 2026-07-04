@@ -317,6 +317,30 @@ export const updateClientNotificationPreferences = async (shareToken, preference
   return { ok: true, preferences: data?.preferences || cleanPreferences };
 };
 
+export const markClientProjectSeen = async (shareToken) => {
+  if (!isSupabaseConfigured || !supabase || !shareToken) {
+    return { ok: false };
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke("kaleido-client-seen", {
+      body: { shareToken },
+    });
+
+    if (error || data?.ok === false) {
+      return {
+        ok: false,
+        error,
+        reason: data?.reason || error?.message || "La lecture client n'a pas pu etre enregistree.",
+      };
+    }
+
+    return { ok: true, seenAt: data?.seenAt || "" };
+  } catch (error) {
+    return { ok: false, error, reason: error?.message || "La lecture client n'a pas pu etre enregistree." };
+  }
+};
+
 export const sendClientShareEmail = async (shareToken, clientEmail = "") => {
   if (!isSupabaseConfigured || !supabase) {
     return { ok: false, reason: "Supabase n'est pas configure." };

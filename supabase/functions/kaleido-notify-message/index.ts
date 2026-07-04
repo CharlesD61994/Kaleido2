@@ -3,6 +3,7 @@ import { corsHeaders, getPublicClientOrigin, getServiceRoleKey, jsonResponse, se
 
 const PROJECTS_TABLE = "kaleido_client_projects";
 const MESSAGES_TABLE = "kaleido_client_messages";
+const CLIENT_ACTIVE_WINDOW_MS = 90_000;
 
 type ClientMessage = {
   id: string;
@@ -19,6 +20,8 @@ type ClientProjectRow = {
   owner_key: string;
   project_json: Record<string, unknown> | null;
   client_message_emails_enabled: boolean | null;
+  client_last_seen_at: string | null;
+  client_message_email_pending: boolean | null;
 };
 
 const escapeHtml = (value: string) => value
@@ -30,7 +33,7 @@ const escapeHtml = (value: string) => value
 const excerpt = (message: ClientMessage) => {
   const body = String(message.body || "").trim();
   if (body) return body.length > 220 ? `${body.slice(0, 217)}...` : body;
-  return message.attachment_url ? "Photo envoyée" : "Nouveau message";
+  return message.attachment_url ? "Photo envoyee" : "Nouveau message";
 };
 
 Deno.serve(async (req) => {
@@ -64,11 +67,26 @@ Deno.serve(async (req) => {
     return jsonResponse({ ok: false, reason: messageError?.message || "Message introuvable." }, 404);
   }
 
-  const { data: projectRow, error: projectError } = await supabase
+  let projectRow: ClientProjectRow | null = null;
+  let projectError: { code?: string; message?: string } | null = null;
+
+  const projectResult = await supabase
     .from(PROJECTS_TABLE)
-    .select("share_token, owner_key, project_json, client_message_emails_enabled")
+    .select("share_token, owner_key, project_json, client_message_emails_enabled, client_last_seen_at, client_message_email_pending")
     .eq("share_token", message.share_token)
     .maybeSingle<ClientProjectRow>();
+  projectRow = projectResult.data;
+  projectError = projectResult.error;
+
+  if (projectError?.code === "42703") {
+    const legacyProjectResult = await supabase
+      .from(PROJECTS_TABLE)
+      .select("share_token, owner_key, project_json, client_message_emails_enabled")
+      .eq("share_token", message.share_token)
+      .maybeSingle<ClientProjectRow>();
+    projectRow = legacyProjectResult.data;
+    projectError = legacyProjectResult.error;
+  }
 
   if (projectError || !projectRow?.project_json) {
     return jsonResponse({ ok: false, reason: projectError?.message || "Projet client introuvable." }, 404);
@@ -87,16 +105,25 @@ Deno.serve(async (req) => {
 
   if (message.sender === "owner") {
     if (projectRow.client_message_emails_enabled === false) {
-      return jsonResponse({ ok: true, skipped: true, reason: "Notifications message désactivées par le client." });
+      return jsonResponse({ ok: true, skipped: true, reason: "Notifications message desactivees par le client." });
+    }
+
+    const clientLastSeenAt = projectRow.client_last_seen_at ? Date.parse(projectRow.client_last_seen_at) : 0;
+    const clientIsActive = clientLastSeenAt > 0 && Date.now() - clientLastSeenAt <= CLIENT_ACTIVE_WINDOW_MS;
+    if (clientIsActive) {
+      return jsonResponse({ ok: true, skipped: true, reason: "Le client consulte deja la fiche." });
+    }
+
+    if (projectRow.client_message_email_pending) {
+      return jsonResponse({ ok: true, skipped: true, reason: "Un courriel de message est deja en attente de lecture." });
     }
 
     recipient = String(project.email || "").trim();
-    subject = `Nouveau message pour ${projectName}`;
-    text = `Bonjour ${clientName},\n\nVous avez reçu un nouveau message au sujet de votre projet ${projectName}.\n\n${messageExcerpt}\n\nConsulter la fiche client : ${shareUrl}\n\nL'Atelier Kaleido`;
+    subject = "Vous avez un nouveau message";
+    text = `Bonjour ${clientName},\n\nVous avez recu un nouveau message concernant votre projet ${projectName}.\n\nVous pouvez le consulter ici : ${shareUrl}\n\nL'Atelier Kaleido`;
     html = `
       <p>Bonjour ${escapeHtml(clientName)},</p>
-      <p>Vous avez reçu un nouveau message au sujet de votre projet <strong>${escapeHtml(projectName)}</strong>.</p>
-      <blockquote style="border-left:3px solid #8B5CF6;padding-left:12px;color:#4B5563;">${escapeHtml(messageExcerpt)}</blockquote>
+      <p>Vous avez recu un nouveau message concernant votre projet <strong>${escapeHtml(projectName)}</strong>.</p>
       <p><a href="${shareUrl}">Ouvrir la fiche client</a></p>
       <p>L'Atelier Kaleido</p>
     `;
@@ -111,9 +138,9 @@ Deno.serve(async (req) => {
 
     recipient = ownerEmail.trim();
     subject = `Nouveau message client - ${projectName}`;
-    text = `${clientName} a envoyé un message pour ${projectName}.\n\n${messageExcerpt}\n\nFiche client : ${shareUrl}`;
+    text = `${clientName} a envoye un message pour ${projectName}.\n\n${messageExcerpt}\n\nFiche client : ${shareUrl}`;
     html = `
-      <p><strong>${escapeHtml(clientName)}</strong> a envoyé un message pour <strong>${escapeHtml(projectName)}</strong>.</p>
+      <p><strong>${escapeHtml(clientName)}</strong> a envoye un message pour <strong>${escapeHtml(projectName)}</strong>.</p>
       <blockquote style="border-left:3px solid #8B5CF6;padding-left:12px;color:#4B5563;">${escapeHtml(messageExcerpt)}</blockquote>
       <p><a href="${shareUrl}">Ouvrir la fiche client</a></p>
     `;
@@ -128,10 +155,21 @@ Deno.serve(async (req) => {
     }, 502);
   }
 
+  const notifiedAt = new Date().toISOString();
   await supabase
     .from(MESSAGES_TABLE)
-    .update({ email_notified_at: new Date().toISOString() })
+    .update({ email_notified_at: notifiedAt })
     .eq("id", message.id);
+
+  if (message.sender === "owner") {
+    await supabase
+      .from(PROJECTS_TABLE)
+      .update({
+        client_message_email_pending: true,
+        last_client_message_email_sent_at: notifiedAt,
+      })
+      .eq("share_token", message.share_token);
+  }
 
   return jsonResponse({ ok: true });
 });

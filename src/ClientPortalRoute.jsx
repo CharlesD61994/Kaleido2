@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { loadClientProjectByToken } from "./services/clientPortalStore";
+import { loadClientProjectByToken, markClientProjectSeen } from "./services/clientPortalStore";
 import { THEME_CSS } from "./styles/theme";
 
 const PublicClientPage = lazy(() => import("./PublicClientPage"));
@@ -45,6 +45,33 @@ function ClientPortalState({ title, message }) {
 
 export default function ClientPortalRoute({ token }) {
   const [state, setState] = useState({ loading: true, project: null, error: "" });
+
+  useEffect(() => {
+    if (!token) return undefined;
+
+    let alive = true;
+    const markSeen = () => {
+      if (!alive || (typeof document !== "undefined" && document.hidden)) return;
+      markClientProjectSeen(token);
+    };
+
+    markSeen();
+    const timer = setInterval(markSeen, 30000);
+    const onVisible = () => {
+      if (!document.hidden) markSeen();
+    };
+    const onFocus = () => markSeen();
+
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      alive = false;
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [token]);
 
   useEffect(() => {
     let alive = true;
