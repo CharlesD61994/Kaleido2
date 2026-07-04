@@ -35,7 +35,6 @@ export default function AppPro({
   const [photoTarget, setPhotoTarget] = useState(null);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("Tous");
-  const [showCreateMenu, setShowCreateMenu] = useState(false);
 
   const projects = useMemo(() => (
     [...(projectsPro || [])]
@@ -120,7 +119,7 @@ export default function AppPro({
 
       <div style={{ position: "fixed", bottom: FLOATING_ACTION_BOTTOM, right: "calc(50% - 184px)", zIndex: 50 }}>
         <button
-          onClick={() => setShowCreateMenu(true)}
+          onClick={() => onCreateProProject?.()}
           style={{
             width: 56,
             height: 56,
@@ -139,18 +138,6 @@ export default function AppPro({
           +
         </button>
       </div>
-
-      {showCreateMenu && (
-        <div data-kaleido-modal-backdrop="true" onClick={() => setShowCreateMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 200, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 430 }}>
-            <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 24px" }} />
-            <h3 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 18, margin: "0 0 20px", textAlign: "center" }}>Nouveau</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <button onClick={() => { setShowCreateMenu(false); onCreateProProject?.(); }} style={{ padding: "18px 20px", borderRadius: 16, background: "linear-gradient(135deg, #05966922, #34D39922)", border: "1px solid #05966944", cursor: "pointer", textAlign: "left", color: "var(--k-text)", fontWeight: 800, fontSize: 16 }}>Créer un projet client</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <ContextMenu
         project={menuProject}
