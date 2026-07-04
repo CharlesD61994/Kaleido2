@@ -30,6 +30,7 @@ Les fonctions ajoutees sont :
 supabase/functions/kaleido-notify-message
 supabase/functions/kaleido-client-preferences
 supabase/functions/kaleido-client-seen
+supabase/functions/kaleido-delete-client-project
 supabase/functions/kaleido-daily-progress-email
 supabase/functions/kaleido-send-share-email
 ```

@@ -341,6 +341,30 @@ export const markClientProjectSeen = async (shareToken) => {
   }
 };
 
+export const deleteClientProjectPublication = async (shareToken) => {
+  if (!isSupabaseConfigured || !supabase || !shareToken) {
+    return { ok: false };
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke("kaleido-delete-client-project", {
+      body: { shareToken },
+    });
+
+    if (error || data?.ok === false) {
+      return {
+        ok: false,
+        error,
+        reason: data?.reason || error?.message || "La fiche client publiee n'a pas pu etre supprimee.",
+      };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error, reason: error?.message || "La fiche client publiee n'a pas pu etre supprimee." };
+  }
+};
+
 export const sendClientShareEmail = async (shareToken, clientEmail = "") => {
   if (!isSupabaseConfigured || !supabase) {
     return { ok: false, reason: "Supabase n'est pas configure." };

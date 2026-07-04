@@ -1,5 +1,5 @@
 import { saveDatabase } from "../services/databaseStore";
-import { publishClientProject, ensureClientShareToken } from "../services/clientPortalStore";
+import { publishClientProject, ensureClientShareToken, deleteClientProjectPublication } from "../services/clientPortalStore";
 import { updateClientInfoRecord } from "../services/clientStore";
 import { updateProjectProgress } from "../services/progressStore";
 import {
@@ -116,6 +116,13 @@ export default function useProjectRecords({
   };
 
   const deleteProProjectFromDB = (projectId) => {
+    const currentProject = (database.projectsPro || []).find((project) => String(project.id) === String(projectId));
+    if (currentProject?.clientShareToken) {
+      deleteClientProjectPublication(currentProject.clientShareToken).catch((error) => {
+        console.warn("[KALEIDO] delete shared client project error:", error);
+      });
+    }
+
     deleteProProjectRecord(setDatabase, saveDatabase, projectId);
     setCurrentProject((prev) => (prev && prev.id === projectId ? null : prev));
   };
