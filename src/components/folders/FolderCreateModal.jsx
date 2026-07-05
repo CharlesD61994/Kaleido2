@@ -12,9 +12,16 @@ export default function FolderCreateModal({ sectionLabel = "cette section", onCl
   };
 
   return (
-    <div data-kaleido-modal-backdrop="true" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 220, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div data-kaleido-modal-card="true" onClick={(e) => e.stopPropagation()} style={{ background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: "24px 24px 0 0", padding: "24px 20px 38px", width: "100%", maxWidth: 430 }}>
-        <div style={{ width: 36, height: 4, background: "var(--k-border-strong)", borderRadius: 2, margin: "0 auto 22px" }} />
+    <div data-kaleido-modal-backdrop="true" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 220, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div data-kaleido-modal-card="true" onClick={(e) => e.stopPropagation()} style={{ position: "relative", background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 22, padding: "26px 20px 22px", width: "100%", maxWidth: 350, boxShadow: "0 18px 60px rgba(0,0,0,0.30)" }}>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fermer"
+          style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text-soft)", fontSize: 19, lineHeight: 1, cursor: "pointer" }}
+        >
+          ×
+        </button>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
           <IconBadge name="folder" tone="violet" size={24} />
         </div>

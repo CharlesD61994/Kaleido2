@@ -47,6 +47,22 @@ export const renameFolderRecord = (setDatabase, folderId, name) => {
   });
 };
 
+export const changeFolderColorRecord = (setDatabase, folderId, colorIdx) => {
+  if (!folderId) return;
+  const nextColorIdx = Number(colorIdx) || 0;
+
+  setDatabase((prev) => {
+    const nextDb = {
+      ...prev,
+      folders: asArray(prev?.folders).map((folder) => (
+        folder.id === folderId ? { ...folder, colorIdx: nextColorIdx } : folder
+      )),
+    };
+    saveDatabase(nextDb);
+    return nextDb;
+  });
+};
+
 export const deleteFolderRecord = (setDatabase, folderId) => {
   if (!folderId) return;
 

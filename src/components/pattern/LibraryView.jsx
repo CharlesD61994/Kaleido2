@@ -175,7 +175,8 @@ export default function LibraryView({
       {renderPatronMenu()}
       <ContextMenu project={menuFolder} position={menuPos} onClose={() => setMenuFolder(null)}
         onRename={() => { setRenameFolder(menuFolder); setMenuFolder(null); }}
-        onDelete={() => { setDeleteFolder(menuFolder); setMenuFolder(null); }} />
+        onDelete={() => { setDeleteFolder(menuFolder); setMenuFolder(null); }}
+        onChangeColor={(idx) => folderRecords?.changeFolderColor(menuFolder.id, idx)} />
       <RenameModal project={renameFolder} onConfirm={(name) => { folderRecords?.renameFolder(renameFolder.id, name); setRenameFolder(null); }} onClose={() => setRenameFolder(null)} />
       <DeleteModal project={deleteFolder} onConfirm={() => { folderRecords?.deleteFolder(deleteFolder.id); setDeleteFolder(null); }} onClose={() => setDeleteFolder(null)} />
 
