@@ -29,6 +29,7 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
           onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
         >
+          <span style={{ position: "absolute", inset: "-3%", borderRadius: "50%", opacity: 0.95, background: `radial-gradient(circle, ${color.bg}66 0%, ${color.bg}2A 42%, transparent 68%)`, boxShadow: `0 0 10px ${color.bg}66, 0 0 22px ${color.bg}33`, pointerEvents: "none" }} />
           <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "var(--k-surface)", border: `3px solid ${color.light}AA`, boxShadow: `0 10px 24px rgba(0,0,0,0.18), 0 0 18px ${color.bg}2F`, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ position: "absolute", inset: "18%", borderRadius: "50%", background: `radial-gradient(circle, ${color.light}22 0%, transparent 68%)` }} />
             <Icon name="folder" size={48} color={color.light} stroke={1.85} />
