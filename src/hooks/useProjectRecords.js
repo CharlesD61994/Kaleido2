@@ -113,6 +113,9 @@ export default function useProjectRecords({
     const readAt = new Date().toISOString();
     updateProProjectRecord(setDatabase, saveDatabase, project.id, { clientLastReadAt: readAt });
     setCurrentProject((prev) => (prev && prev.id === project.id ? { ...prev, clientLastReadAt: readAt } : prev));
+    if (project?.clientShareToken) {
+      publishSharedProjectQuietly({ ...project, clientLastReadAt: readAt });
+    }
   };
 
   const deleteProProjectFromDB = (projectId) => {

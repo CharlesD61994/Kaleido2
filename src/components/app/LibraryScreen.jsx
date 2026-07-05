@@ -12,11 +12,13 @@ export function LibraryPreview({
   handleNewPdfPatron,
   inactivePreviewContentStyle,
   folderRecords,
+  activeFolderId,
   navigateToHub,
   previewLibraryStyle,
   setCurrentPatron,
   setCurrentView,
   setPhotoTarget,
+  onActiveFolderChange,
   updatePatron,
 }) {
   return (
@@ -33,6 +35,8 @@ export function LibraryPreview({
           onChangePatronColor={(id, idx) => updatePatron(id, { colorIdx: idx })}
           onChangePatronPhoto={(id) => setPhotoTarget({ id, context: "patron" })}
           folderRecords={folderRecords}
+          activeFolderId={activeFolderId}
+          onActiveFolderChange={onActiveFolderChange}
           setEditingPdfPatron={() => {}}
         />
       </div>
@@ -48,6 +52,7 @@ export default function LibraryScreen({
   deletePatronFromDB,
   editingPdfPatron,
   folderRecords,
+  activeFolderId,
   handleNewCustomPatron,
   handleNewPdfPatron,
   navigateToHub,
@@ -59,6 +64,7 @@ export default function LibraryScreen({
   setCurrentView,
   setEditingPdfPatron,
   setPhotoTarget,
+  onActiveFolderChange,
   setShowLibraryImportModal,
   showLibraryImportModal,
   updatePatron,
@@ -128,6 +134,8 @@ export default function LibraryScreen({
         onChangePatronColor={(id, idx) => updatePatron(id, { colorIdx: idx })}
         onChangePatronPhoto={(id) => setPhotoTarget({ id, context: "patron" })}
         folderRecords={folderRecords}
+        activeFolderId={activeFolderId}
+        onActiveFolderChange={onActiveFolderChange}
         setEditingPdfPatron={(patron) => {
           if (patron) {
             const fresh = (database.patrons || []).find((item) => item.id === patron.id);

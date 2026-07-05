@@ -1,6 +1,7 @@
 import { VIEWS } from "../constants/views";
 
 export default function useEdgeSwipePreviewStyles({
+  activeLibraryFolderId,
   currentView,
   edgeSwipeActive,
   edgeSwipeDragging,
@@ -10,12 +11,14 @@ export default function useEdgeSwipePreviewStyles({
   const interactiveBackPreview = edgeSwipeActive && currentView !== VIEWS.HUB;
   const usesLibraryBackPreview = currentView === VIEWS.PATRON_EDITOR
     || currentView === VIEWS.PDF_PATRON_IMPORT
-    || currentView === VIEWS.PDF_PATRON_EDIT;
+    || currentView === VIEWS.PDF_PATRON_EDIT
+    || (currentView === VIEWS.LIBRARY && activeLibraryFolderId);
   const previewUsesLibrary = interactiveBackPreview && usesLibraryBackPreview;
   const previewUsesClientPrevious = false;
   const previewUsesHub = interactiveBackPreview
     && !usesLibraryBackPreview
     && currentView !== VIEWS.CLIENT_PAGE;
+  const previewLibraryFolderId = currentView === VIEWS.LIBRARY ? null : activeLibraryFolderId;
 
   const activeScreenInteractiveStyle = interactiveBackPreview ? {
     transform: `translate3d(${(edgeSwipeProgress * 100).toFixed(3)}vw, 0, 0)`,
@@ -104,6 +107,7 @@ export default function useEdgeSwipePreviewStyles({
     inactivePreviewContentStyle,
     keepHubMounted: currentView === VIEWS.HUB || currentView === VIEWS.PDF_VIEWER || previewUsesHub,
     keepLibraryMountedForPreview: usesLibraryBackPreview || previewUsesLibrary,
+    previewLibraryFolderId,
     previewBackdropStyle,
     previewHubStyle,
     previewLibraryStyle,

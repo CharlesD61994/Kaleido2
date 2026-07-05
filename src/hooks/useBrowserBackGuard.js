@@ -2,26 +2,32 @@ import { useEffect, useRef } from "react";
 import { VIEWS } from "../constants/views";
 
 export default function useBrowserBackGuard({
+  activeLibraryFolderId,
   currentView,
   navigateBackFromClientPage,
   navigateToHub,
   navigateToLibrary,
+  setActiveLibraryFolderId,
 }) {
   const stateRef = useRef({
+    activeLibraryFolderId,
     currentView,
     navigateBackFromClientPage,
     navigateToHub,
     navigateToLibrary,
+    setActiveLibraryFolderId,
   });
 
   useEffect(() => {
     stateRef.current = {
+      activeLibraryFolderId,
       currentView,
       navigateBackFromClientPage,
       navigateToHub,
       navigateToLibrary,
+      setActiveLibraryFolderId,
     };
-  }, [currentView, navigateBackFromClientPage, navigateToHub, navigateToLibrary]);
+  }, [activeLibraryFolderId, currentView, navigateBackFromClientPage, navigateToHub, navigateToLibrary, setActiveLibraryFolderId]);
 
   useEffect(() => {
     const isPdfViewer = currentView === VIEWS.PDF_VIEWER;
@@ -64,15 +70,19 @@ export default function useBrowserBackGuard({
     const goBackInsideApp = () => {
       const {
         currentView: view,
+        activeLibraryFolderId: folderId,
         navigateBackFromClientPage: backFromClientPage,
         navigateToHub: goHub,
         navigateToLibrary: goLibrary,
+        setActiveLibraryFolderId: setFolderId,
       } = stateRef.current;
 
       if (view === VIEWS.CLIENT_PAGE) {
         backFromClientPage();
       } else if (view === VIEWS.PATRON_EDITOR || view === VIEWS.PDF_PATRON_IMPORT || view === VIEWS.PDF_PATRON_EDIT) {
         goLibrary();
+      } else if (view === VIEWS.LIBRARY && folderId) {
+        setFolderId?.(null);
       } else if (view === VIEWS.LIBRARY || view === VIEWS.ROW_COUNTER || view === VIEWS.PDF_VIEWER) {
         goHub();
       }

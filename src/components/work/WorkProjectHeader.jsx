@@ -48,23 +48,23 @@ export default function WorkProjectHeader({
       style={{
         position: "relative",
         zIndex: 26,
-        background: unreadClientMessageCount > 0 ? "rgba(244,63,94,0.18)" : "var(--k-surface-2)",
-        border: unreadClientMessageCount > 0 ? "1px solid rgba(244,63,94,0.58)" : "1px solid var(--k-control-border)",
+        background: unreadClientMessageCount > 0 ? "rgba(251,113,133,0.16)" : "var(--k-surface-2)",
+        border: unreadClientMessageCount > 0 ? "1px solid rgba(251,113,133,0.52)" : "1px solid var(--k-control-border)",
         borderRadius: 10,
         width: 36,
         height: 36,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: unreadClientMessageCount > 0 ? "#FDA4AF" : "#A78BFA",
+        color: unreadClientMessageCount > 0 ? "#FECDD3" : "#A78BFA",
         cursor: "pointer",
         flexShrink: 0,
-        boxShadow: unreadClientMessageCount > 0 ? "0 0 0 3px rgba(244,63,94,0.13), 0 0 18px rgba(244,63,94,0.46)" : "none",
+        boxShadow: unreadClientMessageCount > 0 ? "0 0 0 3px rgba(251,113,133,0.12), 0 0 16px rgba(251,113,133,0.38)" : "none",
       }}
     >
       <Icon name="client" size={19} stroke={2.1} color="currentColor" />
       {unreadClientMessageCount > 0 ? (
-        <span style={{ position: "absolute", top: -4, right: -4, minWidth: 16, height: 16, padding: "0 4px", borderRadius: 999, background: "#F43F5E", border: "2px solid var(--k-bg)", color: "#fff", fontSize: 9, fontWeight: 900, lineHeight: "12px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ position: "absolute", top: -4, right: -4, minWidth: 16, height: 16, padding: "0 4px", borderRadius: 999, background: "linear-gradient(135deg, #FB7185, #F43F5E)", border: "2px solid var(--k-bg)", color: "#fff", fontSize: 9, fontWeight: 900, lineHeight: "12px", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {unreadClientMessageCount > 9 ? "9+" : unreadClientMessageCount}
         </span>
       ) : null}

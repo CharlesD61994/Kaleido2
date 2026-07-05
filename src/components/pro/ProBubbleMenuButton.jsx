@@ -50,7 +50,7 @@ export default function ProBubbleMenuButton({ color, project, onMenuOpen }) {
         fontStyle: "italic",
         fontWeight: 700,
         color: isCompleted ? "#9B95AA" : "#fff",
-        boxShadow: isCompleted ? "0 4px 10px rgba(0,0,0,0.28)" : "0 6px 14px rgba(0,0,0,0.35)",
+        boxShadow: isCompleted ? "0 4px 10px rgba(0,0,0,0.28)" : `0 0 0 3px ${color.light}24, 0 6px 14px rgba(0,0,0,0.35)`,
         transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease",
         zIndex: 10,
         padding: 0,

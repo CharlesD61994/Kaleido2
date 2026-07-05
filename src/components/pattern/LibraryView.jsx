@@ -23,6 +23,8 @@ export default function LibraryView({
   onChangePatronColor,
   onChangePatronPhoto,
   setEditingPdfPatron,
+  activeFolderId,
+  onActiveFolderChange,
 }) {
   const [search, setSearch] = useState("");
   const [menuPatron, setMenuPatron] = useState(null);
@@ -34,7 +36,6 @@ export default function LibraryView({
   const [deleteFolder, setDeleteFolder] = useState(null);
   const [showNewMenu, setShowNewMenu] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
-  const [activeFolderId, setActiveFolderId] = useState(null);
 
   const patrons = database.patrons || [];
   const folders = getFolders(database, FOLDER_SECTIONS.LIBRARY);
@@ -42,7 +43,8 @@ export default function LibraryView({
   const term = search.trim().toLowerCase();
   const rootPatrons = patrons.filter((patron) => !patron.folderId);
   const folderPatrons = activeFolder ? patrons.filter((patron) => patron.folderId === activeFolder.id) : [];
-  const filtered = rootPatrons.filter((patron) => !term || patron.name.toLowerCase().includes(term));
+  const searchablePatrons = term ? patrons : rootPatrons;
+  const filtered = searchablePatrons.filter((patron) => !term || patron.name.toLowerCase().includes(term));
   const visibleFolders = folders.filter((folder) => !term || folder.name.toLowerCase().includes(term));
   const movePatronToFolder = (patronId, folderId) => {
     folderRecords?.moveItemToFolder({ section: FOLDER_SECTIONS.LIBRARY, itemId: patronId, folderId });
@@ -98,7 +100,7 @@ export default function LibraryView({
           folder={activeFolder}
           items={folderPatrons}
           mode="library"
-          onBack={() => setActiveFolderId(null)}
+          onBack={() => onActiveFolderChange?.(null)}
           onItemMenuOpen={handleMenuOpen}
           onItemOpen={openPatron}
         />
@@ -148,7 +150,7 @@ export default function LibraryView({
                 key={folder.id}
                 folder={folder}
                 count={patrons.filter((patron) => patron.folderId === folder.id).length}
-                onOpen={(selectedFolder) => setActiveFolderId(selectedFolder.id)}
+                onOpen={(selectedFolder) => onActiveFolderChange?.(selectedFolder.id)}
                 onMenuOpen={handleFolderMenuOpen}
               />
             ))}

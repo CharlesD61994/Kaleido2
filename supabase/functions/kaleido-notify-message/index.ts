@@ -128,6 +128,26 @@ Deno.serve(async (req) => {
       <p>L'Atelier Kaleido</p>
     `;
   } else {
+    const ownerLastReadAt = Date.parse(String(project.clientLastReadAt || ""));
+    const messageCreatedAt = Date.parse(message.created_at || "");
+    if (ownerLastReadAt > 0 && messageCreatedAt > 0 && messageCreatedAt <= ownerLastReadAt) {
+      return jsonResponse({ ok: true, skipped: true, reason: "Le message a deja ete lu par le tricoteur." });
+    }
+
+    const priorNotifiedResult = await supabase
+      .from(MESSAGES_TABLE)
+      .select("id")
+      .eq("share_token", message.share_token)
+      .eq("sender", "client")
+      .gt("created_at", ownerLastReadAt > 0 ? new Date(ownerLastReadAt).toISOString() : "1970-01-01T00:00:00.000Z")
+      .not("email_notified_at", "is", null)
+      .neq("id", message.id)
+      .limit(1);
+
+    if (!priorNotifiedResult.error && (priorNotifiedResult.data || []).length > 0) {
+      return jsonResponse({ ok: true, skipped: true, reason: "Un courriel de message client est deja en attente de lecture." });
+    }
+
     const ownerEmailFallback = Deno.env.get("KALEIDO_OWNER_EMAIL") || "";
     let ownerEmail = ownerEmailFallback;
 

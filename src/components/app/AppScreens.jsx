@@ -27,6 +27,7 @@ export default function AppScreens({
     currentPatron,
     currentProject,
     currentView,
+    activeLibraryFolderId,
     database,
     mode,
     prevView,
@@ -37,6 +38,7 @@ export default function AppScreens({
 
   const {
     setCurrentPatron,
+    setActiveLibraryFolderId,
     setCurrentView,
   } = setters;
 
@@ -102,6 +104,7 @@ export default function AppScreens({
     keepLibraryMountedForPreview,
     previewBackdropStyle,
     previewHubStyle,
+    previewLibraryFolderId,
     previewLibraryStyle,
   } = preview;
 
@@ -146,6 +149,8 @@ export default function AppScreens({
           setCurrentView={setCurrentView}
           setPhotoTarget={setPhotoTarget}
           updatePatron={updatePatron}
+          activeFolderId={previewLibraryFolderId}
+          onActiveFolderChange={setActiveLibraryFolderId}
         />
       )}
 
@@ -175,6 +180,8 @@ export default function AppScreens({
           showLibraryImportModal={showLibraryImportModal}
           updatePatron={updatePatron}
           folderRecords={folderRecords}
+          activeFolderId={activeLibraryFolderId}
+          onActiveFolderChange={setActiveLibraryFolderId}
           viewWrapStyle={viewWrapStyle}
           viewTransition={viewTransition}
         />

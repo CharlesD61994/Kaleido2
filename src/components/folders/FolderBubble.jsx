@@ -21,6 +21,11 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
             background: "transparent",
             padding: 0,
             cursor: "pointer",
+            outline: "none",
+            boxShadow: "none",
+            WebkitTapHighlightColor: "transparent",
+            WebkitAppearance: "none",
+            appearance: "none",
             transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease",
           }}
           onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.94) translateY(3px)"; }}
@@ -30,11 +35,12 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
           onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
         >
+          <span style={{ position: "absolute", inset: 0, borderRadius: "50%", pointerEvents: "none", zIndex: 0, background: `radial-gradient(circle, ${color.bg}66 0%, ${color.bg}2A 40%, transparent 66%)`, boxShadow: `0 0 10px ${color.bg}66, 0 0 22px ${color.bg}33` }} />
           <span style={{ position: "absolute", width: "97%", height: "97%", borderRadius: "50%", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: `linear-gradient(145deg, ${color.light}44, ${color.bg}CC)`, boxShadow: "0 10px 24px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
             <span style={{ position: "absolute", inset: "18%", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 68%)" }} />
-            <span style={{ position: "relative", width: 66, height: 66, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name="folder" size={64} color="#fff" stroke={1.75} />
-              <span style={{ position: "absolute", left: "50%", top: "57%", transform: "translate(-50%, -50%)", minWidth: 24, color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: countLabel > 99 ? 14 : 17, fontWeight: 900, lineHeight: 1, textAlign: "center", textShadow: "0 2px 8px rgba(0,0,0,0.32)" }}>
+            <span style={{ position: "relative", width: 78, height: 78, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="folder" size={76} color="#fff" stroke={1.62} />
+              <span style={{ position: "absolute", left: "50%", top: "57%", transform: "translate(-50%, -50%)", minWidth: 24, color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: countLabel > 99 ? 14 : 18, fontWeight: 900, lineHeight: 1, textAlign: "center", textShadow: "0 2px 8px rgba(0,0,0,0.34)" }}>
                 {countLabel}
               </span>
             </span>
@@ -56,7 +62,7 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onMenuOpen(folder, e); }}
-            style={{ position: "absolute", top: -9, right: -9, transform: "translate(12%, -20%)", width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${color.light}, ${color.bg})`, border: "2.5px solid var(--k-bg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontStyle: "italic", fontWeight: 700, color: "#fff", boxShadow: "0 6px 14px rgba(0,0,0,0.35)", zIndex: 10 }}
+            style={{ position: "absolute", top: -9, right: -9, transform: "translate(12%, -20%)", width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${color.light}, ${color.bg})`, border: "2.5px solid var(--k-bg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontStyle: "italic", fontWeight: 700, color: "#fff", boxShadow: `0 0 0 3px ${color.light}24, 0 6px 14px rgba(0,0,0,0.35)`, zIndex: 10, outline: "none", WebkitTapHighlightColor: "transparent" }}
           >
             i
           </button>
@@ -65,7 +71,7 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
       <button
         type="button"
         onClick={() => onOpen?.(folder)}
-        style={{ width: size, maxWidth: 112, border: "none", background: "transparent", color: "var(--k-text)", fontSize: "clamp(10px, 2.8vw, 12px)", fontFamily: "'DM Sans', sans-serif", fontWeight: 600, textAlign: "center", padding: 0, cursor: "pointer" }}
+        style={{ width: size, maxWidth: 112, border: "none", background: "transparent", color: "var(--k-text)", fontSize: "clamp(10px, 2.8vw, 12px)", fontFamily: "'DM Sans', sans-serif", fontWeight: 600, textAlign: "center", padding: 0, cursor: "pointer", outline: "none", WebkitTapHighlightColor: "transparent" }}
       >
         {folder?.name || "Dossier"}
       </button>

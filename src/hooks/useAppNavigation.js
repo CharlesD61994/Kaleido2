@@ -6,6 +6,7 @@ export default function useAppNavigation({
   currentProject,
   currentView,
   prevView,
+  setActiveLibraryFolderId,
   setCurrentProject,
   setCurrentView,
   setPrevView,
@@ -20,6 +21,7 @@ export default function useAppNavigation({
     setViewTransition("slide-out");
     setTimeout(() => {
       setCurrentView(VIEWS.HUB);
+      setActiveLibraryFolderId?.(null);
       setCurrentProject(null);
       setViewTransition("slide-in");
       resetTransitionSoon();
@@ -44,7 +46,7 @@ export default function useAppNavigation({
     resetTransitionSoon();
     setCurrentProject(project);
     setCurrentView(VIEWS.PATRON_EDITOR);
-  }, [currentView, resetTransitionSoon, setCurrentProject, setCurrentView, setPrevView, setViewTransition]);
+  }, [currentView, resetTransitionSoon, setActiveLibraryFolderId, setCurrentProject, setCurrentView, setPrevView, setViewTransition]);
 
   const navigateToPdfPatronImport = useCallback(() => {
     setPrevView(currentView);

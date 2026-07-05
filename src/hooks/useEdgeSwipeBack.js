@@ -3,10 +3,12 @@ import { VIEWS } from "../constants/views";
 import { setNativePdfBackProgress } from "../services/nativePdfViewer";
 
 export default function useEdgeSwipeBack({
+  activeLibraryFolderId,
   currentView,
   navigateBackFromClientPage,
   navigateToHub,
   navigateToLibrary,
+  setActiveLibraryFolderId,
 }) {
   const [edgeSwipeActive, setEdgeSwipeActive] = useState(false);
   const [edgeSwipeProgress, setEdgeSwipeProgress] = useState(0);
@@ -77,6 +79,10 @@ export default function useEdgeSwipeBack({
         return true;
       }
       if (currentView === VIEWS.LIBRARY) {
+        if (activeLibraryFolderId) {
+          setActiveLibraryFolderId?.(null);
+          return true;
+        }
         navigateToHub();
         return true;
       }
@@ -134,7 +140,8 @@ export default function useEdgeSwipeBack({
     const completeBack = () => {
       const isLibraryBackView = currentView === VIEWS.PATRON_EDITOR
         || currentView === VIEWS.PDF_PATRON_IMPORT
-        || currentView === VIEWS.PDF_PATRON_EDIT;
+        || currentView === VIEWS.PDF_PATRON_EDIT
+        || (currentView === VIEWS.LIBRARY && activeLibraryFolderId);
       const backButton = isLibraryBackView
         ? null
         : findVisibleBackButton();
@@ -149,7 +156,11 @@ export default function useEdgeSwipeBack({
         if (isLibraryBackView) {
           setEdgeSwipeActive(false);
           setEdgeSwipeProgress(0);
-          navigateToLibrary();
+          if (currentView === VIEWS.LIBRARY && activeLibraryFolderId) {
+            setActiveLibraryFolderId?.(null);
+          } else {
+            navigateToLibrary();
+          }
           return;
         } else if (backButton) {
           backButton.click();
@@ -291,7 +302,7 @@ export default function useEdgeSwipeBack({
       document.removeEventListener("touchend", finishGesture, { capture: true });
       document.removeEventListener("touchcancel", finishGesture, { capture: true });
     };
-  }, [currentView, navigateBackFromClientPage, navigateToHub, navigateToLibrary]);
+  }, [activeLibraryFolderId, currentView, navigateBackFromClientPage, navigateToHub, navigateToLibrary, setActiveLibraryFolderId]);
 
   useEffect(() => {
     setEdgeSwipeActive(false);

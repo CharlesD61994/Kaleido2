@@ -91,6 +91,7 @@ function KaleidoHub({ auth }) {
   const [showLibraryImportModal, setShowLibraryImportModal] = useState(false);
   const [showSelectPatronModal, setShowSelectPatronModal] = useState(false);
   const [editingPdfPatron, setEditingPdfPatron] = useState(null);
+  const [activeLibraryFolderId, setActiveLibraryFolderId] = useState(null);
   const databaseRef = useRef(database);
   const didRestoreResumeStateRef = useRef(false);
   const skipInitialResumeWriteRef = useRef(true);
@@ -264,16 +265,19 @@ const {
   currentProject,
   currentView,
   prevView,
+  setActiveLibraryFolderId,
   setCurrentProject,
   setCurrentView,
   setPrevView,
   setViewTransition,
 });
 useBrowserBackGuard({
+  activeLibraryFolderId,
   currentView,
   navigateBackFromClientPage,
   navigateToHub,
   navigateToLibrary,
+  setActiveLibraryFolderId,
 });
 const handleNewCustomPatron = () => {
 const newId = (database.settings.lastPatronId || 0) + 1;
@@ -338,10 +342,12 @@ const {
   edgeSwipeHandlersRef,
   edgeSwipeProgress,
 } = useEdgeSwipeBack({
+  activeLibraryFolderId,
   currentView,
   navigateBackFromClientPage,
   navigateToHub,
   navigateToLibrary,
+  setActiveLibraryFolderId,
 });
 const {
   activeScreenInteractiveStyle,
@@ -351,8 +357,10 @@ const {
   keepLibraryMountedForPreview,
   previewBackdropStyle,
   previewHubStyle,
+  previewLibraryFolderId,
   previewLibraryStyle,
 } = useEdgeSwipePreviewStyles({
+  activeLibraryFolderId,
   currentView,
   edgeSwipeActive,
   edgeSwipeDragging,
@@ -372,6 +380,7 @@ return (
     currentPatron,
     currentProject,
     currentView,
+    activeLibraryFolderId,
     database,
     mode,
     projects,
@@ -381,6 +390,7 @@ return (
   setters={{
     setCurrentPatron,
     setCurrentProject,
+    setActiveLibraryFolderId,
     setCurrentView,
     setDatabase,
     setMode,
@@ -477,6 +487,7 @@ return (
     keepLibraryMountedForPreview,
     previewBackdropStyle,
     previewHubStyle,
+    previewLibraryFolderId,
     previewLibraryStyle,
   }}
   edgeSwipe={{ edgeSwipeHandlersRef }}
