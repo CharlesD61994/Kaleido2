@@ -39,7 +39,9 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
           <span style={{ position: "absolute", width: "97%", height: "97%", borderRadius: "50%", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: `linear-gradient(145deg, ${color.light}44, ${color.bg}CC)`, boxShadow: "0 10px 24px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
             <span style={{ position: "absolute", inset: "18%", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 68%)" }} />
             <span style={{ position: "relative", width: 78, height: 78, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name="folder" size={76} color="#fff" stroke={1.62} />
+              <span style={{ transform: "translateY(-4px)", display: "flex" }}>
+                <Icon name="folder" size={76} color="#fff" stroke={1.62} />
+              </span>
               <span style={{ position: "absolute", left: "50%", top: "57%", transform: "translate(-50%, -50%)", minWidth: 24, color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: countLabel > 99 ? 14 : 18, fontWeight: 900, lineHeight: 1, textAlign: "center", textShadow: "0 2px 8px rgba(0,0,0,0.34)" }}>
                 {countLabel}
               </span>
