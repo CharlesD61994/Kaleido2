@@ -29,11 +29,11 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
           onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
         >
-          <span style={{ position: "absolute", inset: "3%", borderRadius: "50%", opacity: 0.95, background: `radial-gradient(circle, ${color.bg}4D 0%, ${color.bg}1F 46%, transparent 72%)`, boxShadow: `0 0 14px ${color.bg}44, 0 0 28px ${color.bg}22` }} />
-          <span style={{ position: "absolute", inset: "8%", borderRadius: "50%", background: `linear-gradient(145deg, ${color.light}38, ${color.bg}B8)`, border: `2px solid ${color.light}70`, boxShadow: "0 12px 26px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Icon name="folder" size={42} color="#fff" stroke={1.8} />
+          <span style={{ position: "absolute", inset: "6%", borderRadius: "50%", background: "var(--k-surface)", border: `1.5px solid ${color.light}55`, boxShadow: `0 10px 24px rgba(0,0,0,0.18), 0 0 18px ${color.bg}24`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ position: "absolute", inset: "18%", borderRadius: "50%", background: `radial-gradient(circle, ${color.light}22 0%, transparent 68%)` }} />
+            <Icon name="folder" size={48} color={color.light} stroke={1.85} />
           </span>
-          <span style={{ position: "absolute", top: "15%", right: "15%", minWidth: 25, height: 25, padding: "0 7px", borderRadius: 999, background: "var(--k-surface)", border: `1.5px solid ${color.light}88`, color: "var(--k-text)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, lineHeight: 1, boxShadow: "0 8px 18px rgba(0,0,0,0.22)" }}>
+          <span style={{ position: "absolute", top: "13%", right: "13%", minWidth: 25, height: 25, padding: "0 7px", borderRadius: 999, background: `linear-gradient(135deg, ${color.light}, ${color.bg})`, border: "2px solid var(--k-surface)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, lineHeight: 1, boxShadow: "0 8px 18px rgba(0,0,0,0.24)" }}>
             {countLabel}
           </span>
         </button>
