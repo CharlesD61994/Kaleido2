@@ -5,6 +5,7 @@ import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
 export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) {
   const color = KALEIDOSCOPE_COLORS[(Number(folder?.colorIdx) || 0) % KALEIDOSCOPE_COLORS.length];
   const size = "clamp(96px, 28vw, 110px)";
+  const countLabel = Math.max(0, Number(count) || 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "8px 4px", cursor: "default" }}>
@@ -28,12 +29,12 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
           onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
         >
-          <span style={{ position: "absolute", inset: 0, borderRadius: "50%", opacity: 0.9, background: `radial-gradient(circle, ${color.bg}66 0%, ${color.bg}2A 42%, transparent 68%)`, boxShadow: `0 0 12px ${color.bg}66, 0 0 24px ${color.bg}33` }} />
-          <span style={{ position: "absolute", inset: "7%", borderRadius: "50%", background: `linear-gradient(145deg, ${color.light}44, ${color.bg}CC)`, border: `1.5px solid ${color.light}55`, boxShadow: "0 12px 26px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ position: "absolute", inset: "3%", borderRadius: "50%", opacity: 0.95, background: `radial-gradient(circle, ${color.bg}4D 0%, ${color.bg}1F 46%, transparent 72%)`, boxShadow: `0 0 14px ${color.bg}44, 0 0 28px ${color.bg}22` }} />
+          <span style={{ position: "absolute", inset: "8%", borderRadius: "50%", background: `linear-gradient(145deg, ${color.light}38, ${color.bg}B8)`, border: `2px solid ${color.light}70`, boxShadow: "0 12px 26px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Icon name="folder" size={42} color="#fff" stroke={1.8} />
           </span>
-          <span style={{ position: "absolute", right: 4, bottom: 8, minWidth: 26, height: 22, padding: "0 7px", borderRadius: 999, background: "var(--k-surface)", border: `1px solid ${color.light}66`, color: "var(--k-text)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, boxShadow: "0 8px 18px rgba(0,0,0,0.24)" }}>
-            {count}
+          <span style={{ position: "absolute", top: "15%", right: "15%", minWidth: 25, height: 25, padding: "0 7px", borderRadius: 999, background: "var(--k-surface)", border: `1.5px solid ${color.light}88`, color: "var(--k-text)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, lineHeight: 1, boxShadow: "0 8px 18px rgba(0,0,0,0.22)" }}>
+            {countLabel}
           </span>
         </button>
         {onMenuOpen && (

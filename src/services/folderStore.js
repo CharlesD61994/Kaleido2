@@ -80,6 +80,7 @@ export const moveItemToFolderRecord = (setDatabase, { section, itemId, folderId 
   if (!collectionKey) return;
 
   setDatabase((prev) => {
+    const itemIdText = String(itemId);
     const targetFolder = folderId
       ? asArray(prev?.folders).find((folder) => folder.id === folderId && folder.section === section)
       : null;
@@ -89,7 +90,7 @@ export const moveItemToFolderRecord = (setDatabase, { section, itemId, folderId 
     const nextDb = {
       ...prev,
       [collectionKey]: asArray(prev?.[collectionKey]).map((item) => (
-        item?.id === itemId ? { ...item, folderId: folderId || null } : item
+        String(item?.id) === itemIdText ? { ...item, folderId: folderId || null, folderUpdatedAt: new Date().toISOString() } : item
       )),
     };
     saveDatabase(nextDb);
