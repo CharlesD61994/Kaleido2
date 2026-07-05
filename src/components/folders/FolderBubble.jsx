@@ -4,7 +4,7 @@ import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
 
 export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) {
   const color = KALEIDOSCOPE_COLORS[(Number(folder?.colorIdx) || 0) % KALEIDOSCOPE_COLORS.length];
-  const size = "clamp(96px, 28vw, 110px)";
+  const size = "clamp(102px, 29.5vw, 116px)";
   const countLabel = Math.max(0, Number(count) || 0);
   const ringRadius = 51;
 
@@ -30,7 +30,7 @@ export default function FolderBubble({ folder, count = 0, onOpen, onMenuOpen }) 
           onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1) translateY(0)"; }}
         >
-          <span style={{ position: "absolute", width: "97%", height: "97%", borderRadius: "50%", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: `linear-gradient(145deg, ${color.light}44, ${color.bg}CC)`, boxShadow: "0 10px 24px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+          <span style={{ position: "absolute", width: "100%", height: "100%", borderRadius: "50%", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: `linear-gradient(145deg, ${color.light}44, ${color.bg}CC)`, boxShadow: "0 10px 24px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
             <span style={{ position: "absolute", inset: "18%", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 68%)" }} />
             <Icon name="folder" size={50} color="#fff" stroke={1.85} />
           </span>
