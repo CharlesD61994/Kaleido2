@@ -84,14 +84,14 @@ export default function ClientNotificationPreferences({ project, onPreferencesCh
     setSaving(false);
 
     if (!result.ok) {
-      setStatus(result.reason || "Les preferences n'ont pas pu etre sauvegardees.");
+      setStatus(result.reason || "Les préférences n'ont pas pu être sauvegardées.");
       return;
     }
 
     const savedPreferences = result.preferences || nextPreferences;
     setPreferences(savedPreferences);
     onPreferencesChange?.(savedPreferences);
-    setStatus("Preferences sauvegardees.");
+    setStatus("Préférences sauvegardées.");
     window.setTimeout(() => setStatus(""), 1800);
   };
 
@@ -100,14 +100,14 @@ export default function ClientNotificationPreferences({ project, onPreferencesCh
       <div style={{ display: "grid", gap: 10 }}>
         <PreferenceToggle
           label="Nouveaux messages"
-          description="Recevoir un courriel quand un message est ajoute a la conversation."
+          description="Recevoir un courriel quand un message est ajouté à la conversation."
           checked={preferences.messageEmails}
           disabled={saving || !shareToken}
           onChange={(value) => save({ ...preferences, messageEmails: value })}
         />
         <PreferenceToggle
-          label="Resume d'avancement"
-          description="Recevoir un courriel en fin de journee seulement si le projet a avance."
+          label="Résumé d'avancement"
+          description="Recevoir un courriel en fin de journée seulement si le projet a avancé."
           checked={preferences.progressEmails}
           disabled={saving || !shareToken}
           onChange={(value) => save({ ...preferences, progressEmails: value })}

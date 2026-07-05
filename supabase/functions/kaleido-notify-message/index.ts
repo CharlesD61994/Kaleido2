@@ -4,6 +4,7 @@ import { corsHeaders, getPublicClientOrigin, getServiceRoleKey, jsonResponse, se
 const PROJECTS_TABLE = "kaleido_client_projects";
 const MESSAGES_TABLE = "kaleido_client_messages";
 const CLIENT_ACTIVE_WINDOW_MS = 90_000;
+const MESSAGE_EMAIL_COOLDOWN_MS = 60 * 60 * 1000;
 
 type ClientMessage = {
   id: string;
@@ -13,6 +14,7 @@ type ClientMessage = {
   body: string | null;
   attachment_url: string | null;
   created_at: string;
+  email_notified_at: string | null;
 };
 
 type ClientProjectRow = {
@@ -29,12 +31,6 @@ const escapeHtml = (value: string) => value
   .replaceAll("<", "&lt;")
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;");
-
-const excerpt = (message: ClientMessage) => {
-  const body = String(message.body || "").trim();
-  if (body) return body.length > 220 ? `${body.slice(0, 217)}...` : body;
-  return message.attachment_url ? "Photo envoyee" : "Nouveau message";
-};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -59,7 +55,7 @@ Deno.serve(async (req) => {
 
   const { data: message, error: messageError } = await supabase
     .from(MESSAGES_TABLE)
-    .select("id, share_token, owner_key, sender, body, attachment_url, created_at")
+    .select("id, share_token, owner_key, sender, body, attachment_url, created_at, email_notified_at")
     .eq("id", messageId)
     .maybeSingle<ClientMessage>();
 
@@ -98,7 +94,24 @@ Deno.serve(async (req) => {
   const clientName = String(project.client || "client");
   const projectName = String(project.name || "projet");
   const shareUrl = `${getPublicClientOrigin()}/client/${message.share_token}`;
-  const messageExcerpt = excerpt(message);
+  if (message.email_notified_at) {
+    return jsonResponse({ ok: true, skipped: true, reason: "Ce message a deja declenche un courriel." });
+  }
+
+  const recentEmailCutoff = new Date(Date.now() - MESSAGE_EMAIL_COOLDOWN_MS).toISOString();
+  const recentNotificationResult = await supabase
+    .from(MESSAGES_TABLE)
+    .select("id")
+    .eq("share_token", message.share_token)
+    .eq("owner_key", message.owner_key)
+    .eq("sender", message.sender)
+    .gte("email_notified_at", recentEmailCutoff)
+    .neq("id", message.id)
+    .limit(1);
+
+  if (!recentNotificationResult.error && (recentNotificationResult.data || []).length > 0) {
+    return jsonResponse({ ok: true, skipped: true, reason: "Un courriel de message a deja ete envoye dans la derniere heure." });
+  }
 
   let recipient = "";
   let subject = "";
@@ -116,41 +129,16 @@ Deno.serve(async (req) => {
       return jsonResponse({ ok: true, skipped: true, reason: "Le client consulte deja la fiche." });
     }
 
-    if (projectRow.client_message_email_pending) {
-      return jsonResponse({ ok: true, skipped: true, reason: "Un courriel de message est deja en attente de lecture." });
-    }
-
     recipient = String(project.email || "").trim();
     subject = "Vous avez un nouveau message";
-    text = `Bonjour ${clientName},\n\nVous avez recu un nouveau message concernant votre projet ${projectName}.\n\nVous pouvez le consulter ici : ${shareUrl}\n\nL'Atelier Kaleido`;
+    text = `Bonjour ${clientName},\n\nVous avez reçu un nouveau message concernant votre projet ${projectName}.\n\nVous pouvez le consulter ici : ${shareUrl}\n\nL'Atelier Kaleido`;
     html = `
       <p>Bonjour ${escapeHtml(clientName)},</p>
-      <p>Vous avez recu un nouveau message concernant votre projet <strong>${escapeHtml(projectName)}</strong>.</p>
+      <p>Vous avez reçu un nouveau message concernant votre projet <strong>${escapeHtml(projectName)}</strong>.</p>
       <p><a href="${shareUrl}">Ouvrir la fiche client</a></p>
       <p>L'Atelier Kaleido</p>
     `;
   } else {
-    const ownerLastReadAt = Date.parse(String(project.clientLastReadAt || ""));
-    const messageCreatedAt = Date.parse(message.created_at || "");
-    if (ownerLastReadAt > 0 && messageCreatedAt > 0 && messageCreatedAt <= ownerLastReadAt) {
-      return jsonResponse({ ok: true, skipped: true, reason: "Le message a deja ete lu par le tricoteur." });
-    }
-
-    const priorNotifiedResult = await supabase
-      .from(MESSAGES_TABLE)
-      .select("id")
-      .eq("share_token", message.share_token)
-      .eq("owner_key", message.owner_key)
-      .eq("sender", "client")
-      .gt("created_at", ownerLastReadAt > 0 ? new Date(ownerLastReadAt).toISOString() : "1970-01-01T00:00:00.000Z")
-      .not("email_notified_at", "is", null)
-      .neq("id", message.id)
-      .limit(1);
-
-    if (!priorNotifiedResult.error && (priorNotifiedResult.data || []).length > 0) {
-      return jsonResponse({ ok: true, skipped: true, reason: "Un courriel de message client est deja en attente de lecture." });
-    }
-
     const ownerEmailFallback = Deno.env.get("KALEIDO_OWNER_EMAIL") || "";
     let ownerEmail = ownerEmailFallback;
 
@@ -160,12 +148,13 @@ Deno.serve(async (req) => {
     }
 
     recipient = ownerEmail.trim();
-    subject = `Nouveau message client - ${projectName}`;
-    text = `${clientName} a envoye un message pour ${projectName}.\n\n${messageExcerpt}\n\nFiche client : ${shareUrl}`;
+    subject = "Vous avez un nouveau message";
+    text = `Bonjour,\n\nVous avez reçu un nouveau message concernant le projet ${projectName}.\n\nVous pouvez le consulter ici : ${shareUrl}\n\nL'Atelier Kaleido`;
     html = `
-      <p><strong>${escapeHtml(clientName)}</strong> a envoye un message pour <strong>${escapeHtml(projectName)}</strong>.</p>
-      <blockquote style="border-left:3px solid #8B5CF6;padding-left:12px;color:#4B5563;">${escapeHtml(messageExcerpt)}</blockquote>
+      <p>Bonjour,</p>
+      <p>Vous avez reçu un nouveau message concernant le projet <strong>${escapeHtml(projectName)}</strong>.</p>
       <p><a href="${shareUrl}">Ouvrir la fiche client</a></p>
+      <p>L'Atelier Kaleido</p>
     `;
   }
 
@@ -183,17 +172,6 @@ Deno.serve(async (req) => {
     .from(MESSAGES_TABLE)
     .update({ email_notified_at: notifiedAt })
     .eq("id", message.id);
-
-  if (message.sender === "owner") {
-    await supabase
-      .from(PROJECTS_TABLE)
-      .update({
-        client_message_email_pending: true,
-        last_client_message_email_sent_at: notifiedAt,
-      })
-      .eq("share_token", message.share_token)
-      .eq("owner_key", message.owner_key);
-  }
 
   return jsonResponse({ ok: true });
 });
