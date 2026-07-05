@@ -139,6 +139,12 @@ Deno.serve(async (req) => {
       <p>L'Atelier Kaleido</p>
     `;
   } else {
+    const ownerLastReadAt = Date.parse(String(project.clientLastReadAt || ""));
+    const ownerIsActive = ownerLastReadAt > 0 && Date.now() - ownerLastReadAt <= CLIENT_ACTIVE_WINDOW_MS;
+    if (ownerIsActive) {
+      return jsonResponse({ ok: true, skipped: true, reason: "Le tricoteur consulte deja la fiche." });
+    }
+
     const ownerEmailFallback = Deno.env.get("KALEIDO_OWNER_EMAIL") || "";
     let ownerEmail = ownerEmailFallback;
 

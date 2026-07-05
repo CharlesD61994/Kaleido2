@@ -18,10 +18,18 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
   const clientInitial = (project?.client || "?").trim().charAt(0).toUpperCase() || "?";
 
   useEffect(() => {
-    if (unreadClientMessageCount > 0 && project?.clientShareToken && typeof onMarkMessagesRead === "function") {
+    if (project?.clientShareToken && typeof onMarkMessagesRead === "function") {
       onMarkMessagesRead(project);
+
+      const interval = window.setInterval(() => {
+        onMarkMessagesRead(project);
+      }, 60_000);
+
+      return () => window.clearInterval(interval);
     }
-  }, [project?.id, project?.clientShareToken, onMarkMessagesRead, unreadClientMessageCount]);
+
+    return undefined;
+  }, [project?.id, project?.clientShareToken, onMarkMessagesRead]);
 
   return (
     <div
