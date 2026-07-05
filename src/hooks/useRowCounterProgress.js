@@ -13,7 +13,11 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const allRangsForCount = allRangs.filter(r => !r.isNote);
   const totalRangsForCount = allRangsForCount.length;
   const savedCountableIndex = Math.max(0, Math.min((project?.rang || 1) - 1, Math.max(0, allRangsForCount.length - 1)));
-  const savedGlobalId = allRangsForCount[savedCountableIndex]?.globalId || allRangs[0]?.globalId || null;
+  const savedExplicitGlobalId = project?.currentRangGlobalId
+    && allRangs.some((rang) => rang.globalId === project.currentRangGlobalId)
+    ? project.currentRangGlobalId
+    : null;
+  const savedGlobalId = savedExplicitGlobalId || allRangsForCount[savedCountableIndex]?.globalId || allRangs[0]?.globalId || null;
   const savedIndex = Math.max(0, allRangs.findIndex(r => r.globalId === savedGlobalId));
   const [currentRangId, setCurrentRangId] = useState(savedGlobalId);
   const currentRangIdRef = useRef(savedGlobalId);
@@ -26,6 +30,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const lastPartieTickRef = useRef(Date.now());
   const currentPartieIdRef = useRef(null);
   const partieTimesRef = useRef(project?.partieTimes || {});
+  const partieCurrentRangGlobalIdsRef = useRef(project?.partieCurrentRangGlobalIds || {});
   const [counters, setCounters] = useState([]);
   const [instructionHighlights, setInstructionHighlights] = useState(project?.instructionHighlights || {});
   const [showNextPartieModal, setShowNextPartieModal] = useState(false);
@@ -59,7 +64,12 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
               allRangs.slice(0, Math.max(0, currentIndexRef.current) + 1).filter(r => !r.isNote).length,
               totalRangsForCount,
               nextElapsed,
-              { instructionHighlights, partieTimes: partieTimesRef.current }
+              {
+                currentRangGlobalId: allRangs[Math.max(0, currentIndexRef.current)]?.globalId || null,
+                partieCurrentRangGlobalIds: partieCurrentRangGlobalIdsRef.current,
+                instructionHighlights,
+                partieTimes: partieTimesRef.current,
+              }
             );
           }
           wasPausedByVisibilityRef.current = true;
@@ -193,8 +203,21 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   };
 
   const saveProgressAtIndex = (index) => {
+    const safeIndex = Math.max(0, index);
+    const targetRang = allRangs[safeIndex];
+    if (targetRang?.partieId) {
+      partieCurrentRangGlobalIdsRef.current = {
+        ...partieCurrentRangGlobalIdsRef.current,
+        [targetRang.partieId]: targetRang.globalId,
+      };
+    }
     if (typeof onSaveProgress === "function") {
-      onSaveProgress(allRangs.slice(0, Math.max(0, index) + 1).filter(r => !r.isNote).length, totalRangsForCount, elapsedTimeRef.current, { instructionHighlights, partieTimes: partieTimesRef.current });
+      onSaveProgress(allRangs.slice(0, safeIndex + 1).filter(r => !r.isNote).length, totalRangsForCount, elapsedTimeRef.current, {
+        currentRangGlobalId: targetRang?.globalId || null,
+        partieCurrentRangGlobalIds: partieCurrentRangGlobalIdsRef.current,
+        instructionHighlights,
+        partieTimes: partieTimesRef.current,
+      });
     }
   };
 
@@ -212,7 +235,12 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
           allRangs.slice(0, Math.max(0, currentIndexRef.current) + 1).filter(r => !r.isNote).length,
           totalRangsForCount,
           elapsedTimeRef.current,
-          { instructionHighlights: next, partieTimes: partieTimesRef.current }
+          {
+            currentRangGlobalId: allRangs[Math.max(0, currentIndexRef.current)]?.globalId || null,
+            partieCurrentRangGlobalIds: partieCurrentRangGlobalIdsRef.current,
+            instructionHighlights: next,
+            partieTimes: partieTimesRef.current,
+          }
         );
       }
       return next;
@@ -254,6 +282,8 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     addPartieTime();
     if (typeof onSaveProgress === "function") {
       onSaveProgress(totalRangsForCount, totalRangsForCount, elapsedTimeRef.current, {
+        currentRangGlobalId: allRangs[Math.max(0, allRangs.length - 1)]?.globalId || null,
+        partieCurrentRangGlobalIds: partieCurrentRangGlobalIdsRef.current,
         instructionHighlights,
         partieTimes: partieTimesRef.current,
         status: "termine",
@@ -296,7 +326,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
       currentRangIdRef.current = livePrev.globalId;
       currentIndexRef.current = liveIndex - 1;
       setCurrentRangId(livePrev.globalId);
-      if (typeof onSaveProgress === "function") onSaveProgress(allRangs.slice(0, liveIndex).filter(r => !r.isNote).length, totalRangsForCount, elapsedTimeRef.current, { instructionHighlights, partieTimes: partieTimesRef.current });
+      saveProgressAtIndex(liveIndex - 1);
       if (navigator.vibrate) navigator.vibrate(15);
     }
   };
@@ -310,7 +340,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
       currentRangIdRef.current = target.globalId;
       currentIndexRef.current = liveIndex - 1;
       setCurrentRangId(target.globalId);
-      if (typeof onSaveProgress === "function") onSaveProgress(allRangs.slice(0, liveIndex).filter(r => !r.isNote).length, totalRangsForCount, elapsedTimeRef.current, { instructionHighlights, partieTimes: partieTimesRef.current });
+      saveProgressAtIndex(liveIndex - 1);
     }
 
     setShowPrevPartieModal(false);
@@ -320,7 +350,10 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
 
   const goToPartie = (partieId) => {
     addPartieTime();
-    const targetGlobalId = getPartieFirstInstructionGlobalId(partieId);
+    saveProgressAtIndex(currentIndexRef.current);
+    const savedGlobalId = partieCurrentRangGlobalIdsRef.current?.[partieId];
+    const savedRang = allRangs.find(r => r.globalId === savedGlobalId && r.partieId === partieId);
+    const targetGlobalId = savedRang?.globalId || getPartieFirstInstructionGlobalId(partieId);
 
     if (targetGlobalId) {
       currentRangIdRef.current = targetGlobalId;

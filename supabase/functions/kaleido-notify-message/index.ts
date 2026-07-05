@@ -74,6 +74,7 @@ Deno.serve(async (req) => {
     .from(PROJECTS_TABLE)
     .select("share_token, owner_key, project_json, client_message_emails_enabled, client_last_seen_at, client_message_email_pending")
     .eq("share_token", message.share_token)
+    .eq("owner_key", message.owner_key)
     .maybeSingle<ClientProjectRow>();
   projectRow = projectResult.data;
   projectError = projectResult.error;
@@ -83,6 +84,7 @@ Deno.serve(async (req) => {
       .from(PROJECTS_TABLE)
       .select("share_token, owner_key, project_json, client_message_emails_enabled")
       .eq("share_token", message.share_token)
+      .eq("owner_key", message.owner_key)
       .maybeSingle<ClientProjectRow>();
     projectRow = legacyProjectResult.data;
     projectError = legacyProjectResult.error;
@@ -138,6 +140,7 @@ Deno.serve(async (req) => {
       .from(MESSAGES_TABLE)
       .select("id")
       .eq("share_token", message.share_token)
+      .eq("owner_key", message.owner_key)
       .eq("sender", "client")
       .gt("created_at", ownerLastReadAt > 0 ? new Date(ownerLastReadAt).toISOString() : "1970-01-01T00:00:00.000Z")
       .not("email_notified_at", "is", null)
@@ -188,7 +191,8 @@ Deno.serve(async (req) => {
         client_message_email_pending: true,
         last_client_message_email_sent_at: notifiedAt,
       })
-      .eq("share_token", message.share_token);
+      .eq("share_token", message.share_token)
+      .eq("owner_key", message.owner_key);
   }
 
   return jsonResponse({ ok: true });

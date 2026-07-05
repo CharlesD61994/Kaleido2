@@ -28,6 +28,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const lastPartieTickRef = useRef(Date.now());
   const currentPartieIdRef = useRef("global");
   const partieTimesRef = useRef(project?.partieTimes || {});
+  const pdfPartieRangsRef = useRef(project?.pdfPartieRangs || {});
   const [showNextPartieModal, setShowNextPartieModal] = useState(false);
   const [showPrevPartieModal, setShowPrevPartieModal] = useState(false);
   const [showFinModal, setShowFinModal] = useState(false);
@@ -59,7 +60,10 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
           elapsedTimeRef.current = nextElapsed;
           setElapsedTime(nextElapsed);
           if (typeof onSaveProgress === "function") {
-            onSaveProgress(rangRef.current, total, nextElapsed, { partieTimes: partieTimesRef.current });
+            onSaveProgress(rangRef.current, total, nextElapsed, {
+              partieTimes: partieTimesRef.current,
+              pdfPartieRangs: pdfPartieRangsRef.current,
+            });
           }
           wasPausedByVisibilityRef.current = true;
         }
@@ -143,8 +147,20 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   };
 
   const saveProgress = (nextRang = rangRef.current, nextTotal = total, extra = {}) => {
+    if (hasParties) {
+      const partieIndex = getPartieIndexForRang(nextRang);
+      const partieId = pdfParties[partieIndex]?.id || `partie-${partieIndex}`;
+      pdfPartieRangsRef.current = {
+        ...pdfPartieRangsRef.current,
+        [partieId]: nextRang,
+      };
+    }
     if (typeof onSaveProgress === "function") {
-      onSaveProgress(nextRang, nextTotal, elapsedTimeRef.current, { partieTimes: partieTimesRef.current, ...extra });
+      onSaveProgress(nextRang, nextTotal, elapsedTimeRef.current, {
+        partieTimes: partieTimesRef.current,
+        pdfPartieRangs: pdfPartieRangsRef.current,
+        ...extra,
+      });
     }
   };
 
@@ -290,6 +306,27 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     saveProgress(nextRang, total);
   };
 
+  const goToPartieIndex = (partieIndex) => {
+    addPartieTime();
+    saveProgress(rangRef.current, total);
+    const safeIndex = Math.max(0, Math.min(Number(partieIndex) || 0, Math.max(0, pdfParties.length - 1)));
+    let offset = 0;
+    for (let i = 0; i < safeIndex; i += 1) {
+      offset += Number(pdfParties[i]?.totalRangs) || 0;
+    }
+    const partieTotal = Math.max(1, Number(pdfParties[safeIndex]?.totalRangs) || 1);
+    const partieId = pdfParties[safeIndex]?.id || `partie-${safeIndex}`;
+    const savedRang = Number(pdfPartieRangsRef.current?.[partieId]) || 0;
+    const minRang = offset + 1;
+    const maxRang = offset + partieTotal;
+    const nextRang = savedRang >= minRang && savedRang <= maxRang ? savedRang : minRang;
+
+    setCurrentPartieIdx(safeIndex);
+    rangRef.current = nextRang;
+    setRang(nextRang);
+    saveProgress(nextRang, total);
+  };
+
   const formatTime = (ms) => {
     const s = Math.floor(ms / 1000);
     const m = Math.floor(s / 60);
@@ -316,6 +353,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     rang,
     rangDansPartie,
     resetTimer,
+    goToPartieIndex,
     setCurrentPartieIdx: setCurrentPartieIdxWithTime,
     setRang: setRangWithProgress,
     setShowFinModal,

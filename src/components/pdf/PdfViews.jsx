@@ -87,6 +87,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     rang,
     rangDansPartie,
     resetTimer,
+    goToPartieIndex,
     setCurrentPartieIdx,
     setRang,
     setShowFinModal,
@@ -102,11 +103,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
   } = usePdfProgress({ project, onNavigateHub, onSaveProgress });
 
   const selectPdfPartie = (partieIndex) => {
-    let offset = 0;
-    for (let i = 0; i < partieIndex; i++) {
-      offset += Number(pdfParties[i]?.totalRangs) || 0;
-    }
-    setRang(offset + 1);
+    goToPartieIndex(partieIndex);
     setShowPartiePicker(false);
   };
 
