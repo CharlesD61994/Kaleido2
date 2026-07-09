@@ -1,5 +1,5 @@
 import { computeProgress } from "./progressStore";
-import { supabase, publicSupabase, isSupabaseConfigured } from "./supabaseClient";
+import { supabase, isSupabaseConfigured } from "./supabaseClient";
 import { getActiveCloudUserId, setActiveCloudUserId } from "./authStore";
 
 const CLIENT_PROJECTS_TABLE = "kaleido_client_projects";
@@ -276,8 +276,7 @@ export const loadClientProjectByToken = async (token) => {
 };
 
 export const loadClientMessages = async (shareToken) => {
-  const messageClient = publicSupabase || supabase;
-  if (!isSupabaseConfigured || !messageClient) {
+  if (!isSupabaseConfigured || !supabase) {
     return { ok: false, reason: "Supabase n'est pas configuré." };
   }
 
@@ -290,15 +289,15 @@ export const loadClientMessages = async (shareToken) => {
 
   try {
     const result = await withClientMessagesTimeout(
-      messageClient
-        .from(CLIENT_MESSAGES_TABLE)
-        .select("id, sender, body, attachment_url, attachment_type, created_at")
-        .eq("share_token", shareToken)
-        .order("created_at", { ascending: true })
-        .limit(80)
+      supabase.functions.invoke("kaleido-client-messages", {
+        body: {
+          action: "list",
+          shareToken,
+        },
+      })
     );
-    data = result.data;
-    error = result.error;
+    data = result.data?.messages || [];
+    error = result.error || (result.data?.ok === false ? new Error(result.data?.reason || "Les messages sont impossibles a charger.") : null);
   } catch (loadError) {
     return { ok: false, error: loadError, reason: loadError.message || "Les messages sont impossibles a charger." };
   }
@@ -507,7 +506,7 @@ export const loadClientMessageCounts = async (shareTokens = []) => {
   return { ok: true, countsByToken: messagesByToken };
 };
 
-export const sendClientMessage = async ({
+const sendClientMessageDirect = async ({
   shareToken,
   sender = "client",
   body = "",
@@ -553,4 +552,50 @@ export const sendClientMessage = async ({
   notifyMessageEmail(data?.id);
 
   return { ok: true, message: data };
+};
+
+export const sendClientMessage = async ({
+  shareToken,
+  sender = "client",
+  body = "",
+  ownerKey = "",
+  attachmentUrl = "",
+  attachmentType = "",
+} = {}) => {
+  if (!isSupabaseConfigured || !supabase) {
+    return { ok: false, reason: "Supabase n'est pas configure." };
+  }
+
+  const cleanBody = String(body || "").trim();
+  const cleanOwnerKey = String(ownerKey || "").trim();
+  const cleanAttachmentUrl = String(attachmentUrl || "").trim();
+  const cleanAttachmentType = String(attachmentType || "").trim();
+  if (!shareToken) {
+    return { ok: false, reason: "Le lien client n'est pas encore publie." };
+  }
+
+  if (!cleanBody && !cleanAttachmentUrl) {
+    return { ok: false, reason: "Le message est vide." };
+  }
+
+  const safeSender = sender === "owner" ? "owner" : "client";
+  const { data, error } = await supabase.functions.invoke("kaleido-client-messages", {
+    body: {
+      action: "send",
+      shareToken,
+      sender: safeSender,
+      body: cleanBody,
+      ownerKey: cleanOwnerKey,
+      attachmentUrl: cleanAttachmentUrl,
+      attachmentType: cleanAttachmentType,
+    },
+  });
+
+  if (error || data?.ok === false) {
+    return { ok: false, error, reason: data?.reason || error?.message || "Le message n'a pas pu etre envoye." };
+  }
+
+  notifyMessageEmail(data?.message?.id);
+
+  return { ok: true, message: data?.message };
 };
