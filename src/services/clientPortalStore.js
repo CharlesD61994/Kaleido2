@@ -1,5 +1,5 @@
 import { computeProgress } from "./progressStore";
-import { supabase, isSupabaseConfigured } from "./supabaseClient";
+import { supabase, publicSupabase, isSupabaseConfigured } from "./supabaseClient";
 import { getActiveCloudUserId, setActiveCloudUserId } from "./authStore";
 
 const CLIENT_PROJECTS_TABLE = "kaleido_client_projects";
@@ -276,7 +276,8 @@ export const loadClientProjectByToken = async (token) => {
 };
 
 export const loadClientMessages = async (shareToken) => {
-  if (!isSupabaseConfigured || !supabase) {
+  const messageClient = publicSupabase || supabase;
+  if (!isSupabaseConfigured || !messageClient) {
     return { ok: false, reason: "Supabase n'est pas configuré." };
   }
 
@@ -289,7 +290,7 @@ export const loadClientMessages = async (shareToken) => {
 
   try {
     const result = await withClientMessagesTimeout(
-      supabase
+      messageClient
         .from(CLIENT_MESSAGES_TABLE)
         .select("id, sender, body, attachment_url, attachment_type, created_at")
         .eq("share_token", shareToken)
@@ -531,11 +532,12 @@ export const sendClientMessage = async ({
   }
 
   const safeSender = sender === "owner" ? "owner" : "client";
+  const messageOwnerKey = cleanOwnerKey || (safeSender === "owner" ? await getResolvedOwnerKey() : getOwnerKey());
   const { data, error } = await supabase
     .from(CLIENT_MESSAGES_TABLE)
     .insert({
       share_token: shareToken,
-      owner_key: cleanOwnerKey || getOwnerKey(),
+      owner_key: messageOwnerKey,
       sender: safeSender,
       body: cleanBody,
       attachment_url: cleanAttachmentUrl || null,

@@ -177,6 +177,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
           <div style={{ color: "var(--k-muted-3)", fontSize: 11, fontWeight: 800, fontFamily: "'DM Sans', sans-serif", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8, paddingLeft: 2 }}>Prochains rangs</div>
           <div
             className="partiesStrip"
+            data-kaleido-scrollable="true"
             style={{
               display: "grid",
               gap: 6,

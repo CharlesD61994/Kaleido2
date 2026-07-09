@@ -56,7 +56,7 @@ export default function useBrowserBackGuard({
     const isInteractiveTarget = (target) => {
       if (!(target instanceof Element)) return false;
       return Boolean(
-        target.closest('input, textarea, select, button, a, [contenteditable="true"], [data-kaleido-back-button="true"], [data-kaleido-no-edge-back="true"]')
+        target.closest('input, textarea, select, button, a, [contenteditable="true"], [data-kaleido-back-button="true"], [data-kaleido-no-edge-back="true"], [data-kaleido-scrollable="true"]')
       );
     };
 
