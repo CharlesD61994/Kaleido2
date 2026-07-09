@@ -43,6 +43,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
   const [fullscreen, setFullscreen] = useState(false);
   const compactMessagesRef = useRef(null);
   const fullscreenMessagesRef = useRef(null);
+  const refreshRequestRef = useRef(0);
   const inheritedTheme = typeof document !== "undefined"
     ? document.querySelector('[data-kaleido-screen="true"][data-kaleido-theme]')?.getAttribute("data-kaleido-theme")
     : undefined;
@@ -73,14 +74,30 @@ export default function ClientChatPreview({ project, color, publicView = false, 
   };
 
   const refreshMessages = async ({ quiet = false } = {}) => {
+    const requestId = refreshRequestRef.current + 1;
+    refreshRequestRef.current = requestId;
+
     if (!shareToken) {
       setMessages([]);
+      if (!quiet) setLoading(false);
       return;
     }
 
     if (!quiet) setLoading(true);
-    const result = await loadClientMessages(shareToken);
-    if (!quiet) setLoading(false);
+    let result = null;
+
+    try {
+      result = await loadClientMessages(shareToken);
+    } catch (error) {
+      result = {
+        ok: false,
+        reason: error?.message || "Messages indisponibles.",
+      };
+    } finally {
+      if (!quiet) setLoading(false);
+    }
+
+    if (refreshRequestRef.current !== requestId) return;
 
     if (!result.ok) {
       if (!quiet) setStatus(result.reason || "Messages indisponibles.");

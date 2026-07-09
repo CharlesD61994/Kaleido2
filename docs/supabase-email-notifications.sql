@@ -11,3 +11,29 @@ add column if not exists last_client_message_email_sent_at timestamptz;
 
 alter table public.kaleido_client_messages
 add column if not exists email_notified_at timestamptz;
+
+alter table public.kaleido_client_messages enable row level security;
+
+drop policy if exists "kaleido client messages owner access" on public.kaleido_client_messages;
+
+create policy "kaleido client messages owner access"
+on public.kaleido_client_messages
+for all
+to authenticated
+using (
+  exists (
+    select 1
+    from public.kaleido_client_projects p
+    where p.share_token = kaleido_client_messages.share_token
+      and p.owner_key = auth.uid()::text
+  )
+)
+with check (
+  sender = 'owner'
+  and exists (
+    select 1
+    from public.kaleido_client_projects p
+    where p.share_token = kaleido_client_messages.share_token
+      and p.owner_key = auth.uid()::text
+  )
+);
