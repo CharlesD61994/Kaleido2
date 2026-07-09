@@ -96,6 +96,29 @@ const computeLastPatronId = (patrons, fallback = 0) => {
   return Math.max(fallback, 0, ...ids);
 };
 
+const restoreMissingFolders = ({ folders, projectsPersonal, projectsPro, patrons }) => {
+  const existingIds = new Set(asArray(folders).map((folder) => folder?.id).filter(Boolean));
+  const recovered = [];
+  const addRecoveredFolder = (folderId, section) => {
+    if (!folderId || !section || existingIds.has(folderId)) return;
+    existingIds.add(folderId);
+    recovered.push({
+      id: folderId,
+      name: "Dossier récupéré",
+      section,
+      colorIdx: recovered.length % 12,
+      createdAt: nowIso(),
+      recovered: true,
+    });
+  };
+
+  asArray(projectsPersonal).forEach((item) => addRecoveredFolder(item?.folderId, "personal"));
+  asArray(projectsPro).forEach((item) => addRecoveredFolder(item?.folderId, "pro"));
+  asArray(patrons).forEach((item) => addRecoveredFolder(item?.folderId, "library"));
+
+  return recovered.length ? [...folders, ...recovered] : folders;
+};
+
 const isLikelyInlineMedia = (value) => {
   if (typeof value !== "string") return false;
   return value.startsWith("data:") || value.length > 1200;
@@ -172,9 +195,15 @@ export const normalizeDatabase = (input) => {
   const projectsPersonal = projectsPersonalRaw.map(stripHeavyMediaFields);
   const projectsPro = projectsProRaw.map(stripHeavyMediaFields);
   const patrons = patronsRaw.map(stripHeavyMediaFields);
-  const folders = foldersRaw
+  const foldersClean = foldersRaw
     .filter((folder) => folder && typeof folder === "object" && folder.id && folder.section)
     .map((folder) => ({ ...folder }));
+  const folders = restoreMissingFolders({
+    folders: foldersClean,
+    projectsPersonal,
+    projectsPro,
+    patrons,
+  });
 
   const rawSettings = raw.settings && typeof raw.settings === "object" ? raw.settings : {};
   const lastProjectId = computeLastProjectId(

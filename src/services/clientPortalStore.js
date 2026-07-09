@@ -8,12 +8,22 @@ const LEGACY_OWNER_KEY = import.meta.env.VITE_KALEIDO_USER_KEY || "owner";
 const PUBLIC_CLIENT_ORIGIN = import.meta.env.VITE_PUBLIC_CLIENT_ORIGIN || "https://app.atelierkaleido.ca";
 const getOwnerKey = () => getActiveCloudUserId() || LEGACY_OWNER_KEY;
 const CLIENT_PUBLISH_TIMEOUT_MS = 12000;
+const CLIENT_MESSAGES_TIMEOUT_MS = 12000;
 
 const withTimeout = (promise, message = "La publication prend trop de temps. Reessaie dans quelques secondes.") => (
   Promise.race([
     promise,
     new Promise((_, reject) => {
       window.setTimeout(() => reject(new Error(message)), CLIENT_PUBLISH_TIMEOUT_MS);
+    }),
+  ])
+);
+
+const withClientMessagesTimeout = (promise) => (
+  Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error("Les messages prennent trop de temps a charger.")), CLIENT_MESSAGES_TIMEOUT_MS);
     }),
   ])
 );
@@ -274,12 +284,23 @@ export const loadClientMessages = async (shareToken) => {
     return { ok: false, reason: "Le lien client n'est pas encore publié." };
   }
 
-  const { data, error } = await supabase
-    .from(CLIENT_MESSAGES_TABLE)
-    .select("id, sender, body, attachment_url, attachment_type, created_at")
-    .eq("share_token", shareToken)
-    .order("created_at", { ascending: true })
-    .limit(80);
+  let data = null;
+  let error = null;
+
+  try {
+    const result = await withClientMessagesTimeout(
+      supabase
+        .from(CLIENT_MESSAGES_TABLE)
+        .select("id, sender, body, attachment_url, attachment_type, created_at")
+        .eq("share_token", shareToken)
+        .order("created_at", { ascending: true })
+        .limit(80)
+    );
+    data = result.data;
+    error = result.error;
+  } catch (loadError) {
+    return { ok: false, error: loadError, reason: loadError.message || "Les messages sont impossibles a charger." };
+  }
 
   if (error) {
     return { ok: false, error, reason: error.message || "Les messages sont impossibles à charger." };

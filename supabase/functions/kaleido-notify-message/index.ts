@@ -145,12 +145,12 @@ Deno.serve(async (req) => {
       return jsonResponse({ ok: true, skipped: true, reason: "Le tricoteur consulte deja la fiche." });
     }
 
-    const ownerEmailFallback = Deno.env.get("KALEIDO_OWNER_EMAIL") || "";
-    let ownerEmail = ownerEmailFallback;
+    const ownerEmailOverride = Deno.env.get("KALEIDO_OWNER_EMAIL") || "";
+    let ownerEmail = ownerEmailOverride;
 
-    if (projectRow.owner_key && projectRow.owner_key.includes("-")) {
+    if (!ownerEmail && projectRow.owner_key && projectRow.owner_key.includes("-")) {
       const { data: userData } = await supabase.auth.admin.getUserById(projectRow.owner_key);
-      ownerEmail = userData?.user?.email || ownerEmailFallback;
+      ownerEmail = userData?.user?.email || "";
     }
 
     recipient = ownerEmail.trim();

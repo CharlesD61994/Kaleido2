@@ -173,9 +173,24 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
       </div>
 
       {upcomingItems.length > 0 && (
-        <div style={{ position: "relative", zIndex: 10, padding: "2px 8px 10px", flex: 1, minHeight: 0, overflow: "hidden" }}>
+      <div style={{ position: "relative", zIndex: 10, padding: "2px 8px 10px", flex: 1, minHeight: 0, overflow: "hidden" }}>
           <div style={{ color: "var(--k-muted-3)", fontSize: 11, fontWeight: 800, fontFamily: "'DM Sans', sans-serif", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8, paddingLeft: 2 }}>Prochains rangs</div>
-          <div style={{ display: "grid", gap: 6, height: "calc(100% - 24px)", alignContent: "start", overflow: "hidden" }}>
+          <div
+            className="partiesStrip"
+            style={{
+              display: "grid",
+              gap: 6,
+              height: "calc(100% - 24px)",
+              alignContent: "start",
+              overflowY: "auto",
+              overflowX: "hidden",
+              overscrollBehavior: "contain",
+              WebkitOverflowScrolling: "touch",
+              paddingBottom: 12,
+              maskImage: "linear-gradient(to bottom, #000 calc(100% - 18px), transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, #000 calc(100% - 18px), transparent 100%)",
+            }}
+          >
             {upcomingItems.map((item, index) => {
               if (item.type === "partie") {
                 const col = KALEIDOSCOPE_COLORS[item.partie.colorIdx % KALEIDOSCOPE_COLORS.length];
