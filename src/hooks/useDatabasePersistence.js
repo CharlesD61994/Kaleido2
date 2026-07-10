@@ -121,7 +121,7 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
       }
     };
 
-    const syncTimer = setInterval(syncNow, 60000);
+    const syncTimer = setInterval(syncNow, 300000);
     const channel = isSupabaseConfigured && supabase && getActiveCloudUserId()
       ? supabase
         .channel(`kaleido-backups-${getActiveCloudUserId()}-${Date.now()}`)
@@ -141,7 +141,7 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
         )
         .subscribe()
       : null;
-    const pullTimer = setInterval(pullCloudOnly, 30000);
+    const pullTimer = setInterval(pullCloudOnly, 300000);
 
     window.addEventListener("pagehide", flushDatabase);
     window.addEventListener("beforeunload", flushDatabase);

@@ -54,7 +54,11 @@ export default function useClientMessageNotifications(projects = []) {
     };
 
     checkMessages();
-    const timer = setInterval(checkMessages, 2000);
+    const timer = setInterval(checkMessages, 300000);
+    const onVisible = () => {
+      if (!document.hidden) checkMessages();
+    };
+    const onFocus = () => checkMessages();
     let channel = null;
 
     try {
@@ -70,10 +74,7 @@ export default function useClientMessageNotifications(projects = []) {
             },
             (payload) => {
               const token = payload?.new?.share_token || payload?.old?.share_token;
-              if (!token || !tokens.includes(token)) {
-                checkMessages();
-                return;
-              }
+              if (!token || !tokens.includes(token)) return;
 
               if (payload.eventType === "INSERT" && payload?.new?.sender === "client" && payload?.new?.created_at) {
                 setMessagesByToken((current) => {
@@ -88,7 +89,6 @@ export default function useClientMessageNotifications(projects = []) {
                 });
               }
 
-              checkMessages();
             }
           )
           .subscribe()
@@ -98,9 +98,14 @@ export default function useClientMessageNotifications(projects = []) {
       channel = null;
     }
 
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+
     return () => {
       alive = false;
       clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
       if (channel) supabase.removeChannel(channel);
     };
   }, [tokens.join("|")]);

@@ -112,7 +112,10 @@ export default function ClientChatPreview({ project, color, publicView = false, 
     refreshMessages();
     if (!shareToken) return undefined;
 
-    const timer = setInterval(() => refreshMessages({ quiet: true }), 8000);
+    const onVisible = () => {
+      if (!document.hidden) refreshMessages({ quiet: true });
+    };
+    const onFocus = () => refreshMessages({ quiet: true });
     const channel = isSupabaseConfigured && supabase
       ? supabase
         .channel(`kaleido-client-chat-${shareToken}`)
@@ -129,8 +132,12 @@ export default function ClientChatPreview({ project, color, publicView = false, 
         .subscribe()
       : null;
 
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+
     return () => {
-      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
       if (channel) supabase.removeChannel(channel);
     };
   }, [shareToken]);

@@ -56,7 +56,7 @@ export default function ClientPortalRoute({ token }) {
     };
 
     markSeen();
-    const timer = setInterval(markSeen, 30000);
+    const timer = setInterval(markSeen, 120000);
     const onVisible = () => {
       if (!document.hidden) markSeen();
     };
@@ -102,7 +102,7 @@ export default function ClientPortalRoute({ token }) {
     };
 
     load();
-    const timer = setInterval(() => load({ quiet: true }), 10000);
+    const timer = setInterval(() => load({ quiet: true }), 180000);
 
     return () => {
       alive = false;

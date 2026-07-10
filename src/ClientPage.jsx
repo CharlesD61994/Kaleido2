@@ -23,7 +23,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
 
       const interval = window.setInterval(() => {
         onMarkMessagesRead(project);
-      }, 60_000);
+      }, 180_000);
 
       return () => window.clearInterval(interval);
     }
