@@ -148,7 +148,8 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     if (action === "resetTimer") resetTimer();
     if (action === "openClientPage" && typeof onOpenClientPage === "function") onOpenClientPage();
     if (action === "openPartiePicker") setShowPartiePicker(true);
-  }, [decrementRang, incrementRang, onOpenClientPage, resetTimer, toggleTimer]);
+    if (action === "finishRepeat" && repeatBadge?.onClick) repeatBadge.onClick();
+  }, [decrementRang, incrementRang, onOpenClientPage, repeatBadge, resetTimer, toggleTimer]);
 
   const hideNativePdf = showPartiePicker || showFinModal || showNextPartieModal || showPrevPartieModal;
 

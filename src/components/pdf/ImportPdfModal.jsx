@@ -59,6 +59,9 @@ export default function ImportPdfModal({ asPage = false, onClose, onCreate }) {
   const headerStyle = asPage
     ? { flexShrink: 0, position: "relative", padding: "calc(env(safe-area-inset-top, 0px) + 14px) 20px 14px", borderBottom: "1px solid var(--k-border)", background: "var(--k-header-gradient)" }
     : { flexShrink: 0, position: "relative", padding: "16px 20px 14px", borderBottom: "1px solid var(--k-border)" };
+  const repeatCardStyle = { display: "grid", gap: 7, marginTop: 10, padding: 9, borderRadius: 12, background: "var(--k-surface)", border: "1px solid var(--k-border)", boxSizing: "border-box", overflow: "hidden" };
+  const repeatInputStyle = { width: "100%", minWidth: 0, boxSizing: "border-box", background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 9, padding: "8px 9px", color: "var(--k-text)", fontSize: 14 };
+  const repeatButtonStyle = { width: "100%", boxSizing: "border-box", borderRadius: 9, padding: "8px 9px", fontSize: 13, fontWeight: 800, cursor: "pointer" };
 
   return (
     <div data-kaleido-modal-backdrop={asPage ? undefined : "true"} data-kaleido-pdf-patron-page={asPage ? "true" : undefined} onClick={asPage ? undefined : onClose} style={rootStyle}>
@@ -154,17 +157,17 @@ export default function ImportPdfModal({ asPage = false, onClose, onCreate }) {
               <>
                 <button onClick={addRepetition} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #7C3AED55", color: "#7C3AED", fontSize: 13, cursor: "pointer", marginTop: 8 }}>+ Ajouter une répétition</button>
                 {repetitions.map((repeat) => (
-                  <div key={repeat.id} style={{ display: "grid", gap: 8, marginTop: 10, padding: 10, borderRadius: 12, background: "var(--k-surface)", border: "1px solid var(--k-border)" }}>
-                    <select value={repeat.partieId} onChange={(event) => updateRepetition(repeat.id, "partieId", event.target.value)} style={{ width: "100%", background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 10, padding: 10, color: "var(--k-text)", fontSize: 16 }}>
+                  <div key={repeat.id} style={repeatCardStyle}>
+                    <select value={repeat.partieId} onChange={(event) => updateRepetition(repeat.id, "partieId", event.target.value)} style={repeatInputStyle}>
                       {parties.map((partie, index) => <option key={partie.id} value={partie.id}>{partie.nom || `Partie ${index + 1}`}</option>)}
                     </select>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      <input value={repeat.startRang} onChange={(event) => updateRepetition(repeat.id, "startRang", event.target.value)} placeholder="Début" type="number" min="1" style={{ background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 10, padding: 10, color: "var(--k-text)", fontSize: 16 }} />
-                      <input value={repeat.endRang} onChange={(event) => updateRepetition(repeat.id, "endRang", event.target.value)} placeholder="Fin" type="number" min="1" style={{ background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 10, padding: 10, color: "var(--k-text)", fontSize: 16 }} />
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 7 }}>
+                      <input value={repeat.startRang} onChange={(event) => updateRepetition(repeat.id, "startRang", event.target.value)} placeholder="Début" type="number" min="1" style={repeatInputStyle} />
+                      <input value={repeat.endRang} onChange={(event) => updateRepetition(repeat.id, "endRang", event.target.value)} placeholder="Fin" type="number" min="1" style={repeatInputStyle} />
                     </div>
-                    <button type="button" onClick={() => updateRepetition(repeat.id, "infinite", !repeat.infinite)} style={{ border: `1px solid ${repeat.infinite ? "#7C3AED" : "var(--k-border)"}`, borderRadius: 10, background: repeat.infinite ? "rgba(124,58,237,0.16)" : "var(--k-muted-fill)", color: repeat.infinite ? "#A78BFA" : "var(--k-muted)", padding: 10, fontWeight: 800 }}>Jusqu'à satisfaction</button>
-                    {!repeat.infinite ? <input value={repeat.passages} onChange={(event) => updateRepetition(repeat.id, "passages", event.target.value)} placeholder="Passages total" type="number" min="2" style={{ background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 10, padding: 10, color: "var(--k-text)", fontSize: 16 }} /> : null}
-                    <button type="button" onClick={() => removeRepetition(repeat.id)} style={{ border: "1px solid rgba(239,68,68,0.35)", borderRadius: 10, background: "rgba(239,68,68,0.12)", color: "#F87171", padding: 10, fontWeight: 800 }}>Retirer la répétition</button>
+                    <button type="button" onClick={() => updateRepetition(repeat.id, "infinite", !repeat.infinite)} style={{ ...repeatButtonStyle, border: `1px solid ${repeat.infinite ? "#7C3AED" : "var(--k-border)"}`, background: repeat.infinite ? "rgba(124,58,237,0.16)" : "var(--k-muted-fill)", color: repeat.infinite ? "#A78BFA" : "var(--k-muted)" }}>Jusqu'à satisfaction</button>
+                    {!repeat.infinite ? <input value={repeat.passages} onChange={(event) => updateRepetition(repeat.id, "passages", event.target.value)} placeholder="Passages total" type="number" min="2" style={repeatInputStyle} /> : null}
+                    <button type="button" onClick={() => removeRepetition(repeat.id)} style={{ ...repeatButtonStyle, border: "1px solid rgba(239,68,68,0.35)", background: "rgba(239,68,68,0.12)", color: "#F87171" }}>Retirer la répétition</button>
                   </div>
                 ))}
               </>

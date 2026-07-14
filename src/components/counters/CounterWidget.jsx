@@ -128,6 +128,11 @@ strokeLinecap="round" style={{
 <TimerPill {...timerProps} color={currentPartieColor} />
 </div>
 ) : null}
+{repeatBadge ? (
+<button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: -61, top: 72, minWidth: 50, height: 30, borderRadius: 999, border: `1px solid ${currentPartieColor.bg}44`, background: `${currentPartieColor.bg}18`, color: currentPartieColor.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
+{repeatBadge.label}
+</button>
+) : null}
 <div style={{ transform: showInlineControls ? "translateY(9px)" : "translateY(0)" }}>
 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compact ? 4 : 6, gap: 8 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: compact ? 16 : 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
@@ -140,11 +145,6 @@ strokeLinecap="round" style={{
 </div>
 {showInlineControls ? (
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 13 }}>
-{repeatBadge ? (
-<button type="button" onClick={repeatBadge.onClick} style={{ minWidth: 48, height: 30, borderRadius: 999, border: `1px solid ${currentPartieColor.bg}44`, background: `${currentPartieColor.bg}18`, color: currentPartieColor.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default" }}>
-{repeatBadge.label}
-</button>
-) : null}
 <button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 40, height: 40, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
 <button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 40, height: 40, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>

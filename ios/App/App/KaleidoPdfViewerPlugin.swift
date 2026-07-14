@@ -599,11 +599,13 @@ final class KaleidoNativePdfHeaderView: UIView {
     private let timerMenuLabel = UILabel()
     private let timerToggleButton = UIButton(type: .system)
     private let timerResetButton = UIButton(type: .system)
+    private let repeatButton = UIButton(type: .system)
     private let clientButton = UIButton(type: .system)
     private let unreadBadge = UILabel()
 
     private var localProgress: CGFloat = 0
     private var hasClient = false
+    private var hasRepeatBadge = false
     private var isTimerMenuOpen = false
     private var isTimerRunning = false
 
@@ -667,6 +669,12 @@ final class KaleidoNativePdfHeaderView: UIView {
         timerResetButton.addTarget(self, action: #selector(resetTimer), for: .touchUpInside)
         [timerMenuLabel, timerToggleButton, timerResetButton].forEach(timerMenu.addSubview)
 
+        repeatButton.titleLabel?.font = KaleidoNativeFont.dmSans(size: 12, weightValue: 800, fallbackWeight: .bold)
+        repeatButton.layer.cornerRadius = 15
+        repeatButton.clipsToBounds = true
+        repeatButton.contentEdgeInsets = UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
+        repeatButton.addTarget(self, action: #selector(finishRepeat), for: .touchUpInside)
+
         clientButton.layer.cornerRadius = 11
         clientButton.clipsToBounds = true
         clientButton.setImage(UIImage(systemName: "person.fill"), for: .normal)
@@ -680,7 +688,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         unreadBadge.layer.cornerRadius = 8
         unreadBadge.clipsToBounds = true
 
-        [globalLabel, circleView, partButton, partCountLabel, progressTrack, minusButton, countLabel, plusButton, timerButton, timerMenu, clientButton, unreadBadge].forEach(addSubview)
+        [globalLabel, circleView, partButton, partCountLabel, progressTrack, minusButton, countLabel, plusButton, timerButton, timerMenu, repeatButton, clientButton, unreadBadge].forEach(addSubview)
     }
 
     func update(with object: JSObject?) {
@@ -696,8 +704,10 @@ final class KaleidoNativePdfHeaderView: UIView {
         let partTotal = intValue(object?["totalPartieCourante"])
         let pct = max(0, min(100, intValue(object?["pct"])))
         let timeText = (object?["timeText"] as? String) ?? "00:00:00"
+        let repeatBadgeLabel = (object?["repeatBadgeLabel"] as? String) ?? ""
         let unread = intValue(object?["unreadClientMessageCount"])
         hasClient = boolValue(object?["hasClient"])
+        hasRepeatBadge = !repeatBadgeLabel.isEmpty
         isTimerRunning = boolValue(object?["isTimerRunning"])
         localProgress = CGFloat(max(0, min(100, intValue(object?["localProgress"])))) / 100
 
@@ -735,6 +745,13 @@ final class KaleidoNativePdfHeaderView: UIView {
         timerResetButton.setTitle("RESET", for: .normal)
         timerResetButton.backgroundColor = UIColor(red: 0.486, green: 0.227, blue: 0.929, alpha: 1)
         timerMenu.isHidden = !isTimerMenuOpen
+
+        repeatButton.isHidden = !hasRepeatBadge
+        repeatButton.setTitle(repeatBadgeLabel, for: .normal)
+        repeatButton.setTitleColor(accent, for: .normal)
+        repeatButton.backgroundColor = accent.withAlphaComponent(0.12)
+        repeatButton.layer.borderWidth = 1
+        repeatButton.layer.borderColor = accent.withAlphaComponent(0.40).cgColor
 
         clientButton.isHidden = !hasClient
         clientButton.backgroundColor = unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.18) : accent.withAlphaComponent(0.10)
@@ -777,6 +794,9 @@ final class KaleidoNativePdfHeaderView: UIView {
         plusButton.frame = CGRect(x: countLabel.frame.maxX + 8, y: controlsY, width: buttonSize, height: buttonSize)
 
         clientButton.frame = CGRect(x: circleView.frame.maxX + 10, y: controlsY + 1, width: 34, height: 34)
+        let repeatWidth: CGFloat = 54
+        let repeatX = max(circleView.frame.maxX + 10, minusButton.frame.minX - repeatWidth - 10)
+        repeatButton.frame = CGRect(x: repeatX, y: controlsY + 5, width: repeatWidth, height: 30)
         unreadBadge.frame = CGRect(x: clientButton.frame.maxX - 9, y: clientButton.frame.minY - 5, width: 17, height: 15)
     }
 
@@ -819,6 +839,7 @@ final class KaleidoNativePdfHeaderView: UIView {
     @objc private func resetTimer() { onAction?("resetTimer") }
     @objc private func openClient() { onAction?("openClientPage") }
     @objc private func openPartiePicker() { onAction?("openPartiePicker") }
+    @objc private func finishRepeat() { onAction?("finishRepeat") }
 }
 
 final class KaleidoNativeCircleView: UIView {
