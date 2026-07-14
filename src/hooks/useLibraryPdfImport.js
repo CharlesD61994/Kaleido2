@@ -6,7 +6,7 @@ export default function useLibraryPdfImport({
   database,
   setShowLibraryImportModal,
 }) {
-  const handleCreatePdfPatron = async (name, pdfData, total, partiesConfig) => {
+  const handleCreatePdfPatron = async (name, pdfData, total, partiesConfig, repetitionsConfig = []) => {
     const newId = (database.settings.lastPatronId || 0) + 1;
     const colorIdx = Math.floor(Math.random() * KALEIDOSCOPE_COLORS.length);
     const pdfId = `patron_pdf_${newId}`;
@@ -36,6 +36,7 @@ export default function useLibraryPdfImport({
       pdfId,
       total,
       pdfParties,
+      pdfRepetitions: repetitionsConfig,
       createdAt: new Date().toISOString(),
     };
 

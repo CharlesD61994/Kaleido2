@@ -17,6 +17,7 @@ export default function PdfCounterCard({
   compact = false,
   timerProps = null,
   clientButton = null,
+  repeatBadge = null,
 }) {
   const [swiped, setSwiped] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -120,6 +121,11 @@ export default function PdfCounterCard({
                 <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${localProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)" }} />
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}>
+                {repeatBadge ? (
+                  <button type="button" onClick={repeatBadge.onClick} style={{ minWidth: 48, height: 30, borderRadius: 999, border: `1px solid ${color.bg}44`, background: `${color.bg}18`, color: color.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default" }}>
+                    {repeatBadge.label}
+                  </button>
+                ) : null}
                 <button onClick={decrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
                 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
                 <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>

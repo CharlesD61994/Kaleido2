@@ -286,6 +286,20 @@ export const loadClientMessages = async (shareToken) => {
 
   let data = null;
   let error = null;
+  const loadDirectMessages = async () => {
+    const fallback = await supabase
+      .from(CLIENT_MESSAGES_TABLE)
+      .select("id, sender, body, attachment_url, attachment_type, created_at")
+      .eq("share_token", shareToken)
+      .order("created_at", { ascending: true })
+      .limit(80);
+
+    if (fallback.error) {
+      return { ok: false, error: fallback.error, reason: fallback.error.message || "Les messages sont impossibles a charger." };
+    }
+
+    return { ok: true, messages: fallback.data || [] };
+  };
 
   try {
     const result = await withClientMessagesTimeout(
@@ -299,11 +313,15 @@ export const loadClientMessages = async (shareToken) => {
     data = result.data?.messages || [];
     error = result.error || (result.data?.ok === false ? new Error(result.data?.reason || "Les messages sont impossibles a charger.") : null);
   } catch (loadError) {
-    return { ok: false, error: loadError, reason: loadError.message || "Les messages sont impossibles a charger." };
+    const fallback = await loadDirectMessages();
+    if (fallback.ok) return fallback;
+    return { ok: false, error: loadError, reason: loadError.message || fallback.reason || "Les messages sont impossibles a charger." };
   }
 
   if (error) {
-    return { ok: false, error, reason: error.message || "Les messages sont impossibles à charger." };
+    const fallback = await loadDirectMessages();
+    if (fallback.ok) return fallback;
+    return { ok: false, error, reason: error.message || fallback.reason || "Les messages sont impossibles a charger." };
   }
 
   return { ok: true, messages: data || [] };
@@ -592,7 +610,14 @@ export const sendClientMessage = async ({
   });
 
   if (error || data?.ok === false) {
-    return { ok: false, error, reason: data?.reason || error?.message || "Le message n'a pas pu etre envoye." };
+    return await sendClientMessageDirect({
+      shareToken,
+      sender: safeSender,
+      body: cleanBody,
+      ownerKey: cleanOwnerKey,
+      attachmentUrl: cleanAttachmentUrl,
+      attachmentType: cleanAttachmentType,
+    });
   }
 
   notifyMessageEmail(data?.message?.id);

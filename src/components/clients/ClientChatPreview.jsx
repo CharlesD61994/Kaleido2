@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { loadClientMessages, sendClientMessage } from "../../services/clientPortalStore";
-import { isSupabaseConfigured, supabase } from "../../services/supabaseClient";
 import ClientSectionCard from "./ClientSectionCard";
 import { getReadableColorText } from "../../constants/colors";
 
@@ -116,29 +115,12 @@ export default function ClientChatPreview({ project, color, publicView = false, 
       if (!document.hidden) refreshMessages({ quiet: true });
     };
     const onFocus = () => refreshMessages({ quiet: true });
-    const channel = isSupabaseConfigured && supabase
-      ? supabase
-        .channel(`kaleido-client-chat-${shareToken}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "kaleido_client_messages",
-            filter: `share_token=eq.${shareToken}`,
-          },
-          () => refreshMessages({ quiet: true })
-        )
-        .subscribe()
-      : null;
-
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onFocus);
 
     return () => {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onFocus);
-      if (channel) supabase.removeChannel(channel);
     };
   }, [shareToken]);
 

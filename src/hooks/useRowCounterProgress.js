@@ -33,6 +33,8 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const partieCurrentRangGlobalIdsRef = useRef(project?.partieCurrentRangGlobalIds || {});
   const [counters, setCounters] = useState([]);
   const [instructionHighlights, setInstructionHighlights] = useState(project?.instructionHighlights || {});
+  const [rangRepeatState, setRangRepeatState] = useState(project?.rangRepeatState || {});
+  const rangRepeatStateRef = useRef(project?.rangRepeatState || {});
   const [showNextPartieModal, setShowNextPartieModal] = useState(false);
   const [showPrevPartieModal, setShowPrevPartieModal] = useState(false);
   const [showFinModal, setShowFinModal] = useState(false);
@@ -61,14 +63,15 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
           setElapsedTime(nextElapsed);
           if (typeof onSaveProgress === "function") {
             onSaveProgress(
-              allRangs.slice(0, Math.max(0, currentIndexRef.current) + 1).filter(r => !r.isNote).length,
-              totalRangsForCount,
+              getVirtualCountAtIndex(currentIndexRef.current),
+              getVirtualTotal(),
               nextElapsed,
               {
                 currentRangGlobalId: allRangs[Math.max(0, currentIndexRef.current)]?.globalId || null,
                 partieCurrentRangGlobalIds: partieCurrentRangGlobalIdsRef.current,
                 instructionHighlights,
                 partieTimes: partieTimesRef.current,
+                rangRepeatState: rangRepeatStateRef.current,
               }
             );
           }
@@ -125,6 +128,44 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   };
 
   const currentIndex = allRangs.findIndex(r => r.globalId === currentRangId);
+  const getRepeatDefinitions = () => allRangs
+    .map((rang, startIndex) => {
+      const repeat = rang?.repeat;
+      if (!repeat || rang?.isNote) return null;
+      const endIndex = allRangs.findIndex((item) => item.partieId === rang.partieId && item.id === repeat.endRangId);
+      if (endIndex < startIndex) return null;
+      const length = allRangs.slice(startIndex, endIndex + 1).filter((item) => !item.isNote).length;
+      if (length <= 0) return null;
+      return {
+        key: repeat.id || `repeat-${rang.globalId}`,
+        startIndex,
+        endIndex,
+        startGlobalId: rang.globalId,
+        passages: Math.max(2, Number(repeat.passages) || 2),
+        infinite: repeat.infinite === true,
+        length,
+      };
+    })
+    .filter(Boolean);
+  const repeatDefinitions = getRepeatDefinitions();
+  const getRepeatPassage = (repeat) => Math.max(1, Number(rangRepeatStateRef.current?.[repeat.key]?.passage) || 1);
+  const getActiveRepeat = (index) => repeatDefinitions.find((repeat) => index >= repeat.startIndex && index <= repeat.endIndex) || null;
+  const getVirtualTotal = () => totalRangsForCount + repeatDefinitions.reduce((sum, repeat) => (
+    repeat.infinite ? sum : sum + repeat.length * (repeat.passages - 1)
+  ), 0);
+  const getVirtualCountAtIndex = (index) => {
+    const safeIndex = Math.max(0, index);
+    let count = allRangs.slice(0, safeIndex + 1).filter(r => !r.isNote).length;
+    repeatDefinitions.forEach((repeat) => {
+      if (repeat.infinite) return;
+      if (safeIndex > repeat.endIndex) {
+        count += repeat.length * (repeat.passages - 1);
+      } else if (safeIndex >= repeat.startIndex && safeIndex <= repeat.endIndex) {
+        count += repeat.length * (getRepeatPassage(repeat) - 1);
+      }
+    });
+    return Math.max(1, count);
+  };
 
   useEffect(() => {
     currentRangIdRef.current = currentRangId;
@@ -132,10 +173,10 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   }, [currentRangId, currentIndex]);
 
   const currentRang = allRangs[currentIndex];
-  const totalRangs = allRangsForCount.length;
+  const totalRangs = getVirtualTotal();
   const currentCountIndex = currentRang?.isNote
     ? allRangs.slice(0, currentIndex).filter(r => !r.isNote).length - 1
-    : allRangs.slice(0, currentIndex + 1).filter(r => !r.isNote).length - 1;
+    : getVirtualCountAtIndex(currentIndex) - 1;
   const currentPartie = currentRang ? patron.parties.find(p => p.id === currentRang.partieId) : null;
   const currentPartieIndex = currentPartie ? patron.parties.findIndex(p => p.id === currentPartie.id) : -1;
   const partieRangsOnly = currentPartie ? currentPartie.rangs.filter(r => !r.isNote) : [];
@@ -212,11 +253,12 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
       };
     }
     if (typeof onSaveProgress === "function") {
-      onSaveProgress(allRangs.slice(0, safeIndex + 1).filter(r => !r.isNote).length, totalRangsForCount, elapsedTimeRef.current, {
+      onSaveProgress(getVirtualCountAtIndex(safeIndex), getVirtualTotal(), elapsedTimeRef.current, {
         currentRangGlobalId: targetRang?.globalId || null,
         partieCurrentRangGlobalIds: partieCurrentRangGlobalIdsRef.current,
         instructionHighlights,
         partieTimes: partieTimesRef.current,
+        rangRepeatState: rangRepeatStateRef.current,
       });
     }
   };
@@ -232,14 +274,15 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
       }
       if (typeof onSaveProgress === "function") {
         onSaveProgress(
-          allRangs.slice(0, Math.max(0, currentIndexRef.current) + 1).filter(r => !r.isNote).length,
-          totalRangsForCount,
+          getVirtualCountAtIndex(currentIndexRef.current),
+          getVirtualTotal(),
           elapsedTimeRef.current,
           {
             currentRangGlobalId: allRangs[Math.max(0, currentIndexRef.current)]?.globalId || null,
             partieCurrentRangGlobalIds: partieCurrentRangGlobalIdsRef.current,
             instructionHighlights: next,
             partieTimes: partieTimesRef.current,
+            rangRepeatState: rangRepeatStateRef.current,
           }
         );
       }
@@ -259,6 +302,26 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     if (liveIndex >= allRangs.length - 1) {
       setShowFinModal(true);
       return;
+    }
+    const activeRepeat = getActiveRepeat(liveIndex);
+    if (activeRepeat && liveIndex === activeRepeat.endIndex) {
+      const passage = getRepeatPassage(activeRepeat);
+      const shouldLoop = activeRepeat.infinite || passage < activeRepeat.passages;
+      if (shouldLoop) {
+        const nextState = {
+          ...rangRepeatStateRef.current,
+          [activeRepeat.key]: { passage: passage + 1 },
+        };
+        rangRepeatStateRef.current = nextState;
+        setRangRepeatState(nextState);
+        const target = allRangs[activeRepeat.startIndex];
+        currentRangIdRef.current = target.globalId;
+        currentIndexRef.current = activeRepeat.startIndex;
+        setCurrentRangId(target.globalId);
+        saveProgressAtIndex(activeRepeat.startIndex);
+        if (navigator.vibrate) navigator.vibrate(15);
+        return;
+      }
     }
     const liveCurrent = allRangs[liveIndex];
     const liveNext = allRangs[liveIndex + 1];
@@ -281,11 +344,12 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const completeProject = () => {
     addPartieTime();
     if (typeof onSaveProgress === "function") {
-      onSaveProgress(totalRangsForCount, totalRangsForCount, elapsedTimeRef.current, {
+      onSaveProgress(getVirtualTotal(), getVirtualTotal(), elapsedTimeRef.current, {
         currentRangGlobalId: allRangs[Math.max(0, allRangs.length - 1)]?.globalId || null,
         partieCurrentRangGlobalIds: partieCurrentRangGlobalIdsRef.current,
         instructionHighlights,
         partieTimes: partieTimesRef.current,
+        rangRepeatState: rangRepeatStateRef.current,
         status: "termine",
         completedAt: new Date().toISOString(),
       });
@@ -348,6 +412,33 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     if (navigator.vibrate) navigator.vibrate(20);
   };
 
+  const finishActiveInfiniteRepeat = () => {
+    const activeRepeat = getActiveRepeat(currentIndexRef.current);
+    if (!activeRepeat?.infinite) return;
+    const ok = typeof window === "undefined"
+      ? true
+      : window.confirm("Terminer cette répétition et passer au rang suivant?");
+    if (!ok) return;
+    const targetIndex = activeRepeat.endIndex + 1;
+    if (targetIndex >= allRangs.length) {
+      setShowFinModal(true);
+      return;
+    }
+    const liveCurrent = allRangs[activeRepeat.endIndex];
+    const liveNext = allRangs[targetIndex];
+    if (liveCurrent && liveNext && liveNext.partieId !== liveCurrent.partieId) {
+      currentIndexRef.current = activeRepeat.endIndex;
+      currentRangIdRef.current = liveCurrent.globalId;
+      setCurrentRangId(liveCurrent.globalId);
+      setShowNextPartieModal(true);
+      return;
+    }
+    currentIndexRef.current = targetIndex;
+    currentRangIdRef.current = liveNext.globalId;
+    setCurrentRangId(liveNext.globalId);
+    saveProgressAtIndex(targetIndex);
+  };
+
   const goToPartie = (partieId) => {
     addPartieTime();
     saveProgressAtIndex(currentIndexRef.current);
@@ -368,6 +459,11 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const addCounter = () => setCounters(prev => [...prev, { id: Date.now(), name: `Compteur ${prev.length + 1}`, value: 1, maxRepeats: 4, syncWithGlobal: false, colorIdx: Math.floor(Math.random() * KALEIDOSCOPE_COLORS.length) }]);
   const updateCounter = (id, updates) => setCounters(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
   const deleteCounter = (id) => setCounters(prev => prev.filter(c => c.id !== id));
+  const activeRepeat = getActiveRepeat(currentIndex);
+  const repeatBadge = activeRepeat ? {
+    label: `↻ ${getRepeatPassage(activeRepeat)}/${activeRepeat.infinite ? "∞" : activeRepeat.passages}`,
+    onClick: activeRepeat.infinite ? finishActiveInfiniteRepeat : undefined,
+  } : null;
 
   return {
     addCounter,
@@ -395,6 +491,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     patron,
     prevRang,
     resetTimer,
+    repeatBadge,
     setShowNextPartieModal,
     setShowPrevPartieModal,
     setShowFinModal,

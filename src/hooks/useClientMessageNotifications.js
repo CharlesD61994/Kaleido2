@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { loadClientMessageCounts } from "../services/clientPortalStore";
-import { isSupabaseConfigured, supabase } from "../services/supabaseClient";
 
 const CACHE_KEY = "kaleido_client_message_notifications";
 
@@ -26,7 +25,6 @@ const saveCachedMessages = (messagesByToken) => {
 
 export default function useClientMessageNotifications(projects = []) {
   const [messagesByToken, setMessagesByToken] = useState(() => loadCachedMessages());
-  const channelIdRef = useRef(`kaleido-client-message-notifications-${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
   const tokens = useMemo(() => (
     [...new Set((projects || []).map((project) => project?.clientShareToken).filter(Boolean))]
@@ -54,50 +52,11 @@ export default function useClientMessageNotifications(projects = []) {
     };
 
     checkMessages();
-    const timer = setInterval(checkMessages, 300000);
+    const timer = setInterval(checkMessages, 900000);
     const onVisible = () => {
       if (!document.hidden) checkMessages();
     };
     const onFocus = () => checkMessages();
-    let channel = null;
-
-    try {
-      channel = isSupabaseConfigured && supabase
-        ? supabase
-          .channel(`${channelIdRef.current}-${tokens.length}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "kaleido_client_messages",
-            },
-            (payload) => {
-              const token = payload?.new?.share_token || payload?.old?.share_token;
-              if (!token || !tokens.includes(token)) return;
-
-              if (payload.eventType === "INSERT" && payload?.new?.sender === "client" && payload?.new?.created_at) {
-                setMessagesByToken((current) => {
-                  const currentMessages = current[token] || [];
-                  if (currentMessages.includes(payload.new.created_at)) return current;
-                  const nextMessages = {
-                    ...current,
-                    [token]: [payload.new.created_at, ...currentMessages],
-                  };
-                  saveCachedMessages(nextMessages);
-                  return nextMessages;
-                });
-              }
-
-            }
-          )
-          .subscribe()
-        : null;
-    } catch (error) {
-      console.warn("[KALEIDO] canal notifications client indisponible:", error);
-      channel = null;
-    }
-
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onFocus);
 
@@ -106,7 +65,6 @@ export default function useClientMessageNotifications(projects = []) {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onFocus);
-      if (channel) supabase.removeChannel(channel);
     };
   }, [tokens.join("|")]);
 

@@ -169,7 +169,7 @@ export default function useProjectCreation({
             notes: patron.notes,
             parties: patron.parties,
           }
-        : { pdfId: patron.pdfId, pdfParties: patron.pdfParties }),
+        : { pdfId: patron.pdfId, pdfParties: patron.pdfParties, pdfRepetitions: patron.pdfRepetitions || [] }),
       elapsedTime: 0,
       createdAt: new Date().toISOString(),
       status: "en_cours",

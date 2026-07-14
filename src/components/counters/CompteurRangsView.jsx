@@ -36,6 +36,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
     patron,
     prevRang,
     resetTimer,
+    repeatBadge,
     setHighlightedInstruction,
     setShowNextPartieModal,
     setShowPrevPartieModal,
@@ -117,6 +118,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
                 onToggleTimer: toggleTimer,
                 onResetTimer: resetTimer,
               }}
+              repeatBadge={repeatBadge}
               onPrevRang={prevRang}
               onNextRang={nextRang}
               canPrev={currentIndex > 0}

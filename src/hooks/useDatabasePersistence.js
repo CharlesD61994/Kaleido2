@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  buildDatabaseFromCloudRow,
   flushPendingCloudDatabase,
   getDatabaseCloudFingerprint,
-  isCloudRowNewerThanLocal,
-  loadCloudDatabase,
   saveDatabase,
   syncDatabaseWithCloud,
 } from "../services/databaseStore";
 import { syncDatabaseMediaToCloud } from "../services/mediaStore";
-import { getActiveCloudUserId } from "../services/authStore";
-import { isSupabaseConfigured, supabase } from "../services/supabaseClient";
+import { isSupabaseConfigured } from "../services/supabaseClient";
 
 export default function useDatabasePersistence(database, databaseRef, setDatabase) {
   const [cloudReady, setCloudReady] = useState(true);
@@ -68,32 +64,6 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
     if (!cloudReady) return undefined;
     let syncing = false;
 
-    const applyCloudDatabase = (cloudDatabase) => {
-      if (!cloudDatabase) return false;
-      if (Date.now() - lastLocalWriteAtRef.current < 12000) return false;
-      const fingerprint = getDatabaseCloudFingerprint(cloudDatabase);
-      if (!fingerprint || fingerprint === lastAppliedCloudRef.current) return false;
-
-      const cloudTime = Date.parse(cloudDatabase?._meta?.updatedAt || 0);
-      const localTime = Date.parse(databaseRef.current?._meta?.updatedAt || 0);
-      if (cloudTime <= localTime) return false;
-
-      lastAppliedCloudRef.current = fingerprint;
-      skipNextSaveRef.current = true;
-      saveDatabase(cloudDatabase, { syncCloud: false, source: "cloud" });
-      setDatabase(cloudDatabase);
-      return true;
-    };
-
-    const pullCloudOnly = async () => {
-      const cloudDatabase = await loadCloudDatabase();
-      if (!cloudDatabase) return;
-
-      const cloudTime = Date.parse(cloudDatabase?._meta?.updatedAt || 0);
-      const localTime = Date.parse(databaseRef.current?._meta?.updatedAt || 0);
-      if (cloudTime >= localTime) applyCloudDatabase(cloudDatabase);
-    };
-
     const syncNow = async () => {
       if (syncing) return;
       syncing = true;
@@ -121,39 +91,16 @@ export default function useDatabasePersistence(database, databaseRef, setDatabas
       }
     };
 
-    const syncTimer = setInterval(syncNow, 300000);
-    const channel = isSupabaseConfigured && supabase && getActiveCloudUserId()
-      ? supabase
-        .channel(`kaleido-backups-${getActiveCloudUserId()}-${Date.now()}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "kaleido_backups",
-            filter: `user_key=eq.${getActiveCloudUserId()}`,
-          },
-          (payload) => {
-            const nextDatabase = buildDatabaseFromCloudRow(payload?.new);
-            if (!nextDatabase || !isCloudRowNewerThanLocal(payload?.new)) return;
-            applyCloudDatabase(nextDatabase);
-          }
-        )
-        .subscribe()
-      : null;
-    const pullTimer = setInterval(pullCloudOnly, 300000);
-
     window.addEventListener("pagehide", flushDatabase);
     window.addEventListener("beforeunload", flushDatabase);
     document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", syncNow);
 
     return () => {
-      clearInterval(syncTimer);
-      clearInterval(pullTimer);
-      if (channel) supabase.removeChannel(channel);
       window.removeEventListener("pagehide", flushDatabase);
       window.removeEventListener("beforeunload", flushDatabase);
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", syncNow);
     };
   }, [cloudReady, databaseRef, setDatabase]);
 

@@ -10,6 +10,7 @@ export default function ImportPdfModal({ asPage = false, onClose, onCreate }) {
   const [configRangs, setConfigRangs] = useState(false);
   const [totalRangs, setTotalRangs] = useState("");
   const [parties, setParties] = useState([]);
+  const [repetitions, setRepetitions] = useState([]);
   const [colorPickerPartie, setColorPickerPartie] = useState(null);
   const getRandomColorIdx = () => Math.floor(Math.random() * KALEIDOSCOPE_COLORS.length);
 
@@ -30,6 +31,22 @@ export default function ImportPdfModal({ asPage = false, onClose, onCreate }) {
   const addPartie = () => setParties((prev) => [...prev, { id: Date.now(), nom: "", rangs: "", colorIdx: getRandomColorIdx(), continuesFromPrevious: false }]);
   const updatePartie = (id, field, value) => setParties((prev) => prev.map((partie) => (partie.id === id ? { ...partie, [field]: value } : partie)));
   const removePartie = (id) => setParties((prev) => prev.filter((partie) => partie.id !== id));
+  const addRepetition = () => setRepetitions((prev) => [...prev, { id: Date.now(), partieId: parties[0]?.id || "", startRang: "1", endRang: "1", passages: "2", infinite: false }]);
+  const updateRepetition = (id, field, value) => setRepetitions((prev) => prev.map((repeat) => (repeat.id === id ? { ...repeat, [field]: value } : repeat)));
+  const removeRepetition = (id) => setRepetitions((prev) => prev.filter((repeat) => repeat.id !== id));
+  const buildPdfRepetitions = () => repetitions.map((repeat, index) => {
+    const partieIndex = Math.max(0, parties.findIndex((partie) => String(partie.id) === String(repeat.partieId)));
+    const offset = parties.slice(0, partieIndex).reduce((sum, partie) => sum + (parseInt(partie.rangs, 10) || 0), 0);
+    const start = Math.max(1, parseInt(repeat.startRang, 10) || 1);
+    const end = Math.max(start, parseInt(repeat.endRang, 10) || start);
+    return {
+      id: `pdf-repeat-${Date.now()}-${index}`,
+      startRang: offset + start,
+      endRang: offset + end,
+      passages: repeat.infinite ? null : Math.max(2, parseInt(repeat.passages, 10) || 2),
+      infinite: repeat.infinite === true,
+    };
+  });
   const totalFromParties = parties.reduce((sum, partie) => sum + (parseInt(partie.rangs) || 0), 0);
   const total = configRangs ? (parties.length > 0 ? totalFromParties : parseInt(totalRangs) || 0) : 0;
   const canCreate = name.trim() && pdfData && !loading;
@@ -133,6 +150,25 @@ export default function ImportPdfModal({ asPage = false, onClose, onCreate }) {
             ) : null}
 
             <button onClick={addPartie} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #0891B244", color: "#0891B2", fontSize: 13, cursor: "pointer", marginTop: 4 }}>+ Ajouter une partie</button>
+            {parties.length > 0 ? (
+              <>
+                <button onClick={addRepetition} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #7C3AED55", color: "#7C3AED", fontSize: 13, cursor: "pointer", marginTop: 8 }}>+ Ajouter une répétition</button>
+                {repetitions.map((repeat) => (
+                  <div key={repeat.id} style={{ display: "grid", gap: 8, marginTop: 10, padding: 10, borderRadius: 12, background: "var(--k-surface)", border: "1px solid var(--k-border)" }}>
+                    <select value={repeat.partieId} onChange={(event) => updateRepetition(repeat.id, "partieId", event.target.value)} style={{ width: "100%", background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 10, padding: 10, color: "var(--k-text)", fontSize: 16 }}>
+                      {parties.map((partie, index) => <option key={partie.id} value={partie.id}>{partie.nom || `Partie ${index + 1}`}</option>)}
+                    </select>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      <input value={repeat.startRang} onChange={(event) => updateRepetition(repeat.id, "startRang", event.target.value)} placeholder="Début" type="number" min="1" style={{ background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 10, padding: 10, color: "var(--k-text)", fontSize: 16 }} />
+                      <input value={repeat.endRang} onChange={(event) => updateRepetition(repeat.id, "endRang", event.target.value)} placeholder="Fin" type="number" min="1" style={{ background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 10, padding: 10, color: "var(--k-text)", fontSize: 16 }} />
+                    </div>
+                    <button type="button" onClick={() => updateRepetition(repeat.id, "infinite", !repeat.infinite)} style={{ border: `1px solid ${repeat.infinite ? "#7C3AED" : "var(--k-border)"}`, borderRadius: 10, background: repeat.infinite ? "rgba(124,58,237,0.16)" : "var(--k-muted-fill)", color: repeat.infinite ? "#A78BFA" : "var(--k-muted)", padding: 10, fontWeight: 800 }}>Jusqu'à satisfaction</button>
+                    {!repeat.infinite ? <input value={repeat.passages} onChange={(event) => updateRepetition(repeat.id, "passages", event.target.value)} placeholder="Passages total" type="number" min="2" style={{ background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 10, padding: 10, color: "var(--k-text)", fontSize: 16 }} /> : null}
+                    <button type="button" onClick={() => removeRepetition(repeat.id)} style={{ border: "1px solid rgba(239,68,68,0.35)", borderRadius: 10, background: "rgba(239,68,68,0.12)", color: "#F87171", padding: 10, fontWeight: 800 }}>Retirer la répétition</button>
+                  </div>
+                ))}
+              </>
+            ) : null}
             {parties.length > 0 ? <div style={{ color: "var(--k-muted-2)", fontSize: 12, textAlign: "center", marginTop: 10 }}>Total : {totalFromParties} rangs</div> : null}
           </div>
         ) : null}
@@ -141,7 +177,7 @@ export default function ImportPdfModal({ asPage = false, onClose, onCreate }) {
 
         <div style={{ flexShrink: 0, display: "flex", gap: 12, padding: "12px 20px calc(env(safe-area-inset-bottom, 0px) + 18px)", borderTop: "1px solid var(--k-border)", background: "var(--k-surface)" }}>
           <button onClick={onClose} style={{ flex: 1, padding: "14px", borderRadius: 14, border: "1px solid var(--k-border)", background: "none", color: "var(--k-muted)", fontSize: 14, cursor: "pointer" }}>Annuler</button>
-          <button onClick={() => canCreate && onCreate(name.trim(), pdfData, total, parties)} disabled={!canCreate} style={{ flex: 1, padding: "14px", borderRadius: 14, border: "none", background: canCreate ? "linear-gradient(135deg, #0891B2, #22D3EE)" : "var(--k-border-strong)", color: canCreate ? "#fff" : "var(--k-muted-2)", fontSize: 14, fontWeight: 700, cursor: canCreate ? "pointer" : "not-allowed" }}>
+          <button onClick={() => canCreate && onCreate(name.trim(), pdfData, total, parties, buildPdfRepetitions())} disabled={!canCreate} style={{ flex: 1, padding: "14px", borderRadius: 14, border: "none", background: canCreate ? "linear-gradient(135deg, #0891B2, #22D3EE)" : "var(--k-border-strong)", color: canCreate ? "#fff" : "var(--k-muted-2)", fontSize: 14, fontWeight: 700, cursor: canCreate ? "pointer" : "not-allowed" }}>
             Creer la bulle
           </button>
         </div>

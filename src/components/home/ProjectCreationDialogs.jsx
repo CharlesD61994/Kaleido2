@@ -16,7 +16,7 @@ export default function ProjectCreationDialogs({
   showNewMenu,
   showSelectPatronModal,
 }) {
-  const handleCreatePdfProject = async (name, pdfData, total, partiesConfig) => {
+  const handleCreatePdfProject = async (name, pdfData, total, partiesConfig, repetitionsConfig = []) => {
     const newId = database.settings.lastProjectId + 1;
     const colorIdx = Math.floor(Math.random() * KALEIDOSCOPE_COLORS.length);
     const pdfId = `pdf_${newId}`;
@@ -48,6 +48,7 @@ export default function ProjectCreationDialogs({
       projectType: "pdf",
       pdfId,
       pdfParties,
+      pdfRepetitions: repetitionsConfig,
       elapsedTime: 0,
       createdAt: new Date().toISOString(),
       status: "en_cours",

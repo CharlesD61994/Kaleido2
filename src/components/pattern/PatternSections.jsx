@@ -8,6 +8,7 @@ const [isEditingNom, setIsEditingNom] = useState(false);
 const [showColorPicker, setShowColorPicker] = useState(false);
 const [tempNom, setTempNom] = useState(partie.nom);
 const [displayNom, setDisplayNom] = useState(partie.nom || "Nouvelle partie");
+const [repeatDraft, setRepeatDraft] = useState(null);
 const color = KALEIDOSCOPE_COLORS[partie.colorIdx % KALEIDOSCOPE_COLORS.length];
 useEffect(() => {
 const syncedNom = partie.nom || "Nouvelle partie";
@@ -29,6 +30,40 @@ setTempNom(displayNom || partie.nom || "Nouvelle partie");
 setIsEditingNom(true);
 };
 const act = (e, fn) => { e.preventDefault(); e.stopPropagation(); fn(); };
+const countableRangs = partie.rangs.filter(r => !r.isNote);
+const openRepeatDraft = (rangId) => {
+const startIndex = countableRangs.findIndex(r => r.id === rangId);
+if (startIndex < 0) return;
+const startRang = countableRangs[startIndex];
+const existing = startRang.repeat || {};
+const endRangId = existing.endRangId && countableRangs.some(r => r.id === existing.endRangId)
+? existing.endRangId
+: (countableRangs[Math.min(countableRangs.length - 1, startIndex + 1)]?.id || startRang.id);
+setRepeatDraft({
+startRangId: rangId,
+startIndex,
+endRangId,
+passages: Math.max(2, Number(existing.passages) || 2),
+infinite: existing.infinite === true,
+});
+};
+const saveRepeatDraft = () => {
+if (!repeatDraft?.startRangId) return;
+onUpdateRang(partie.id, repeatDraft.startRangId, {
+repeat: {
+id: `repeat-${repeatDraft.startRangId}`,
+endRangId: repeatDraft.endRangId,
+passages: repeatDraft.infinite ? null : Math.max(2, Number(repeatDraft.passages) || 2),
+infinite: repeatDraft.infinite === true,
+},
+});
+setRepeatDraft(null);
+};
+const deleteRepeatDraft = () => {
+if (!repeatDraft?.startRangId) return;
+onUpdateRang(partie.id, repeatDraft.startRangId, { repeat: null });
+setRepeatDraft(null);
+};
 return (
 <div style={{ background: "var(--k-surface)", border: `1px solid ${color.light}22`, borderRadius: 16, padding: 16, marginBottom: 16 }}>
 {/* Header partie */}
@@ -104,6 +139,7 @@ onDelete={(rangId) => onDeleteRang(partie.id, rangId)}
 onDuplicate={(rangId) => onDuplicateRang(partie.id, rangId)}
 onMoveUp={(rangId) => onMoveRangUp(partie.id, rangId)}
 onMoveDown={(rangId) => onMoveRangDown(partie.id, rangId)}
+onCreateRepeat={openRepeatDraft}
 isFirst={index === 0} isLast={index === partie.rangs.length - 1} />
 );
 });
@@ -113,6 +149,34 @@ isFirst={index === 0} isLast={index === partie.rangs.length - 1} />
 + Ajouter un rang
 </button>
 </>
+)}
+{repeatDraft && (
+<div style={{ position: "fixed", inset: 0, zIndex: 5000, background: "rgba(0,0,0,0.58)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setRepeatDraft(null)}>
+<div style={{ width: "100%", maxWidth: 360, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, padding: 18, boxShadow: "0 24px 80px rgba(0,0,0,0.38)" }} onClick={(event) => event.stopPropagation()}>
+<h3 style={{ margin: "0 0 12px", color: "var(--k-text)", fontSize: 18, fontFamily: "'Syne', sans-serif" }}>Répétition de rangs</h3>
+<label style={{ display: "grid", gap: 6, color: "var(--k-muted)", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
+Jusqu'au rang
+<select value={repeatDraft.endRangId} onChange={(event) => setRepeatDraft((current) => ({ ...current, endRangId: event.target.value }))} style={{ width: "100%", border: "1px solid var(--k-border)", borderRadius: 12, background: "var(--k-field)", color: "var(--k-text)", padding: 12, fontSize: 16 }}>
+{countableRangs.slice(repeatDraft.startIndex).map((rang, index) => (
+<option key={rang.id} value={rang.id}>Rang {repeatDraft.startIndex + index + 1}</option>
+))}
+</select>
+</label>
+<button type="button" onClick={() => setRepeatDraft((current) => ({ ...current, infinite: !current.infinite }))} style={{ width: "100%", border: `1px solid ${repeatDraft.infinite ? color.light : "var(--k-border)"}`, borderRadius: 12, background: repeatDraft.infinite ? `${color.bg}22` : "var(--k-muted-fill)", color: repeatDraft.infinite ? color.light : "var(--k-text)", padding: "11px 12px", fontWeight: 900, marginBottom: 12 }}>
+Répéter jusqu'à satisfaction
+</button>
+{!repeatDraft.infinite && (
+<label style={{ display: "grid", gap: 6, color: "var(--k-muted)", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
+Nombre de passages total
+<input type="number" min="2" value={repeatDraft.passages} onChange={(event) => setRepeatDraft((current) => ({ ...current, passages: event.target.value }))} style={{ width: "100%", border: "1px solid var(--k-border)", borderRadius: 12, background: "var(--k-field)", color: "var(--k-text)", padding: 12, fontSize: 16 }} />
+</label>
+)}
+<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+<button type="button" onClick={deleteRepeatDraft} style={{ border: "1px solid rgba(239,68,68,0.35)", borderRadius: 12, background: "rgba(239,68,68,0.14)", color: "#F87171", padding: "11px 12px", fontWeight: 900 }}>Retirer</button>
+<button type="button" onClick={saveRepeatDraft} style={{ border: "none", borderRadius: 12, background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, color: "#fff", padding: "11px 12px", fontWeight: 900 }}>Sauvegarder</button>
+</div>
+</div>
+</div>
 )}
 </div>
 );

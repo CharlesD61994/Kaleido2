@@ -19,13 +19,19 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
 
   useEffect(() => {
     if (project?.clientShareToken && typeof onMarkMessagesRead === "function") {
-      onMarkMessagesRead(project);
+      const markRead = () => onMarkMessagesRead(project);
+      const onVisible = () => {
+        if (!document.hidden) markRead();
+      };
 
-      const interval = window.setInterval(() => {
-        onMarkMessagesRead(project);
-      }, 180_000);
+      markRead();
+      document.addEventListener("visibilitychange", onVisible);
+      window.addEventListener("focus", markRead);
 
-      return () => window.clearInterval(interval);
+      return () => {
+        document.removeEventListener("visibilitychange", onVisible);
+        window.removeEventListener("focus", markRead);
+      };
     }
 
     return undefined;

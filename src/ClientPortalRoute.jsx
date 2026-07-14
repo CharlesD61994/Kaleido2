@@ -56,7 +56,6 @@ export default function ClientPortalRoute({ token }) {
     };
 
     markSeen();
-    const timer = setInterval(markSeen, 120000);
     const onVisible = () => {
       if (!document.hidden) markSeen();
     };
@@ -67,7 +66,6 @@ export default function ClientPortalRoute({ token }) {
 
     return () => {
       alive = false;
-      clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onFocus);
     };
@@ -102,11 +100,18 @@ export default function ClientPortalRoute({ token }) {
     };
 
     load();
-    const timer = setInterval(() => load({ quiet: true }), 180000);
+    const onVisible = () => {
+      if (!document.hidden) load({ quiet: true });
+    };
+    const onFocus = () => load({ quiet: true });
+
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
 
     return () => {
       alive = false;
-      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
     };
   }, [token]);
 
