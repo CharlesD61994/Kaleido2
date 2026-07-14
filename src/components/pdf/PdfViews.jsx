@@ -87,6 +87,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     rang,
     rangDansPartie,
     repeatBadge,
+    repeatStateKey,
     resetTimer,
     goToPartieIndex,
     setCurrentPartieIdx,
@@ -138,17 +139,21 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
       hasClient: Boolean(project?.client),
       unreadClientMessageCount,
       repeatBadgeLabel: repeatBadge?.label || "",
+      repeatBadgeKey: repeatBadge?.label || "",
     };
-  }, [color.bg, color.light, currentPartie?.nom, elapsedTime, formatTime, isTimerRunning, pct, project?.client, rang, rangDansPartie, repeatBadge?.label, themeMode, total, totalPartieCourante, unreadClientMessageCount]);
+  }, [color.bg, color.light, currentPartie?.nom, elapsedTime, formatTime, isTimerRunning, pct, project?.client, rang, rangDansPartie, repeatBadge?.label, repeatStateKey, themeMode, total, totalPartieCourante, unreadClientMessageCount]);
 
   const handleNativePdfAction = React.useCallback((action) => {
+    if (action === "finishRepeat") {
+      if (repeatBadge?.onClick) repeatBadge.onClick();
+      return;
+    }
     if (action === "decrementRang") decrementRang();
     if (action === "incrementRang") incrementRang();
     if (action === "toggleTimer") toggleTimer();
     if (action === "resetTimer") resetTimer();
     if (action === "openClientPage" && typeof onOpenClientPage === "function") onOpenClientPage();
     if (action === "openPartiePicker") setShowPartiePicker(true);
-    if (action === "finishRepeat" && repeatBadge?.onClick) repeatBadge.onClick();
   }, [decrementRang, incrementRang, onOpenClientPage, repeatBadge, resetTimer, toggleTimer]);
 
   const hideNativePdf = showPartiePicker || showFinModal || showNextPartieModal || showPrevPartieModal;

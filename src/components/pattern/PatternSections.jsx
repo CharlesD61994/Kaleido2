@@ -168,7 +168,7 @@ Répéter jusqu'à satisfaction
 {!repeatDraft.infinite && (
 <label style={{ display: "grid", gap: 6, color: "var(--k-muted)", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
 Nombre de passages total
-<input type="number" min="2" value={repeatDraft.passages} onChange={(event) => setRepeatDraft((current) => ({ ...current, passages: event.target.value }))} style={{ width: "100%", border: "1px solid var(--k-border)", borderRadius: 12, background: "var(--k-field)", color: "var(--k-text)", padding: 12, fontSize: 16 }} />
+<input type="number" min="2" value={repeatDraft.passages} onChange={(event) => setRepeatDraft((current) => ({ ...current, passages: event.target.value }))} style={{ width: "100%", minWidth: 0, boxSizing: "border-box", border: "1px solid var(--k-border)", borderRadius: 12, background: "var(--k-field)", color: "var(--k-text)", padding: 12, fontSize: 16 }} />
 </label>
 )}
 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>

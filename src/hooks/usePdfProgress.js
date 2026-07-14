@@ -436,6 +436,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     rangDansPartie,
     resetTimer,
     repeatBadge,
+    repeatStateKey: JSON.stringify(pdfRepeatState),
     goToPartieIndex,
     setCurrentPartieIdx: setCurrentPartieIdxWithTime,
     setRang: setRangWithProgress,
