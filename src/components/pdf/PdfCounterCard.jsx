@@ -78,7 +78,7 @@ export default function PdfCounterCard({
               </div>
             </div>
             {clientButton && !repeatBadge ? (
-              <div style={{ position: "absolute", left: circleSize + 13, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: circleSize + 16, top: clientButtonTop + 1, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
@@ -136,7 +136,7 @@ export default function PdfCounterCard({
                 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
                 <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                 {clientButton && repeatBadge ? (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 6, flexShrink: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 9, transform: "translateY(1px)", flexShrink: 0 }}>
                     {clientButton}
                   </div>
                 ) : null}
