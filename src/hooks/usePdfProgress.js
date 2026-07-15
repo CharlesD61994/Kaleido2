@@ -76,6 +76,28 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const isRepeatCompleted = (repeat) => pdfRepeatStateRef.current?.[repeat.key]?.completed === true;
   const getRepeatTotalPassages = (repeat) => repeat.infinite && isRepeatCompleted(repeat) ? getRepeatPassage(repeat) : repeat.passages;
   const getActiveRepeat = (targetRang) => repeatDefinitions.find((repeat) => targetRang >= repeat.startRang && targetRang <= repeat.endRang) || null;
+  const reactivateInfiniteRepeatForRang = (targetRang) => {
+    const repeat = repeatDefinitions.find((item) =>
+      item.infinite
+      && targetRang >= item.startRang
+      && targetRang <= item.endRang
+    );
+    if (!repeat) return null;
+    const current = pdfRepeatStateRef.current?.[repeat.key] || {};
+    if (current.completed === true || !current.passage) {
+      const nextState = {
+        ...pdfRepeatStateRef.current,
+        [repeat.key]: {
+          ...current,
+          passage: Math.max(1, Number(current.passage) || 1),
+          completed: false,
+        },
+      };
+      pdfRepeatStateRef.current = nextState;
+      setPdfRepeatState(nextState);
+    }
+    return repeat;
+  };
   const getPartieStartRang = (partieIndex) => {
     if (!hasParties) return 1;
     return pdfParties.slice(0, Math.max(0, partieIndex)).reduce((sum, partie) => sum + (Number(partie?.totalRangs) || 0), 0) + 1;
@@ -409,12 +431,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     if (liveRang <= 1) return;
 
     const newRang = liveRang - 1;
-    const previousInfiniteRepeat = repeatDefinitions.find((repeat) =>
-      repeat.infinite
-      && !isRepeatCompleted(repeat)
-      && newRang >= repeat.startRang
-      && newRang <= repeat.endRang
-    );
+    const previousInfiniteRepeat = reactivateInfiniteRepeatForRang(newRang);
     if (previousInfiniteRepeat) {
       rangRef.current = newRang;
       if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(newRang));
@@ -464,6 +481,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const setRangWithProgress = (next) => {
     const rawNextRang = typeof next === "function" ? next(rangRef.current) : next;
     const nextRang = Math.max(1, Number(rawNextRang) || 1);
+    reactivateInfiniteRepeatForRang(nextRang);
     rangRef.current = nextRang;
     if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(nextRang));
     setRang(nextRang);

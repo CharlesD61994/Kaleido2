@@ -158,7 +158,7 @@ strokeLinecap="round" style={{
 </button>
 ) : null}
 {clientButton && repeatBadge && showInlineControls ? (
-<div style={{ position: "absolute", left: "calc(50% + 88px)", top: 60, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+<div style={{ position: "absolute", left: "calc(50% + 88px)", top: 58, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
 ) : null}
