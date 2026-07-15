@@ -519,15 +519,8 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const displayRang = activeRepeatDisplayRang
     ?? activePartieRepeatDisplayRang
     ?? (rang + getFixedRepeatExtraBefore(rang) + getFixedPartieRepeatExtraBefore(rang));
-  const infiniteProgressStartRang = activeInfiniteRepeat
-    ? Math.max(0, activeInfiniteRepeat.startRang - 1)
-    : activeInfinitePartieRepeat
-      ? Math.max(0, activeInfinitePartieRepeat.startRang - 1)
-      : null;
   const displayTotal = isInfiniteProgress ? "∞" : displayNumericTotal;
-  const globalProgressRatio = isInfiniteProgress
-    ? (infiniteProgressStartRang || 0) / displayNumericTotal
-    : displayRang / displayNumericTotal;
+  const globalProgressRatio = displayRang / displayNumericTotal;
   const displayRangDansPartie = isInfiniteProgress
     ? activeInfiniteRepeat
       ? Math.max(1, rangDansPartie + ((getRepeatPassage(activeInfiniteRepeat) - 1) * activeInfiniteRepeat.length))
@@ -557,14 +550,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     const targetDisplayRang = targetRepeatDisplayRang
       ?? targetPartieRepeatDisplayRang
       ?? (targetRang + getFixedRepeatExtraBefore(targetRang) + getFixedPartieRepeatExtraBefore(targetRang));
-    const targetInfiniteProgressStartRang = targetInfiniteRepeat
-      ? Math.max(0, targetInfiniteRepeat.startRang - 1)
-      : targetInfinitePartieRepeat
-        ? Math.max(0, targetInfinitePartieRepeat.startRang - 1)
-        : null;
-    const targetProgressRatio = targetIsInfinite
-      ? (targetInfiniteProgressStartRang || 0) / freshDisplayNumericTotal
-      : targetDisplayRang / freshDisplayNumericTotal;
+    const targetProgressRatio = targetDisplayRang / freshDisplayNumericTotal;
     return {
       progressDisplay: {
         rang: targetDisplayRang,

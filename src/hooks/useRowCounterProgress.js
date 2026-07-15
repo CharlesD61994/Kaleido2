@@ -566,16 +566,9 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const displayCurrentCount = activeRepeatDisplayCount
     ?? activePartieRepeatDisplayCount
     ?? (getVirtualCountAtIndex(currentIndex) + fixedRepeatExtraBeforeCurrent + fixedPartieRepeatExtraBeforeCurrent);
-  const infiniteProgressStartCount = activeInfiniteRepeat
-    ? allRangs.slice(0, activeInfiniteRepeat.startIndex).filter(r => !r.isNote).length
-    : activeInfinitePartieRepeat
-      ? allRangs.slice(0, activeInfinitePartieRepeat.startIndex).filter(r => !r.isNote).length
-      : null;
   const isInfiniteProgress = Boolean(activeInfiniteRepeat || activeInfinitePartieRepeat);
   const displayTotalRangs = isInfiniteProgress ? "∞" : displayNumericTotalRangs;
-  const globalProgressRatio = isInfiniteProgress
-    ? (infiniteProgressStartCount || 0) / displayNumericTotalRangs
-    : displayCurrentCount / displayNumericTotalRangs;
+  const globalProgressRatio = displayCurrentCount / displayNumericTotalRangs;
   const displayCurrentPartieRang = isInfiniteProgress
     ? activeInfiniteRepeat
       ? Math.max(1, currentPartieDisplayRangIndex + 1 + ((getRepeatPassage(activeInfiniteRepeat) - 1) * activeInfiniteRepeat.length))
@@ -620,14 +613,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     const targetDisplayCount = targetRepeatDisplayCount
       ?? targetPartieRepeatDisplayCount
       ?? (getVirtualCountAtIndex(targetIndex) + fixedRepeatExtraBeforeTarget + fixedPartieRepeatExtraBeforeTarget);
-    const targetInfiniteStartCount = targetInfiniteRepeat
-      ? allRangs.slice(0, targetInfiniteRepeat.startIndex).filter(r => !r.isNote).length
-      : targetInfinitePartieRepeat
-        ? allRangs.slice(0, targetInfinitePartieRepeat.startIndex).filter(r => !r.isNote).length
-        : null;
-    const targetProgressRatio = targetIsInfinite
-      ? (targetInfiniteStartCount || 0) / freshDisplayNumericTotalRangs
-      : targetDisplayCount / freshDisplayNumericTotalRangs;
+    const targetProgressRatio = targetDisplayCount / freshDisplayNumericTotalRangs;
     return {
       progressDisplay: {
         rang: targetDisplayCount,
