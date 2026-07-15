@@ -4,7 +4,6 @@ import { corsHeaders, getPublicClientOrigin, getServiceRoleKey, jsonResponse, se
 const PROJECTS_TABLE = "kaleido_client_projects";
 const MESSAGES_TABLE = "kaleido_client_messages";
 const CLIENT_ACTIVE_WINDOW_MS = 90_000;
-const OWNER_ACTIVE_WINDOW_MS = 12_000;
 const MESSAGE_EMAIL_COOLDOWN_MS = 60 * 60 * 1000;
 
 type ClientMessage = {
@@ -103,27 +102,27 @@ Deno.serve(async (req) => {
     return jsonResponse({ ok: true, skipped: true, reason: "Ce message a deja declenche un courriel." });
   }
 
-  const recentEmailCutoff = new Date(Date.now() - MESSAGE_EMAIL_COOLDOWN_MS).toISOString();
-  const recentNotificationResult = await supabase
-    .from(MESSAGES_TABLE)
-    .select("id")
-    .eq("share_token", message.share_token)
-    .eq("owner_key", message.owner_key)
-    .eq("sender", message.sender)
-    .gte("email_notified_at", recentEmailCutoff)
-    .neq("id", message.id)
-    .limit(1);
-
-  if (!recentNotificationResult.error && (recentNotificationResult.data || []).length > 0) {
-    return jsonResponse({ ok: true, skipped: true, reason: "Un courriel de message a deja ete envoye dans la derniere heure." });
-  }
-
   let recipient = "";
   let subject = "";
   let html = "";
   let text = "";
 
   if (message.sender === "owner") {
+    const recentEmailCutoff = new Date(Date.now() - MESSAGE_EMAIL_COOLDOWN_MS).toISOString();
+    const recentNotificationResult = await supabase
+      .from(MESSAGES_TABLE)
+      .select("id")
+      .eq("share_token", message.share_token)
+      .eq("owner_key", message.owner_key)
+      .eq("sender", message.sender)
+      .gte("email_notified_at", recentEmailCutoff)
+      .neq("id", message.id)
+      .limit(1);
+
+    if (!recentNotificationResult.error && (recentNotificationResult.data || []).length > 0) {
+      return jsonResponse({ ok: true, skipped: true, reason: "Un courriel de message a deja ete envoye dans la derniere heure." });
+    }
+
     if (projectRow.client_message_emails_enabled === false) {
       return jsonResponse({ ok: true, skipped: true, reason: "Notifications message desactivees par le client." });
     }
@@ -144,12 +143,6 @@ Deno.serve(async (req) => {
       <p>L'Atelier Kaleido</p>
     `;
   } else {
-    const ownerLastReadAt = Date.parse(String(project.clientLastReadAt || ""));
-    const ownerIsActive = ownerLastReadAt > 0 && Date.now() - ownerLastReadAt <= OWNER_ACTIVE_WINDOW_MS;
-    if (ownerIsActive) {
-      return jsonResponse({ ok: true, skipped: true, reason: "Le tricoteur consulte deja la fiche." });
-    }
-
     const ownerEmail = cleanEmailSecret(
       Deno.env.get("KALEIDO_OWNER_EMAIL")
       || Deno.env.get("KALEIDO_NOTIFICATION_EMAIL")
