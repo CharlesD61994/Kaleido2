@@ -633,7 +633,7 @@ export const sendClientMessage = async ({
     return fallback.ok ? fallback : { ...fallback, reason: fallback.reason || functionReason || "Le message n'a pas pu etre envoye." };
   }
 
-  const notification = await notifyMessageEmail(data?.message?.id);
+  const notification = data?.notification || await notifyMessageEmail(data?.message?.id);
 
   return { ok: true, message: data?.message, notification };
 };

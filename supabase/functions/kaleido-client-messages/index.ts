@@ -8,6 +8,50 @@ type MessageSender = "owner" | "client";
 
 const cleanText = (value: unknown) => String(value || "").trim();
 
+const notifyMessageEmail = async ({
+  supabaseUrl,
+  serviceRoleKey,
+  messageId,
+}: {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  messageId: string;
+}) => {
+  if (!messageId) {
+    return { ok: false, reason: "messageId manquant." };
+  }
+
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/kaleido-notify-message`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ messageId }),
+    });
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok || payload?.ok === false) {
+      return {
+        ok: false,
+        reason: payload?.reason || `Notification courriel refusee (${response.status}).`,
+      };
+    }
+
+    return {
+      ok: true,
+      skipped: payload?.skipped === true,
+      reason: payload?.reason || "",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: error instanceof Error ? error.message : "Notification courriel non envoyee.",
+    };
+  }
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -102,7 +146,13 @@ Deno.serve(async (req) => {
       return jsonResponse({ ok: false, reason: error.message || "Le message n'a pas pu etre envoye." }, 500);
     }
 
-    return jsonResponse({ ok: true, message: data });
+    const notification = await notifyMessageEmail({
+      supabaseUrl,
+      serviceRoleKey,
+      messageId: data?.id || "",
+    });
+
+    return jsonResponse({ ok: true, message: data, notification });
   }
 
   return jsonResponse({ ok: false, reason: "Action non supportee." }, 400);
