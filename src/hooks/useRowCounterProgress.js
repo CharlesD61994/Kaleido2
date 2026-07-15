@@ -571,10 +571,10 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const globalProgressRatio = displayCurrentCount / displayNumericTotalRangs;
   const getFrozenInfiniteProgressCount = (repeat, partieRepeat, baseIndex = currentIndex, extraRepeat = fixedRepeatExtraBeforeCurrent, extraPartieRepeat = fixedPartieRepeatExtraBeforeCurrent) => {
     if (repeat) {
-      return getVirtualCountAtIndex(repeat.startIndex) + extraRepeat + extraPartieRepeat;
+      return Math.max(0, getVirtualCountAtIndex(repeat.startIndex) - 1) + extraRepeat + extraPartieRepeat;
     }
     if (partieRepeat) {
-      return getVirtualCountAtIndex(partieRepeat.startIndex) + extraRepeat + extraPartieRepeat;
+      return Math.max(0, getVirtualCountAtIndex(partieRepeat.startIndex) - 1) + extraRepeat + extraPartieRepeat;
     }
     return getVirtualCountAtIndex(baseIndex) + extraRepeat + extraPartieRepeat;
   };
