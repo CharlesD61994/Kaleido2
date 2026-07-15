@@ -90,7 +90,7 @@ export default function PdfCounterCard({
               </div>
             ) : null}
             {repeatBadge ? (
-              <button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: 0, top: 72, minWidth: 50, height: 30, borderRadius: 999, border: `1px solid ${color.bg}44`, background: `${color.bg}18`, color: color.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
+              <button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: -6, top: 72, minWidth: 46, height: 30, borderRadius: 999, border: `1px solid ${color.bg}44`, background: `${color.bg}18`, color: color.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
                 {repeatBadge.label}
               </button>
             ) : null}

@@ -150,21 +150,10 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const repeatDefinitions = getRepeatDefinitions();
   const getRepeatPassage = (repeat) => Math.max(1, Number(rangRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const getActiveRepeat = (index) => repeatDefinitions.find((repeat) => index >= repeat.startIndex && index <= repeat.endIndex) || null;
-  const getVirtualTotal = () => totalRangsForCount + repeatDefinitions.reduce((sum, repeat) => (
-    repeat.infinite ? sum : sum + repeat.length * (repeat.passages - 1)
-  ), 0);
+  const getVirtualTotal = () => totalRangsForCount;
   const getVirtualCountAtIndex = (index) => {
     const safeIndex = Math.max(0, index);
-    let count = allRangs.slice(0, safeIndex + 1).filter(r => !r.isNote).length;
-    repeatDefinitions.forEach((repeat) => {
-      if (repeat.infinite) return;
-      if (safeIndex > repeat.endIndex) {
-        count += repeat.length * (repeat.passages - 1);
-      } else if (safeIndex >= repeat.startIndex && safeIndex <= repeat.endIndex) {
-        count += repeat.length * (getRepeatPassage(repeat) - 1);
-      }
-    });
-    return Math.max(1, count);
+    return Math.max(1, allRangs.slice(0, safeIndex + 1).filter(r => !r.isNote).length);
   };
 
   useEffect(() => {
@@ -173,7 +162,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   }, [currentRangId, currentIndex]);
 
   const currentRang = allRangs[currentIndex];
-  const totalRangs = getVirtualTotal();
+  const totalRangs = totalRangsForCount;
   const currentCountIndex = currentRang?.isNote
     ? allRangs.slice(0, currentIndex).filter(r => !r.isNote).length - 1
     : getVirtualCountAtIndex(currentIndex) - 1;

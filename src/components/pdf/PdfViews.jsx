@@ -72,6 +72,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     addCounter,
     color,
     completeProject,
+    confirmFinishActiveInfiniteRepeat,
     counters,
     currentPartie,
     currentPartieIdx,
@@ -96,8 +97,10 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     setShowNextPartieModal,
     setShowPrevPartieModal,
     showFinModal,
+    showFinishRepeatModal,
     showNextPartieModal,
     showPrevPartieModal,
+    setShowFinishRepeatModal,
     toggleTimer,
     total,
     totalPartieCourante,
@@ -156,7 +159,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     if (action === "openPartiePicker") setShowPartiePicker(true);
   }, [decrementRang, incrementRang, onOpenClientPage, repeatBadge, resetTimer, toggleTimer]);
 
-  const hideNativePdf = showPartiePicker || showFinModal || showNextPartieModal || showPrevPartieModal;
+  const hideNativePdf = showPartiePicker || showFinModal || showFinishRepeatModal || showNextPartieModal || showPrevPartieModal;
 
   return (
     <div style={{ background: "var(--k-bg)", color: "var(--k-text)", height: "100vh", fontFamily: "'DM Sans', sans-serif", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -250,6 +253,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
       <PdfProgressModals
         color={color}
         completeProject={completeProject}
+        confirmFinishActiveInfiniteRepeat={confirmFinishActiveInfiniteRepeat}
         currentPartie={currentPartie}
         currentPartieIdx={currentPartieIdx}
         pdfParties={pdfParties}
@@ -257,9 +261,11 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
         setCurrentPartieIdx={setCurrentPartieIdx}
         setRang={setRang}
         setShowFinModal={setShowFinModal}
+        setShowFinishRepeatModal={setShowFinishRepeatModal}
         setShowNextPartieModal={setShowNextPartieModal}
         setShowPrevPartieModal={setShowPrevPartieModal}
         showFinModal={showFinModal}
+        showFinishRepeatModal={showFinishRepeatModal}
         showNextPartieModal={showNextPartieModal}
         showPrevPartieModal={showPrevPartieModal}
       />

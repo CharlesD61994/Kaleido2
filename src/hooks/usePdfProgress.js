@@ -33,6 +33,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const [showNextPartieModal, setShowNextPartieModal] = useState(false);
   const [showPrevPartieModal, setShowPrevPartieModal] = useState(false);
   const [showFinModal, setShowFinModal] = useState(false);
+  const [showFinishRepeatModal, setShowFinishRepeatModal] = useState(false);
   const [pdfRepeatState, setPdfRepeatState] = useState(project?.pdfRepeatState || {});
   const pdfRepeatStateRef = useRef(project?.pdfRepeatState || {});
 
@@ -54,20 +55,9 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const repeatDefinitions = getRepeatDefinitions();
   const getRepeatPassage = (repeat) => Math.max(1, Number(pdfRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const getActiveRepeat = (targetRang) => repeatDefinitions.find((repeat) => targetRang >= repeat.startRang && targetRang <= repeat.endRang) || null;
-  const getVirtualTotal = () => total + repeatDefinitions.reduce((sum, repeat) => (
-    repeat.infinite ? sum : sum + repeat.length * (repeat.passages - 1)
-  ), 0);
+  const getVirtualTotal = () => total;
   const getVirtualRang = (targetRang) => {
-    let count = Math.max(1, Number(targetRang) || 1);
-    repeatDefinitions.forEach((repeat) => {
-      if (repeat.infinite) return;
-      if (targetRang > repeat.endRang) {
-        count += repeat.length * (repeat.passages - 1);
-      } else if (targetRang >= repeat.startRang && targetRang <= repeat.endRang) {
-        count += repeat.length * (getRepeatPassage(repeat) - 1);
-      }
-    });
-    return Math.max(1, count);
+    return Math.max(1, Math.min(total || 1, Number(targetRang) || 1));
   };
 
   useEffect(() => {
@@ -164,7 +154,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const color = currentPartie
     ? KALEIDOSCOPE_COLORS[currentPartie.colorIdx % KALEIDOSCOPE_COLORS.length]
     : KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
-  const virtualTotal = getVirtualTotal();
+  const virtualTotal = total;
   const virtualRang = getVirtualRang(rang);
   const pct = virtualTotal > 0 ? Math.min(100, Math.round((virtualRang / virtualTotal) * 100)) : 0;
 
@@ -195,7 +185,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
       };
     }
     if (typeof onSaveProgress === "function") {
-      onSaveProgress(getVirtualRang(nextRang), getVirtualTotal(), elapsedTimeRef.current, {
+      onSaveProgress(Math.max(1, Number(nextRang) || 1), total, elapsedTimeRef.current, {
         partieTimes: partieTimesRef.current,
         pdfPartieRangs: pdfPartieRangsRef.current,
         pdfCurrentRang: nextRang,
@@ -389,12 +379,18 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const finishActiveInfiniteRepeat = () => {
     const activeRepeat = getActiveRepeat(rangRef.current);
     if (!activeRepeat?.infinite) return;
-    const ok = typeof window === "undefined"
-      ? true
-      : window.confirm("Terminer cette répétition et passer au rang suivant?");
-    if (!ok) return;
+    setShowFinishRepeatModal(true);
+  };
+
+  const confirmFinishActiveInfiniteRepeat = () => {
+    const activeRepeat = getActiveRepeat(rangRef.current);
+    if (!activeRepeat?.infinite) {
+      setShowFinishRepeatModal(false);
+      return;
+    }
     const nextRang = activeRepeat.endRang + 1;
     if (total > 0 && nextRang > total) {
+      setShowFinishRepeatModal(false);
       setShowFinModal(true);
       return;
     }
@@ -402,6 +398,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(nextRang));
     setRang(nextRang);
     saveProgress(nextRang, total);
+    setShowFinishRepeatModal(false);
   };
 
   const formatTime = (ms) => {
@@ -420,6 +417,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     addCounter,
     color,
     completeProject,
+    confirmFinishActiveInfiniteRepeat,
     counters,
     currentPartie,
     currentPartieIdx,
@@ -441,13 +439,15 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     setCurrentPartieIdx: setCurrentPartieIdxWithTime,
     setRang: setRangWithProgress,
     setShowFinModal,
+    setShowFinishRepeatModal,
     setShowNextPartieModal,
     setShowPrevPartieModal,
     showFinModal,
+    showFinishRepeatModal,
     showNextPartieModal,
     showPrevPartieModal,
     toggleTimer,
-    total: virtualTotal,
+    total,
     totalPartieCourante,
     updateCounter,
   };
