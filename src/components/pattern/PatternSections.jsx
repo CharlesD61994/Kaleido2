@@ -251,7 +251,7 @@ export function PartieSection({
         </div>
 
         {partieRepeatMeta ? (
-          <div style={{ display: "flex", justifyContent: "flex-start", paddingLeft: 46 }}>
+          <div style={{ display: "flex", justifyContent: "flex-start", paddingLeft: 0 }}>
             <span style={{ maxWidth: "calc(100% - 46px)", borderRadius: 999, border: `1px solid ${partieRepeatColor.bg}55`, background: `color-mix(in srgb, ${partieRepeatColor.bg} 14%, var(--k-surface))`, color: partieRepeatColor.bg, fontSize: 10, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "3px 8px", lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               ↻ {repeatBadgeText}
             </span>
