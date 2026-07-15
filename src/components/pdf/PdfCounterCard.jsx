@@ -117,7 +117,7 @@ export default function PdfCounterCard({
               </button>
             ) : null}
             {clientButton && repeatBadge ? (
-              <div style={{ position: "absolute", left: "calc(50% + 82px)", top: 79, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: "calc(50% + 82px)", top: 76, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
