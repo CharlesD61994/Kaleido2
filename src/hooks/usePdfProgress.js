@@ -521,6 +521,18 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     ?? (rang + getFixedRepeatExtraBefore(rang) + getFixedPartieRepeatExtraBefore(rang));
   const displayTotal = isInfiniteProgress ? "∞" : displayNumericTotal;
   const globalProgressRatio = displayRang / displayNumericTotal;
+  const getFrozenInfiniteProgressRang = (repeat, partieRepeat, baseRang = rang) => {
+    if (repeat) {
+      return repeat.startRang + getFixedRepeatExtraBefore(repeat.startRang) + getFixedPartieRepeatExtraBefore(repeat.startRang);
+    }
+    if (partieRepeat) {
+      return partieRepeat.startRang + getFixedRepeatExtraBefore(partieRepeat.startRang) + getFixedPartieRepeatExtraBefore(partieRepeat.startRang);
+    }
+    return baseRang + getFixedRepeatExtraBefore(baseRang) + getFixedPartieRepeatExtraBefore(baseRang);
+  };
+  const clientGlobalProgressRatio = isInfiniteProgress
+    ? getFrozenInfiniteProgressRang(activeInfiniteRepeat, activeInfinitePartieRepeat) / displayNumericTotal
+    : globalProgressRatio;
   const displayRangDansPartie = isInfiniteProgress
     ? activeInfiniteRepeat
       ? Math.max(1, rangDansPartie + ((getRepeatPassage(activeInfiniteRepeat) - 1) * activeInfiniteRepeat.length))
@@ -550,7 +562,12 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     const targetDisplayRang = targetRepeatDisplayRang
       ?? targetPartieRepeatDisplayRang
       ?? (targetRang + getFixedRepeatExtraBefore(targetRang) + getFixedPartieRepeatExtraBefore(targetRang));
-    const targetProgressRatio = targetDisplayRang / freshDisplayNumericTotal;
+    const targetFrozenInfiniteRang = targetInfiniteRepeat
+      ? getFrozenInfiniteProgressRang(targetInfiniteRepeat, null, targetRang)
+      : targetInfinitePartieRepeat
+        ? getFrozenInfiniteProgressRang(null, targetInfinitePartieRepeat, targetRang)
+        : targetDisplayRang;
+    const targetProgressRatio = (targetIsInfinite ? targetFrozenInfiniteRang : targetDisplayRang) / freshDisplayNumericTotal;
     return {
       progressDisplay: {
         rang: targetDisplayRang,
@@ -565,7 +582,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     progressDisplay: {
       rang: displayRang,
       total: displayTotal,
-      progress: Math.round(Math.max(0, Math.min(1, globalProgressRatio)) * 100),
+      progress: Math.round(Math.max(0, Math.min(1, clientGlobalProgressRatio)) * 100),
       infinite: isInfiniteProgress,
       message: isInfiniteProgress ? "Répétition jusqu'à satisfaction en cours. La progression sera mise à jour lorsque cette étape sera terminée." : "",
       partRang: displayRangDansPartie,

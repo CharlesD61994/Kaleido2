@@ -569,6 +569,18 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const isInfiniteProgress = Boolean(activeInfiniteRepeat || activeInfinitePartieRepeat);
   const displayTotalRangs = isInfiniteProgress ? "∞" : displayNumericTotalRangs;
   const globalProgressRatio = displayCurrentCount / displayNumericTotalRangs;
+  const getFrozenInfiniteProgressCount = (repeat, partieRepeat, baseIndex = currentIndex, extraRepeat = fixedRepeatExtraBeforeCurrent, extraPartieRepeat = fixedPartieRepeatExtraBeforeCurrent) => {
+    if (repeat) {
+      return getVirtualCountAtIndex(repeat.startIndex) + extraRepeat + extraPartieRepeat;
+    }
+    if (partieRepeat) {
+      return getVirtualCountAtIndex(partieRepeat.startIndex) + extraRepeat + extraPartieRepeat;
+    }
+    return getVirtualCountAtIndex(baseIndex) + extraRepeat + extraPartieRepeat;
+  };
+  const clientGlobalProgressRatio = isInfiniteProgress
+    ? getFrozenInfiniteProgressCount(activeInfiniteRepeat, activeInfinitePartieRepeat) / displayNumericTotalRangs
+    : globalProgressRatio;
   const displayCurrentPartieRang = isInfiniteProgress
     ? activeInfiniteRepeat
       ? Math.max(1, currentPartieDisplayRangIndex + 1 + ((getRepeatPassage(activeInfiniteRepeat) - 1) * activeInfiniteRepeat.length))
@@ -613,7 +625,12 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     const targetDisplayCount = targetRepeatDisplayCount
       ?? targetPartieRepeatDisplayCount
       ?? (getVirtualCountAtIndex(targetIndex) + fixedRepeatExtraBeforeTarget + fixedPartieRepeatExtraBeforeTarget);
-    const targetProgressRatio = targetDisplayCount / freshDisplayNumericTotalRangs;
+    const targetFrozenInfiniteCount = targetInfiniteRepeat
+      ? getFrozenInfiniteProgressCount(targetInfiniteRepeat, null, targetIndex, fixedRepeatExtraBeforeTarget, fixedPartieRepeatExtraBeforeTarget)
+      : targetInfinitePartieRepeat
+        ? getFrozenInfiniteProgressCount(null, targetInfinitePartieRepeat, targetIndex, fixedRepeatExtraBeforeTarget, fixedPartieRepeatExtraBeforeTarget)
+        : targetDisplayCount;
+    const targetProgressRatio = (targetIsInfinite ? targetFrozenInfiniteCount : targetDisplayCount) / freshDisplayNumericTotalRangs;
     return {
       progressDisplay: {
         rang: targetDisplayCount,
@@ -628,7 +645,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     progressDisplay: {
       rang: displayCurrentCount,
       total: displayTotalRangs,
-      progress: Math.round(Math.max(0, Math.min(1, globalProgressRatio)) * 100),
+      progress: Math.round(Math.max(0, Math.min(1, clientGlobalProgressRatio)) * 100),
       infinite: isInfiniteProgress,
       message: isInfiniteProgress ? "Répétition jusqu'à satisfaction en cours. La progression sera mise à jour lorsque cette étape sera terminée." : "",
       partRang: displayCurrentPartieRang,
