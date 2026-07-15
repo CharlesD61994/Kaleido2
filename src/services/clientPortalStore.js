@@ -28,6 +28,22 @@ const withClientMessagesTimeout = (promise) => (
   ])
 );
 
+const getFunctionErrorReason = async (error) => {
+  if (!error) return "";
+
+  try {
+    const response = error.context;
+    if (response?.clone) {
+      const payload = await response.clone().json().catch(() => null);
+      return payload?.reason || payload?.message || payload?.error || "";
+    }
+  } catch {
+    // Keep the generic error message below.
+  }
+
+  return error?.message || "";
+};
+
 const makeToken = () => {
   const cryptoApi = typeof crypto !== "undefined" ? crypto : null;
 
@@ -315,6 +331,7 @@ export const loadClientMessages = async (shareToken) => {
     data = result.data?.messages || [];
     error = result.error || (result.data?.ok === false ? new Error(result.data?.reason || "Les messages sont impossibles a charger.") : null);
   } catch (loadError) {
+    const functionReason = await getFunctionErrorReason(loadError);
     let fallback = null;
     try {
       fallback = await loadDirectMessages();
@@ -322,10 +339,11 @@ export const loadClientMessages = async (shareToken) => {
     } catch {
       fallback = null;
     }
-    return { ok: false, error: loadError, reason: loadError.message || fallback?.reason || "Les messages sont impossibles a charger." };
+    return { ok: false, error: loadError, reason: fallback?.reason || functionReason || loadError.message || "Les messages sont impossibles a charger." };
   }
 
   if (error) {
+    const functionReason = await getFunctionErrorReason(error);
     let fallback = null;
     try {
       fallback = await loadDirectMessages();
@@ -333,7 +351,7 @@ export const loadClientMessages = async (shareToken) => {
     } catch {
       fallback = null;
     }
-    return { ok: false, error, reason: error.message || fallback?.reason || "Les messages sont impossibles a charger." };
+    return { ok: false, error, reason: fallback?.reason || functionReason || error.message || "Les messages sont impossibles a charger." };
   }
 
   return { ok: true, messages: data || [] };
@@ -622,7 +640,8 @@ export const sendClientMessage = async ({
   });
 
   if (error || data?.ok === false) {
-    return await sendClientMessageDirect({
+    const functionReason = data?.reason || await getFunctionErrorReason(error);
+    const fallback = await sendClientMessageDirect({
       shareToken,
       sender: safeSender,
       body: cleanBody,
@@ -630,6 +649,7 @@ export const sendClientMessage = async ({
       attachmentUrl: cleanAttachmentUrl,
       attachmentType: cleanAttachmentType,
     });
+    return fallback.ok ? fallback : { ...fallback, reason: fallback.reason || functionReason || "Le message n'a pas pu etre envoye." };
   }
 
   notifyMessageEmail(data?.message?.id);
