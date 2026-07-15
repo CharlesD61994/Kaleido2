@@ -1,5 +1,5 @@
 import { computeProgress } from "./progressStore";
-import { supabase, isSupabaseConfigured } from "./supabaseClient";
+import { supabase, publicSupabase, isSupabaseConfigured } from "./supabaseClient";
 import { getActiveCloudUserId, setActiveCloudUserId } from "./authStore";
 
 const CLIENT_PROJECTS_TABLE = "kaleido_client_projects";
@@ -292,7 +292,9 @@ export const loadClientProjectByToken = async (token) => {
 };
 
 export const loadClientMessages = async (shareToken) => {
-  if (!isSupabaseConfigured || !supabase) {
+  const readClient = publicSupabase || supabase;
+
+  if (!isSupabaseConfigured || !readClient) {
     return { ok: false, reason: "Supabase n'est pas configuré." };
   }
 
@@ -304,7 +306,7 @@ export const loadClientMessages = async (shareToken) => {
   let error = null;
   const loadDirectMessages = async () => {
     const fallback = await withClientMessagesTimeout(
-      supabase
+      readClient
         .from(CLIENT_MESSAGES_TABLE)
         .select("id, sender, body, attachment_url, attachment_type, created_at")
         .eq("share_token", shareToken)
@@ -321,7 +323,7 @@ export const loadClientMessages = async (shareToken) => {
 
   try {
     const result = await withClientMessagesTimeout(
-      supabase.functions.invoke("kaleido-client-messages", {
+      readClient.functions.invoke("kaleido-client-messages", {
         body: {
           action: "list",
           shareToken,
