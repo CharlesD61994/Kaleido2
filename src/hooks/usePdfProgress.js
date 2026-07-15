@@ -20,6 +20,9 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const [currentPartieIdx, setCurrentPartieIdx] = useState(() => getPartieIndexForRang(initialRang));
   const [rang, setRang] = useState(initialRang);
   const rangRef = useRef(initialRang);
+  const initialDisplayRang = Math.max(1, Number(project?.progressDisplay?.rang) || initialRang);
+  const [cumulativeDisplayRang, setCumulativeDisplayRang] = useState(initialDisplayRang);
+  const cumulativeDisplayRangRef = useRef(initialDisplayRang);
   const [counters, setCounters] = useState([]);
   const countersRef = useRef([]);
   const [startTime, setStartTime] = useState(Date.now() - (project?.elapsedTime || 0));
@@ -186,6 +189,13 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   useEffect(() => {
     rangRef.current = rang;
   }, [rang]);
+
+  const setCumulativeDisplayRangValue = (value) => {
+    const nextValue = Math.max(1, Math.round(Number(value) || 1));
+    cumulativeDisplayRangRef.current = nextValue;
+    setCumulativeDisplayRang(nextValue);
+    return nextValue;
+  };
 
   useEffect(() => {
     if (!isTimerRunning) return undefined;
@@ -372,6 +382,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const incrementRang = () => {
     addPartieTime();
     const liveRang = rangRef.current;
+    const nextCumulativeRang = cumulativeDisplayRangRef.current + 1;
     const activeRepeat = getActiveRepeat(liveRang);
     const endingRepeat = activeRepeat || repeatDefinitions.find((repeat) =>
       !isRepeatCompleted(repeat)
@@ -388,6 +399,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
         pdfRepeatStateRef.current = nextState;
         setPdfRepeatState(nextState);
         rangRef.current = endingRepeat.startRang;
+        setCumulativeDisplayRangValue(nextCumulativeRang);
         if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(endingRepeat.startRang));
         setRang(endingRepeat.startRang);
         saveProgress(endingRepeat.startRang, total);
@@ -410,6 +422,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
       pdfPartieRepeatStateRef.current = nextState;
       setPdfPartieRepeatState(nextState);
       rangRef.current = activePartieRepeat.startRang;
+      setCumulativeDisplayRangValue(nextCumulativeRang);
       setCurrentPartieIdx(activePartieRepeat.startPartieIndex);
       setRang(activePartieRepeat.startRang);
       saveProgress(activePartieRepeat.startRang, total);
@@ -440,6 +453,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
 
     const newRang = liveRang + 1;
     rangRef.current = newRang;
+    setCumulativeDisplayRangValue(nextCumulativeRang);
     setRang(newRang);
 
     saveProgress(newRang, total);
@@ -470,6 +484,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     const previousInfiniteRepeat = reactivateInfiniteRepeatForRang(newRang);
     if (previousInfiniteRepeat) {
       rangRef.current = newRang;
+      setCumulativeDisplayRangValue(cumulativeDisplayRangRef.current - 1);
       if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(newRang));
       setRang(newRang);
       saveProgress(newRang, total);
@@ -486,6 +501,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     }
 
     if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(newRang));
+    setCumulativeDisplayRangValue(cumulativeDisplayRangRef.current - 1);
     setRang(newRang);
     saveProgress(newRang, total);
   };
@@ -518,6 +534,10 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     const rawNextRang = typeof next === "function" ? next(rangRef.current) : next;
     const nextRang = Math.max(1, Number(rawNextRang) || 1);
     reactivateInfiniteRepeatForRang(nextRang);
+    const direction = nextRang > rangRef.current ? 1 : nextRang < rangRef.current ? -1 : 0;
+    if (direction !== 0) {
+      setCumulativeDisplayRangValue(cumulativeDisplayRangRef.current + direction);
+    }
     rangRef.current = nextRang;
     if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(nextRang));
     setRang(nextRang);
@@ -559,6 +579,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     }
     const passage = getRepeatPassage(activeRepeat);
     const nextRang = activeRepeat.endRang + 1;
+    const nextDisplayRang = activeRepeat.endRang + (activeRepeat.length * Math.max(0, passage - 1)) + 1;
     const nextRepeatState = {
       ...pdfRepeatStateRef.current,
       [activeRepeat.key]: {
@@ -571,6 +592,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     };
     pdfRepeatStateRef.current = nextRepeatState;
     setPdfRepeatState(nextRepeatState);
+    setCumulativeDisplayRangValue(nextDisplayRang);
     if (total > 0 && nextRang > total) {
       saveProgress(total, total);
       setShowFinishRepeatModal(false);
@@ -607,9 +629,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     const within = Math.max(1, rang - activePartieRepeat.startRang + 1);
     return before + ((getPartieRepeatPassage(activePartieRepeat) - 1) * length) + within;
   })() : null;
-  const displayRang = activeRepeatDisplayRang
-    ?? activePartieRepeatDisplayRang
-    ?? (rang + getFixedRepeatExtraBefore(rang) + getFixedPartieRepeatExtraBefore(rang));
+  const displayRang = Math.max(1, cumulativeDisplayRang);
   const displayTotal = isInfiniteProgress ? "∞" : displayNumericTotal;
   const globalProgressRatio = displayRang / displayNumericTotal;
   const getFrozenInfiniteProgressRang = (repeat, partieRepeat, baseRang = rang) => {
@@ -650,9 +670,10 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
       const within = Math.max(1, targetRang - targetPartieRepeat.startRang + 1);
       return before + ((getPartieRepeatPassage(targetPartieRepeat) - 1) * length) + within;
     })() : null;
-    const targetDisplayRang = targetRepeatDisplayRang
+    const derivedTargetDisplayRang = targetRepeatDisplayRang
       ?? targetPartieRepeatDisplayRang
       ?? (targetRang + getFixedRepeatExtraBefore(targetRang) + getFixedPartieRepeatExtraBefore(targetRang));
+    const targetDisplayRang = Math.max(1, Number(cumulativeDisplayRangRef.current) || derivedTargetDisplayRang);
     const targetFrozenInfiniteRang = targetInfiniteRepeat
       ? getFrozenInfiniteProgressRang(targetInfiniteRepeat, null, targetRang)
       : targetInfinitePartieRepeat
