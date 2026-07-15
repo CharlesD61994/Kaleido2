@@ -302,8 +302,6 @@ export const loadClientMessages = async (shareToken) => {
     return { ok: false, reason: "Le lien client n'est pas encore publié." };
   }
 
-  let data = null;
-  let error = null;
   const loadDirectMessages = async () => {
     const fallback = await withClientMessagesTimeout(
       readClient
@@ -322,41 +320,10 @@ export const loadClientMessages = async (shareToken) => {
   };
 
   try {
-    const result = await withClientMessagesTimeout(
-      readClient.functions.invoke("kaleido-client-messages", {
-        body: {
-          action: "list",
-          shareToken,
-        },
-      })
-    );
-    data = result.data?.messages || [];
-    error = result.error || (result.data?.ok === false ? new Error(result.data?.reason || "Les messages sont impossibles a charger.") : null);
+    return await loadDirectMessages();
   } catch (loadError) {
-    const functionReason = await getFunctionErrorReason(loadError);
-    let fallback = null;
-    try {
-      fallback = await loadDirectMessages();
-      if (fallback.ok) return fallback;
-    } catch {
-      fallback = null;
-    }
-    return { ok: false, error: loadError, reason: fallback?.reason || functionReason || loadError.message || "Les messages sont impossibles a charger." };
+    return { ok: false, error: loadError, reason: loadError.message || "Les messages sont impossibles a charger." };
   }
-
-  if (error) {
-    const functionReason = await getFunctionErrorReason(error);
-    let fallback = null;
-    try {
-      fallback = await loadDirectMessages();
-      if (fallback.ok) return fallback;
-    } catch {
-      fallback = null;
-    }
-    return { ok: false, error, reason: fallback?.reason || functionReason || error.message || "Les messages sont impossibles a charger." };
-  }
-
-  return { ok: true, messages: data || [] };
 };
 
 export const updateClientNotificationPreferences = async (shareToken, preferences = {}) => {

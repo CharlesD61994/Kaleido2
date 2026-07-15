@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { computeProgress } from "./services/progressStore";
 import { KALEIDOSCOPE_COLORS } from "./constants/colors";
 import ClientChatPreview from "./components/clients/ClientChatPreview";
@@ -16,10 +16,17 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
   const color = KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
   const statusLabel = project?.status === "termine" ? "Terminé" : "En cours";
   const clientInitial = (project?.client || "?").trim().charAt(0).toUpperCase() || "?";
+  const markReadRef = useRef({ key: "", at: 0 });
 
   useEffect(() => {
     if (project?.clientShareToken && typeof onMarkMessagesRead === "function") {
-      const markRead = () => onMarkMessagesRead(project);
+      const markRead = () => {
+        const key = `${project.id || ""}-${project.clientShareToken || ""}`;
+        const now = Date.now();
+        if (markReadRef.current.key === key && now - markReadRef.current.at < 30000) return;
+        markReadRef.current = { key, at: now };
+        onMarkMessagesRead(project);
+      };
       const onVisible = () => {
         if (!document.hidden) markRead();
       };
@@ -35,7 +42,7 @@ export default function ClientPage({ project, onBack, onEditClient, onMarkMessag
     }
 
     return undefined;
-  }, [project?.id, project?.clientShareToken, onMarkMessagesRead]);
+  }, [project?.id, project?.clientShareToken]);
 
   return (
     <div
