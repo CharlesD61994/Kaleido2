@@ -2,14 +2,16 @@ import React, { useEffect, useState } from "react";
 import { KALEIDOSCOPE_COLORS } from "../../constants/colors";
 import RangItem from "./RangItem";
 
-export function PartieSection({ partie, onUpdate, onDelete, onDuplicate, onMoveUp, onMoveDown, isFirst, isLast, onAddRang, onUpdateRang, onDeleteRang, onDuplicateRang, onMoveRangUp, onMoveRangDown }) {
+export function PartieSection({ partie, allParties = [], partieIndex = 0, partieRepeatMeta = null, onUpdate, onDelete, onDuplicate, onMoveUp, onMoveDown, isFirst, isLast, onAddRang, onUpdateRang, onDeleteRang, onDuplicateRang, onMoveRangUp, onMoveRangDown }) {
 const [isCollapsed, setIsCollapsed] = useState(false);
 const [isEditingNom, setIsEditingNom] = useState(false);
 const [showColorPicker, setShowColorPicker] = useState(false);
 const [tempNom, setTempNom] = useState(partie.nom);
 const [displayNom, setDisplayNom] = useState(partie.nom || "Nouvelle partie");
 const [repeatDraft, setRepeatDraft] = useState(null);
+const [partieRepeatDraft, setPartieRepeatDraft] = useState(null);
 const color = KALEIDOSCOPE_COLORS[partie.colorIdx % KALEIDOSCOPE_COLORS.length];
+const partieRepeatColor = partieRepeatMeta ? KALEIDOSCOPE_COLORS[(partieRepeatMeta.colorIdx ?? partie.colorIdx) % KALEIDOSCOPE_COLORS.length] : color;
 useEffect(() => {
 const syncedNom = partie.nom || "Nouvelle partie";
 setTempNom(syncedNom);
@@ -82,8 +84,35 @@ if (!repeatDraft?.startRangId) return;
 onUpdateRang(partie.id, repeatDraft.startRangId, { repeat: null });
 setRepeatDraft(null);
 };
+const openPartieRepeatDraft = () => {
+const existing = partie.partieRepeat || {};
+const endPartieId = existing.endPartieId && allParties.some(p => String(p.id) === String(existing.endPartieId))
+? existing.endPartieId
+: (allParties[Math.min(allParties.length - 1, partieIndex + 1)]?.id || partie.id);
+setPartieRepeatDraft({
+endPartieId,
+infinite: existing.infinite === true,
+passages: Math.max(2, Number(existing.passages) || 2),
+});
+};
+const savePartieRepeatDraft = () => {
+if (!partieRepeatDraft?.endPartieId) return;
+onUpdate(partie.id, {
+partieRepeat: {
+id: `partie-repeat-${partie.id}`,
+endPartieId: partieRepeatDraft.endPartieId,
+passages: partieRepeatDraft.infinite ? null : Math.max(2, Number(partieRepeatDraft.passages) || 2),
+infinite: partieRepeatDraft.infinite === true,
+},
+});
+setPartieRepeatDraft(null);
+};
+const deletePartieRepeatDraft = () => {
+onUpdate(partie.id, { partieRepeat: null });
+setPartieRepeatDraft(null);
+};
 return (
-<div style={{ background: "var(--k-surface)", border: `1px solid ${color.light}22`, borderRadius: 16, padding: 16, marginBottom: 16 }}>
+<div style={{ background: partieRepeatMeta ? `color-mix(in srgb, ${partieRepeatColor.bg} 8%, var(--k-surface))` : "var(--k-surface)", border: partieRepeatMeta ? `1px solid ${partieRepeatColor.bg}66` : `1px solid ${color.light}22`, borderRadius: 16, padding: 16, marginBottom: 16, boxShadow: partieRepeatMeta ? `inset 3px 0 0 ${partieRepeatColor.bg}, 0 0 0 1px ${partieRepeatColor.bg}10` : "none" }}>
 {/* Header partie */}
 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: isCollapsed ? 0 : 12 }}>
 {/* Rond couleur cliquable */}
@@ -109,6 +138,11 @@ style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradien
 ? <input value={tempNom} onChange={e => { const nextNom = e.target.value; setTempNom(nextNom); setDisplayNom(nextNom || "Nouvelle partie"); }} onKeyDown={e => { e.stopPropagation(); if (e.key === "Enter") handleSaveNom(); if (e.key === "Escape") { const fallbackNom = partie.nom || "Nouvelle partie"; setTempNom(fallbackNom); setDisplayNom(fallbackNom); setIsEditingNom(false); } }} onBlur={handleSaveNom} onClick={e => e.stopPropagation()} onFocus={e => { e.stopPropagation(); e.target.select(); }} autoFocus style={{ background: "none", border: "none", outline: "none", color: "var(--k-text)", fontSize: 15, fontWeight: 600, fontFamily: "'DM Sans', sans-serif", textAlign: "center", width: "100%" }} />
 : <h3 onClick={handleStartEditNom} style={{ color: "var(--k-text)", margin: 0, fontSize: 15, fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", textAlign: "center", wordBreak: "break-word" }}>{displayNom}</h3>
 }
+{partieRepeatMeta ? (
+<span style={{ marginTop: 5, borderRadius: 999, border: `1px solid ${partieRepeatColor.bg}55`, background: `color-mix(in srgb, ${partieRepeatColor.bg} 14%, var(--k-surface))`, color: partieRepeatColor.bg, fontSize: 10, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "3px 7px", lineHeight: 1 }}>
+↻ {partieRepeatMeta.infinite ? "∞" : `${partieRepeatMeta.passages || 2}x`} · {partieRepeatMeta.isStart && partieRepeatMeta.isEnd ? "partie répétée" : partieRepeatMeta.isStart ? "début" : partieRepeatMeta.isEnd ? "fin" : "bloc"}
+</span>
+) : null}
 </div>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
 <span style={{ color: "var(--k-text)", fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif" }}>{partie.rangs.filter(r => !r.isNote).length}</span>
@@ -116,6 +150,7 @@ style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradien
 </div>
 </div>
 <button onClick={() => setIsCollapsed(!isCollapsed)} style={{ background: "none", border: "none", color: color.light, fontSize: 14, cursor: "pointer", padding: 4, flexShrink: 0 }}>{isCollapsed ? "▼" : "▲"}</button>
+<button onClick={e => act(e, openPartieRepeatDraft)} style={{ background: partie.partieRepeat ? "#16A34A" : color.bg, border: "none", borderRadius: 6, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, cursor: "pointer", flexShrink: 0 }}>↻</button>
 <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
 {[
 { icon: "↑", dis: isFirst, fn: () => onMoveUp(partie.id), bg: isFirst ? "#333" : color.bg },
@@ -193,6 +228,34 @@ Nombre de passages total
 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
 <button type="button" onClick={deleteRepeatDraft} style={{ border: "1px solid rgba(239,68,68,0.35)", borderRadius: 12, background: "rgba(239,68,68,0.14)", color: "#F87171", padding: "11px 12px", fontWeight: 900 }}>Retirer</button>
 <button type="button" onClick={saveRepeatDraft} style={{ border: "none", borderRadius: 12, background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, color: "#fff", padding: "11px 12px", fontWeight: 900 }}>Sauvegarder</button>
+</div>
+</div>
+</div>
+)}
+{partieRepeatDraft && (
+<div style={{ position: "fixed", inset: 0, zIndex: 5000, background: "rgba(0,0,0,0.58)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setPartieRepeatDraft(null)}>
+<div style={{ width: "100%", maxWidth: 360, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, padding: 18, boxShadow: "0 24px 80px rgba(0,0,0,0.38)" }} onClick={(event) => event.stopPropagation()}>
+<h3 style={{ margin: "0 0 12px", color: "var(--k-text)", fontSize: 18, fontFamily: "'Syne', sans-serif" }}>Répétition de parties</h3>
+<label style={{ display: "grid", gap: 6, color: "var(--k-muted)", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
+Jusqu'à la partie
+<select value={partieRepeatDraft.endPartieId} onChange={(event) => setPartieRepeatDraft((current) => ({ ...current, endPartieId: event.target.value }))} style={{ width: "100%", border: "1px solid var(--k-border)", borderRadius: 12, background: "var(--k-field)", color: "var(--k-text)", padding: 12, fontSize: 16 }}>
+{allParties.slice(partieIndex).map((optionPartie, index) => (
+<option key={optionPartie.id} value={optionPartie.id}>{optionPartie.nom || `Partie ${partieIndex + index + 1}`}</option>
+))}
+</select>
+</label>
+<button type="button" onClick={() => setPartieRepeatDraft((current) => ({ ...current, infinite: !current.infinite }))} style={{ width: "100%", border: `1px solid ${partieRepeatDraft.infinite ? color.light : "var(--k-border)"}`, borderRadius: 12, background: partieRepeatDraft.infinite ? `${color.bg}22` : "var(--k-muted-fill)", color: partieRepeatDraft.infinite ? color.light : "var(--k-text)", padding: "11px 12px", fontWeight: 900, marginBottom: 12 }}>
+Répéter jusqu'à satisfaction
+</button>
+{!partieRepeatDraft.infinite && (
+<label style={{ display: "grid", gap: 6, color: "var(--k-muted)", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
+Nombre de passages total
+<input type="number" min="2" value={partieRepeatDraft.passages} onChange={(event) => setPartieRepeatDraft((current) => ({ ...current, passages: event.target.value }))} style={{ width: "100%", minWidth: 0, boxSizing: "border-box", border: "1px solid var(--k-border)", borderRadius: 12, background: "var(--k-field)", color: "var(--k-text)", padding: 12, fontSize: 16 }} />
+</label>
+)}
+<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+<button type="button" onClick={deletePartieRepeatDraft} style={{ border: "1px solid rgba(239,68,68,0.35)", borderRadius: 12, background: "rgba(239,68,68,0.14)", color: "#F87171", padding: "11px 12px", fontWeight: 900 }}>Retirer</button>
+<button type="button" onClick={savePartieRepeatDraft} style={{ border: "none", borderRadius: 12, background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, color: "#fff", padding: "11px 12px", fontWeight: 900 }}>Sauvegarder</button>
 </div>
 </div>
 </div>

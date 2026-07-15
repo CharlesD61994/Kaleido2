@@ -35,6 +35,8 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const [instructionHighlights, setInstructionHighlights] = useState(project?.instructionHighlights || {});
   const [rangRepeatState, setRangRepeatState] = useState(project?.rangRepeatState || {});
   const rangRepeatStateRef = useRef(project?.rangRepeatState || {});
+  const [partieRepeatState, setPartieRepeatState] = useState(project?.partieRepeatState || {});
+  const partieRepeatStateRef = useRef(project?.partieRepeatState || {});
   const [showNextPartieModal, setShowNextPartieModal] = useState(false);
   const [showPrevPartieModal, setShowPrevPartieModal] = useState(false);
   const [showFinModal, setShowFinModal] = useState(false);
@@ -73,6 +75,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
                 instructionHighlights,
                 partieTimes: partieTimesRef.current,
                 rangRepeatState: rangRepeatStateRef.current,
+                partieRepeatState: partieRepeatStateRef.current,
               }
             );
           }
@@ -151,6 +154,33 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const repeatDefinitions = getRepeatDefinitions();
   const getRepeatPassage = (repeat) => Math.max(1, Number(rangRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const getActiveRepeat = (index) => repeatDefinitions.find((repeat) => index >= repeat.startIndex && index <= repeat.endIndex) || null;
+  const partieRepeatDefinitions = patron.parties
+    .map((partie, startPartieIndex) => {
+      const repeat = partie?.partieRepeat;
+      if (!repeat?.endPartieId) return null;
+      const endPartieIndex = patron.parties.findIndex((item) => String(item.id) === String(repeat.endPartieId));
+      if (endPartieIndex < startPartieIndex) return null;
+      const startIndex = allRangs.findIndex((rang) => rang.partieId === partie.id);
+      const endIndex = (() => {
+        for (let index = allRangs.length - 1; index >= 0; index -= 1) {
+          if (allRangs[index].partieId === patron.parties[endPartieIndex]?.id) return index;
+        }
+        return -1;
+      })();
+      if (startIndex < 0 || endIndex < startIndex) return null;
+      return {
+        key: repeat.id || `partie-repeat-${partie.id}`,
+        startIndex,
+        endIndex,
+        startPartieIndex,
+        endPartieIndex,
+        passages: Math.max(2, Number(repeat.passages) || 2),
+        infinite: repeat.infinite === true,
+      };
+    })
+    .filter(Boolean);
+  const getPartieRepeatPassage = (repeat) => Math.max(1, Number(partieRepeatStateRef.current?.[repeat.key]?.passage) || 1);
+  const getActivePartieRepeat = (partieIndex) => partieRepeatDefinitions.find((repeat) => partieIndex >= repeat.startPartieIndex && partieIndex <= repeat.endPartieIndex) || null;
   const getVirtualTotal = () => totalRangsForCount;
   const getVirtualCountAtIndex = (index) => {
     const safeIndex = Math.max(0, index);
@@ -209,6 +239,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const currentPartieColor = currentPartie
     ? KALEIDOSCOPE_COLORS[currentPartie.colorIdx % KALEIDOSCOPE_COLORS.length]
     : KALEIDOSCOPE_COLORS[(project?.colorIdx || 0) % KALEIDOSCOPE_COLORS.length];
+  const activePartieRepeat = getActivePartieRepeat(currentPartieIndex);
 
   useEffect(() => {
     currentPartieIdRef.current = currentPartie?.id ? String(currentPartie.id) : "global";
@@ -249,6 +280,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
         instructionHighlights,
         partieTimes: partieTimesRef.current,
         rangRepeatState: rangRepeatStateRef.current,
+        partieRepeatState: partieRepeatStateRef.current,
       });
     }
   };
@@ -273,6 +305,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
             instructionHighlights: next,
             partieTimes: partieTimesRef.current,
             rangRepeatState: rangRepeatStateRef.current,
+            partieRepeatState: partieRepeatStateRef.current,
           }
         );
       }
@@ -286,10 +319,35 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     if (typeof onNavigateHub === "function") onNavigateHub();
   };
 
+  const tryLoopPartieRepeatAtIndex = (liveIndex) => {
+    const liveCurrent = allRangs[liveIndex];
+    if (!liveCurrent) return false;
+    const livePartieIndex = patron.parties.findIndex((partie) => partie.id === liveCurrent.partieId);
+    const livePartieRepeat = getActivePartieRepeat(livePartieIndex);
+    if (!livePartieRepeat || livePartieRepeat.endPartieIndex !== livePartieIndex || livePartieRepeat.endIndex !== liveIndex) return false;
+    const passage = getPartieRepeatPassage(livePartieRepeat);
+    const shouldLoop = livePartieRepeat.infinite || passage < livePartieRepeat.passages;
+    if (!shouldLoop) return false;
+    const nextState = {
+      ...partieRepeatStateRef.current,
+      [livePartieRepeat.key]: { passage: passage + 1 },
+    };
+    partieRepeatStateRef.current = nextState;
+    setPartieRepeatState(nextState);
+    const target = allRangs[livePartieRepeat.startIndex];
+    currentRangIdRef.current = target.globalId;
+    currentIndexRef.current = livePartieRepeat.startIndex;
+    setCurrentRangId(target.globalId);
+    saveProgressAtIndex(livePartieRepeat.startIndex);
+    if (navigator.vibrate) navigator.vibrate(15);
+    return true;
+  };
+
   const nextRang = () => {
     addPartieTime();
     const liveIndex = currentIndexRef.current;
     if (liveIndex >= allRangs.length - 1) {
+      if (tryLoopPartieRepeatAtIndex(liveIndex)) return;
       setShowFinModal(true);
       return;
     }
@@ -318,6 +376,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     const liveIsLastOfPartie = !!liveCurrent && !!liveNext && liveNext.partieId !== liveCurrent.partieId;
 
     if (liveIsLastOfPartie) {
+      if (tryLoopPartieRepeatAtIndex(liveIndex)) return;
       setShowNextPartieModal(true);
     } else {
       currentRangIdRef.current = liveNext.globalId;
@@ -340,6 +399,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
         instructionHighlights,
         partieTimes: partieTimesRef.current,
         rangRepeatState: rangRepeatStateRef.current,
+        partieRepeatState: partieRepeatStateRef.current,
         status: "termine",
         completedAt: new Date().toISOString(),
       });
@@ -455,9 +515,13 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const updateCounter = (id, updates) => setCounters(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
   const deleteCounter = (id) => setCounters(prev => prev.filter(c => c.id !== id));
   const activeRepeat = getActiveRepeat(currentIndex);
+  const activePartieRepeatPassage = activePartieRepeat ? getPartieRepeatPassage(activePartieRepeat) : 1;
   const repeatBadge = activeRepeat ? {
     label: `↻ ${getRepeatPassage(activeRepeat)}/${activeRepeat.infinite ? "∞" : activeRepeat.passages}`,
     onClick: activeRepeat.infinite ? finishActiveInfiniteRepeat : undefined,
+  } : activePartieRepeat ? {
+    label: `↻ ${activePartieRepeatPassage}/${activePartieRepeat.infinite ? "∞" : activePartieRepeat.passages}`,
+    onClick: undefined,
   } : null;
 
   return {

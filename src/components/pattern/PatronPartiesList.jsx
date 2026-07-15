@@ -1,6 +1,25 @@
 import React from "react";
 import { PartieSection } from "./PatternSections";
 
+function getPartieRepeatMeta(parties, targetIndex) {
+  for (let startIndex = 0; startIndex < parties.length; startIndex += 1) {
+    const repeat = parties[startIndex]?.partieRepeat;
+    if (!repeat?.endPartieId) continue;
+    const endIndex = parties.findIndex((partie) => String(partie.id) === String(repeat.endPartieId));
+    if (endIndex < startIndex) continue;
+    if (targetIndex >= startIndex && targetIndex <= endIndex) {
+      return {
+        colorIdx: parties[startIndex]?.colorIdx,
+        infinite: repeat.infinite === true,
+        isEnd: targetIndex === endIndex,
+        isStart: targetIndex === startIndex,
+        passages: repeat.passages,
+      };
+    }
+  }
+  return null;
+}
+
 export default function PatronPartiesList({
   addPartie,
   addRang,
@@ -18,6 +37,9 @@ export default function PatronPartiesList({
     <div style={{ padding: "0 20px 100px" }}>
       {patron.parties.map((partie, index) => (
         <PartieSection key={partie.id} partie={partie}
+          allParties={patron.parties}
+          partieIndex={index}
+          partieRepeatMeta={getPartieRepeatMeta(patron.parties, index)}
           onUpdate={updatePartie} onDelete={deletePartie} onDuplicate={duplicatePartie}
           onMoveUp={id => movePartie(id, "up")} onMoveDown={id => movePartie(id, "down")}
           isFirst={index === 0} isLast={index === patron.parties.length - 1}
