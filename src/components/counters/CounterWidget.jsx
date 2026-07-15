@@ -131,7 +131,7 @@ strokeLinecap="round" style={{
 {sectionRepeatMatch ? (
   <>
     <span>{sectionRepeatMatch[1]}</span>
-    <span style={{ marginLeft: 2 }}>{sectionRepeatMatch[2]}</span>
+    <span style={{ marginLeft: 4 }}>{sectionRepeatMatch[2]}</span>
   </>
 ) : sectionRepeatBadge.label}
 </div>
