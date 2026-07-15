@@ -851,6 +851,13 @@ final class KaleidoNativePdfHeaderView: UIView {
         return 0
     }
 
+    private func doubleValue(_ value: Any?) -> Double {
+        if let double = value as? Double { return double }
+        if let int = value as? Int { return Double(int) }
+        if let number = value as? NSNumber { return number.doubleValue }
+        return 0
+    }
+
     private func boolValue(_ value: Any?) -> Bool {
         if let bool = value as? Bool { return bool }
         if let number = value as? NSNumber { return number.boolValue }
