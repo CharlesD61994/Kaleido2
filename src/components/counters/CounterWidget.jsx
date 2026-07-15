@@ -141,7 +141,7 @@ strokeLinecap="round" style={{
 </button>
 ) : null}
 <div style={{ transform: showInlineControls ? "translateY(9px)" : "translateY(0)" }}>
-<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compact ? 4 : 6, gap: 8 }}>
+<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compact ? 4 : 6, gap: compact ? 14 : 10 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: compact ? 16 : 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: compact ? 14 : 13, fontFamily: "monospace", fontWeight: 800 }}>{localRangNumber}/{currentPartieTotal}</div>
