@@ -72,13 +72,22 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     })
     .filter((repeat) => repeat.startRang <= total && repeat.endRang <= total);
   const repeatDefinitions = getRepeatDefinitions();
-  const getRepeatPassage = (repeat) => Math.max(1, Number(pdfRepeatStateRef.current?.[repeat.key]?.passage) || 1);
-  const isRepeatCompleted = (repeat) => pdfRepeatStateRef.current?.[repeat.key]?.completed === true;
+  const getRepeatState = (repeat) => pdfRepeatStateRef.current?.[repeat.key] || {};
+  const getRepeatPassage = (repeat) => Math.max(1, Number(getRepeatState(repeat)?.passage) || 1);
+  const isRepeatCompleted = (repeat) => getRepeatState(repeat)?.completed === true;
   const shouldCountRepeatExtra = (repeat) =>
     !repeat.infinite
     || isRepeatCompleted(repeat)
     || getRepeatPassage(repeat) > 1;
   const getRepeatTotalPassages = (repeat) => repeat.infinite && shouldCountRepeatExtra(repeat) ? getRepeatPassage(repeat) : repeat.passages;
+  const getRepeatCountedExtra = (repeat) => {
+    const state = getRepeatState(repeat);
+    const storedExtra = Number(state.completedExtra);
+    if (isRepeatCompleted(repeat) && Number.isFinite(storedExtra)) {
+      return Math.max(0, storedExtra);
+    }
+    return repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1);
+  };
   const getActiveRepeat = (targetRang) => repeatDefinitions.find((repeat) => targetRang >= repeat.startRang && targetRang <= repeat.endRang) || null;
   const reactivateInfiniteRepeatForRang = (targetRang) => {
     const repeat = repeatDefinitions.find((item) =>
@@ -130,26 +139,45 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
       };
     })
     .filter(Boolean);
-  const getPartieRepeatPassage = (repeat) => Math.max(1, Number(pdfPartieRepeatStateRef.current?.[repeat.key]?.passage) || 1);
-  const isPartieRepeatCompleted = (repeat) => pdfPartieRepeatStateRef.current?.[repeat.key]?.completed === true;
+  const getPartieRepeatState = (repeat) => pdfPartieRepeatStateRef.current?.[repeat.key] || {};
+  const getPartieRepeatPassage = (repeat) => Math.max(1, Number(getPartieRepeatState(repeat)?.passage) || 1);
+  const isPartieRepeatCompleted = (repeat) => getPartieRepeatState(repeat)?.completed === true;
   const shouldCountPartieRepeatExtra = (repeat) =>
     !repeat.infinite
     || isPartieRepeatCompleted(repeat)
     || getPartieRepeatPassage(repeat) > 1;
   const getPartieRepeatTotalPassages = (repeat) => repeat.infinite && shouldCountPartieRepeatExtra(repeat) ? getPartieRepeatPassage(repeat) : repeat.passages;
+  const getPartieRepeatCountedExtra = (repeat) => {
+    const state = getPartieRepeatState(repeat);
+    const storedExtra = Number(state.completedExtra);
+    if (isPartieRepeatCompleted(repeat) && Number.isFinite(storedExtra)) {
+      return Math.max(0, storedExtra);
+    }
+    return Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1);
+  };
   const getActivePartieRepeat = (partieIndex) => partieRepeatDefinitions.find((repeat) => partieIndex >= repeat.startPartieIndex && partieIndex <= repeat.endPartieIndex) || null;
   const getFixedRepeatExtraTotal = () => repeatDefinitions
     .filter(shouldCountRepeatExtra)
-    .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
+    .reduce((sum, repeat) => sum + getRepeatCountedExtra(repeat), 0);
   const getFixedPartieRepeatExtraTotal = () => partieRepeatDefinitions
     .filter(shouldCountPartieRepeatExtra)
-    .reduce((sum, repeat) => sum + Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
+    .reduce((sum, repeat) => sum + getPartieRepeatCountedExtra(repeat), 0);
   const getFixedRepeatExtraBefore = (targetRang) => repeatDefinitions
-    .filter((repeat) => shouldCountRepeatExtra(repeat) && repeat.startRang < targetRang && (repeat.endRang < targetRang || isRepeatCompleted(repeat)))
-    .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
+    .filter((repeat) => {
+      if (!shouldCountRepeatExtra(repeat)) return false;
+      const completedExitRang = Number(getRepeatState(repeat)?.completedExitRang);
+      if (isRepeatCompleted(repeat) && Number.isFinite(completedExitRang)) return targetRang >= completedExitRang;
+      return repeat.endRang < targetRang;
+    })
+    .reduce((sum, repeat) => sum + getRepeatCountedExtra(repeat), 0);
   const getFixedPartieRepeatExtraBefore = (targetRang) => partieRepeatDefinitions
-    .filter((repeat) => shouldCountPartieRepeatExtra(repeat) && repeat.startRang < targetRang && (repeat.endRang < targetRang || isPartieRepeatCompleted(repeat)))
-    .reduce((sum, repeat) => sum + Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
+    .filter((repeat) => {
+      if (!shouldCountPartieRepeatExtra(repeat)) return false;
+      const completedExitRang = Number(getPartieRepeatState(repeat)?.completedExitRang);
+      if (isPartieRepeatCompleted(repeat) && Number.isFinite(completedExitRang)) return targetRang >= completedExitRang;
+      return repeat.endRang < targetRang;
+    })
+    .reduce((sum, repeat) => sum + getPartieRepeatCountedExtra(repeat), 0);
   const getVirtualTotal = () => total;
   const getVirtualRang = (targetRang) => {
     return Math.max(1, Math.min(total || 1, Number(targetRang) || 1));
@@ -529,18 +557,22 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
       setShowFinishRepeatModal(false);
       return;
     }
+    const passage = getRepeatPassage(activeRepeat);
+    const nextRang = activeRepeat.endRang + 1;
     const nextRepeatState = {
       ...pdfRepeatStateRef.current,
       [activeRepeat.key]: {
         ...(pdfRepeatStateRef.current?.[activeRepeat.key] || {}),
-        passage: getRepeatPassage(activeRepeat),
+        passage,
         completed: true,
+        completedExtra: activeRepeat.length * Math.max(0, passage - 1),
+        completedExitRang: nextRang,
       },
     };
     pdfRepeatStateRef.current = nextRepeatState;
     setPdfRepeatState(nextRepeatState);
-    const nextRang = activeRepeat.endRang + 1;
     if (total > 0 && nextRang > total) {
+      saveProgress(total, total);
       setShowFinishRepeatModal(false);
       setShowFinModal(true);
       return;
