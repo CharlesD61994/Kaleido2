@@ -4,6 +4,7 @@ import { corsHeaders, getPublicClientOrigin, getServiceRoleKey, jsonResponse, se
 const PROJECTS_TABLE = "kaleido_client_projects";
 const MESSAGES_TABLE = "kaleido_client_messages";
 const CLIENT_ACTIVE_WINDOW_MS = 90_000;
+const OWNER_ACTIVE_WINDOW_MS = 12_000;
 const MESSAGE_EMAIL_COOLDOWN_MS = 60 * 60 * 1000;
 
 type ClientMessage = {
@@ -144,7 +145,7 @@ Deno.serve(async (req) => {
     `;
   } else {
     const ownerLastReadAt = Date.parse(String(project.clientLastReadAt || ""));
-    const ownerIsActive = ownerLastReadAt > 0 && Date.now() - ownerLastReadAt <= CLIENT_ACTIVE_WINDOW_MS;
+    const ownerIsActive = ownerLastReadAt > 0 && Date.now() - ownerLastReadAt <= OWNER_ACTIVE_WINDOW_MS;
     if (ownerIsActive) {
       return jsonResponse({ ok: true, skipped: true, reason: "Le tricoteur consulte deja la fiche." });
     }

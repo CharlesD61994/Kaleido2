@@ -162,6 +162,8 @@ export default function ClientChatPreview({ project, color, publicView = false, 
       setStatus("Message envoye. Courriel de notification envoye.");
     } else if (result.notification?.reason) {
       setStatus(`Message envoye. Courriel non envoye: ${result.notification.reason}`);
+    } else {
+      setStatus("Message envoye. Verification du courriel indisponible.");
     }
     scrollMessagesToBottom(fullscreen ? "fullscreen" : "compact");
   };
