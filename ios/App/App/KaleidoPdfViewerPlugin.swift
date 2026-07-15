@@ -734,7 +734,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         partButton.setTitleColor(accent, for: .normal)
         partCountLabel.text = partTotal > 0 ? "\(displayPartRang)/\(displayPartTotal)" : "\(pct)%"
         partCountLabel.textColor = accent
-        countLabel.text = partTotal > 0 ? displayPartRang : displayRang
+        countLabel.text = partTotal > 0 ? "\(partRang)" : "\(rang)"
         countLabel.textColor = textColor
         progressFill.backgroundColor = accent
 

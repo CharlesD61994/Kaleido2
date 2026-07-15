@@ -154,7 +154,7 @@ export default function PdfCounterCard({
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}>
                 <button onClick={decrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
-                <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? displayPartRang : displayGlobalRang}</span>
+                <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
                 <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
               </div>
             </div>
