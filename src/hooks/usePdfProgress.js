@@ -396,6 +396,19 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     const liveRang = rangRef.current;
     if (liveRang <= 1) return;
 
+    const previousInfiniteRepeat = repeatDefinitions.find((repeat) =>
+      repeat.infinite
+      && !isRepeatCompleted(repeat)
+      && liveRang === repeat.endRang + 1
+    );
+    if (previousInfiniteRepeat) {
+      rangRef.current = previousInfiniteRepeat.endRang;
+      if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(previousInfiniteRepeat.endRang));
+      setRang(previousInfiniteRepeat.endRang);
+      saveProgress(previousInfiniteRepeat.endRang, total);
+      return;
+    }
+
     const newRang = liveRang - 1;
 
     if (hasParties && currentPartieIdx > 0) {
