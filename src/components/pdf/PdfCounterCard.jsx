@@ -116,6 +116,11 @@ export default function PdfCounterCard({
                 {repeatBadge.label}
               </button>
             ) : null}
+            {clientButton && repeatBadge ? (
+              <div style={{ position: "absolute", left: "calc(50% + 78px)", top: 82, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+                {clientButton}
+              </div>
+            ) : null}
             <div style={{ transform: "translateY(9px)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 4 }}>
                 <button
@@ -151,11 +156,6 @@ export default function PdfCounterCard({
                 <button onClick={decrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
                 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? displayPartRang : displayGlobalRang}</span>
                 <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
-                {clientButton && repeatBadge ? (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 9, transform: "translateY(1px)", flexShrink: 0 }}>
-                    {clientButton}
-                  </div>
-                ) : null}
               </div>
             </div>
           </div>

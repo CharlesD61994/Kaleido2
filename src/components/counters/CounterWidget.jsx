@@ -157,6 +157,11 @@ strokeLinecap="round" style={{
 {repeatBadge.label}
 </button>
 ) : null}
+{clientButton && repeatBadge && showInlineControls ? (
+<div style={{ position: "absolute", left: "calc(50% + 84px)", top: 75, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+{clientButton}
+</div>
+) : null}
 <div style={{ transform: showInlineControls ? "translateY(9px)" : "translateY(0)" }}>
 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compact ? 4 : 6, gap: compact ? 14 : 10 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: compact ? 16 : 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
@@ -172,11 +177,6 @@ strokeLinecap="round" style={{
 <button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 40, height: 40, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
 <button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 40, height: 40, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
-{clientButton && repeatBadge ? (
-<div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 6, flexShrink: 0 }}>
-{clientButton}
-</div>
-) : null}
 </div>
 ) : null}
 </div>
