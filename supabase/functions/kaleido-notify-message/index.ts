@@ -32,6 +32,10 @@ const escapeHtml = (value: string) => value
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;");
 
+const cleanEmailSecret = (value = "") => value
+  .trim()
+  .replace(/^["']|["']$/g, "");
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -145,15 +149,20 @@ Deno.serve(async (req) => {
       return jsonResponse({ ok: true, skipped: true, reason: "Le tricoteur consulte deja la fiche." });
     }
 
-    const ownerEmailOverride = Deno.env.get("KALEIDO_OWNER_EMAIL") || "";
-    let ownerEmail = ownerEmailOverride;
-
-    if (!ownerEmail && projectRow.owner_key && projectRow.owner_key.includes("-")) {
-      const { data: userData } = await supabase.auth.admin.getUserById(projectRow.owner_key);
-      ownerEmail = userData?.user?.email || "";
+    const ownerEmail = cleanEmailSecret(
+      Deno.env.get("KALEIDO_OWNER_EMAIL")
+      || Deno.env.get("KALEIDO_NOTIFICATION_EMAIL")
+      || "",
+    );
+    recipient = ownerEmail.trim();
+    if (!recipient) {
+      return jsonResponse({
+        ok: false,
+        reason: "KALEIDO_OWNER_EMAIL manquant dans les secrets Supabase. Notification tricoteur non envoyee pour eviter d'utiliser le courriel du compte.",
+        missing: "owner_email",
+      }, 502);
     }
 
-    recipient = ownerEmail.trim();
     subject = "Vous avez un nouveau message";
     text = `Bonjour,\n\nVous avez reçu un nouveau message concernant le projet ${projectName}.\n\nVous pouvez le consulter ici : ${shareUrl}\n\nL'Atelier Kaleido`;
     html = `

@@ -287,12 +287,14 @@ export const loadClientMessages = async (shareToken) => {
   let data = null;
   let error = null;
   const loadDirectMessages = async () => {
-    const fallback = await supabase
-      .from(CLIENT_MESSAGES_TABLE)
-      .select("id, sender, body, attachment_url, attachment_type, created_at")
-      .eq("share_token", shareToken)
-      .order("created_at", { ascending: true })
-      .limit(80);
+    const fallback = await withClientMessagesTimeout(
+      supabase
+        .from(CLIENT_MESSAGES_TABLE)
+        .select("id, sender, body, attachment_url, attachment_type, created_at")
+        .eq("share_token", shareToken)
+        .order("created_at", { ascending: true })
+        .limit(80)
+    );
 
     if (fallback.error) {
       return { ok: false, error: fallback.error, reason: fallback.error.message || "Les messages sont impossibles a charger." };
@@ -313,15 +315,25 @@ export const loadClientMessages = async (shareToken) => {
     data = result.data?.messages || [];
     error = result.error || (result.data?.ok === false ? new Error(result.data?.reason || "Les messages sont impossibles a charger.") : null);
   } catch (loadError) {
-    const fallback = await loadDirectMessages();
-    if (fallback.ok) return fallback;
-    return { ok: false, error: loadError, reason: loadError.message || fallback.reason || "Les messages sont impossibles a charger." };
+    let fallback = null;
+    try {
+      fallback = await loadDirectMessages();
+      if (fallback.ok) return fallback;
+    } catch {
+      fallback = null;
+    }
+    return { ok: false, error: loadError, reason: loadError.message || fallback?.reason || "Les messages sont impossibles a charger." };
   }
 
   if (error) {
-    const fallback = await loadDirectMessages();
-    if (fallback.ok) return fallback;
-    return { ok: false, error, reason: error.message || fallback.reason || "Les messages sont impossibles a charger." };
+    let fallback = null;
+    try {
+      fallback = await loadDirectMessages();
+      if (fallback.ok) return fallback;
+    } catch {
+      fallback = null;
+    }
+    return { ok: false, error, reason: error.message || fallback?.reason || "Les messages sont impossibles a charger." };
   }
 
   return { ok: true, messages: data || [] };
