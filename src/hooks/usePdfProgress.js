@@ -145,10 +145,10 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     .filter(shouldCountPartieRepeatExtra)
     .reduce((sum, repeat) => sum + Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
   const getFixedRepeatExtraBefore = (targetRang) => repeatDefinitions
-    .filter((repeat) => shouldCountRepeatExtra(repeat) && repeat.endRang < targetRang)
+    .filter((repeat) => shouldCountRepeatExtra(repeat) && repeat.startRang < targetRang && (repeat.endRang < targetRang || isRepeatCompleted(repeat)))
     .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
   const getFixedPartieRepeatExtraBefore = (targetRang) => partieRepeatDefinitions
-    .filter((repeat) => shouldCountPartieRepeatExtra(repeat) && repeat.endRang < targetRang)
+    .filter((repeat) => shouldCountPartieRepeatExtra(repeat) && repeat.startRang < targetRang && (repeat.endRang < targetRang || isPartieRepeatCompleted(repeat)))
     .reduce((sum, repeat) => sum + Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
   const getVirtualTotal = () => total;
   const getVirtualRang = (targetRang) => {
