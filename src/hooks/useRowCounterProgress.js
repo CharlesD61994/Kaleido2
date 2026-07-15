@@ -38,6 +38,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const [showNextPartieModal, setShowNextPartieModal] = useState(false);
   const [showPrevPartieModal, setShowPrevPartieModal] = useState(false);
   const [showFinModal, setShowFinModal] = useState(false);
+  const [showFinishRepeatModal, setShowFinishRepeatModal] = useState(false);
 
   useEffect(() => {
     if (!isTimerRunning) return undefined;
@@ -404,12 +405,15 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const finishActiveInfiniteRepeat = () => {
     const activeRepeat = getActiveRepeat(currentIndexRef.current);
     if (!activeRepeat?.infinite) return;
-    const ok = typeof window === "undefined"
-      ? true
-      : window.confirm("Terminer cette répétition et passer au rang suivant?");
-    if (!ok) return;
+    setShowFinishRepeatModal(true);
+  };
+
+  const confirmFinishActiveInfiniteRepeat = () => {
+    const activeRepeat = getActiveRepeat(currentIndexRef.current);
+    if (!activeRepeat?.infinite) return;
     const targetIndex = activeRepeat.endIndex + 1;
     if (targetIndex >= allRangs.length) {
+      setShowFinishRepeatModal(false);
       setShowFinModal(true);
       return;
     }
@@ -419,6 +423,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
       currentIndexRef.current = activeRepeat.endIndex;
       currentRangIdRef.current = liveCurrent.globalId;
       setCurrentRangId(liveCurrent.globalId);
+      setShowFinishRepeatModal(false);
       setShowNextPartieModal(true);
       return;
     }
@@ -426,6 +431,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     currentRangIdRef.current = liveNext.globalId;
     setCurrentRangId(liveNext.globalId);
     saveProgressAtIndex(targetIndex);
+    setShowFinishRepeatModal(false);
   };
 
   const goToPartie = (partieId) => {
@@ -457,6 +463,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   return {
     addCounter,
     allRangs,
+    confirmFinishActiveInfiniteRepeat,
     confirmNextPartie,
     confirmPrevPartie,
     completeProject,
@@ -484,7 +491,9 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     setShowNextPartieModal,
     setShowPrevPartieModal,
     setShowFinModal,
+    setShowFinishRepeatModal,
     setHighlightedInstruction,
+    showFinishRepeatModal,
     showNextPartieModal,
     showPrevPartieModal,
     showFinModal,

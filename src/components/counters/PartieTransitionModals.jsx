@@ -24,6 +24,7 @@ function TransitionModal({ borderColor, children }) {
 
 export default function PartieTransitionModals({
   allRangs,
+  confirmFinishActiveInfiniteRepeat,
   confirmNextPartie,
   confirmPrevPartie,
   completeProject,
@@ -33,9 +34,11 @@ export default function PartieTransitionModals({
   patron,
   projectName,
   setShowFinModal,
+  setShowFinishRepeatModal,
   setShowNextPartieModal,
   setShowPrevPartieModal,
   showFinModal,
+  showFinishRepeatModal,
   showNextPartieModal,
   showPrevPartieModal,
 }) {
@@ -80,6 +83,24 @@ export default function PartieTransitionModals({
             <button onClick={confirmPrevPartie}
               style={{ flex: 1, padding: "14px", borderRadius: 14, border: "none", background: `linear-gradient(135deg, ${prevColor.bg}, ${prevColor.light})`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
               ← Retourner
+            </button>
+          </div>
+        </TransitionModal>
+      )}
+      {showFinishRepeatModal && (
+        <TransitionModal borderColor={currentPartieColor.light}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><IconBadge name="undo" tone="violet" size={24} badgeSize={56} /></div>
+          <div style={{ color: currentPartieColor.light, fontSize: 13, fontFamily: "monospace", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Répétition infinie</div>
+          <h2 style={{ color: "var(--k-text)", fontSize: 20, fontFamily: "'Syne', sans-serif", margin: "0 0 8px" }}>Terminer la répétition?</h2>
+          <p style={{ color: "var(--k-muted-2)", fontSize: 14, margin: "0 0 24px" }}>Tu passeras au rang qui suit cette répétition.</p>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button onClick={() => setShowFinishRepeatModal(false)}
+              style={{ flex: 1, padding: "14px", borderRadius: 14, border: "1px solid #333", background: "none", color: "#999", fontSize: 14, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+              Rester ici
+            </button>
+            <button onClick={confirmFinishActiveInfiniteRepeat}
+              style={{ flex: 1, padding: "14px", borderRadius: 14, border: "none", background: `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+              Terminer
             </button>
           </div>
         </TransitionModal>

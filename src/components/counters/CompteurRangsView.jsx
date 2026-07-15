@@ -14,6 +14,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
     addCounter,
     allRangs,
     completeProject,
+    confirmFinishActiveInfiniteRepeat,
     confirmNextPartie,
     confirmPrevPartie,
     counters,
@@ -38,10 +39,12 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
     resetTimer,
     repeatBadge,
     setHighlightedInstruction,
+    setShowFinishRepeatModal,
     setShowNextPartieModal,
     setShowPrevPartieModal,
     setShowFinModal,
     showFinModal,
+    showFinishRepeatModal,
     showNextPartieModal,
     showPrevPartieModal,
     toggleTimer,
@@ -236,6 +239,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
       <PartieTransitionModals
         allRangs={allRangs}
         completeProject={completeProject}
+        confirmFinishActiveInfiniteRepeat={confirmFinishActiveInfiniteRepeat}
         confirmNextPartie={confirmNextPartie}
         confirmPrevPartie={confirmPrevPartie}
         currentIndex={currentIndex}
@@ -244,9 +248,11 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
         patron={patron}
         projectName={project?.name}
         setShowFinModal={setShowFinModal}
+        setShowFinishRepeatModal={setShowFinishRepeatModal}
         setShowNextPartieModal={setShowNextPartieModal}
         setShowPrevPartieModal={setShowPrevPartieModal}
         showFinModal={showFinModal}
+        showFinishRepeatModal={showFinishRepeatModal}
         showNextPartieModal={showNextPartieModal}
         showPrevPartieModal={showPrevPartieModal}
       />
