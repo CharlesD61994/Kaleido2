@@ -156,6 +156,13 @@ export default function ClientChatPreview({ project, color, publicView = false, 
       if (current.some((message) => message.id === result.message?.id)) return current;
       return [...current, result.message];
     });
+    if (result.notification?.ok && result.notification?.skipped) {
+      setStatus(result.notification.reason || "Courriel non envoye: notification deja couverte.");
+    } else if (result.notification?.ok) {
+      setStatus("Message envoye. Courriel de notification envoye.");
+    } else if (result.notification?.reason) {
+      setStatus(`Message envoye. Courriel non envoye: ${result.notification.reason}`);
+    }
     scrollMessagesToBottom(fullscreen ? "fullscreen" : "compact");
   };
 
@@ -341,7 +348,7 @@ export default function ClientChatPreview({ project, color, publicView = false, 
       </div>
 
       {status ? (
-        <div style={{ color: "#FCA5A5", fontSize: 12, lineHeight: 1.35 }}>
+        <div style={{ color: status.includes("Courriel de notification envoye") || status.includes("deja couverte") ? "var(--k-muted)" : "#FCA5A5", fontSize: 12, lineHeight: 1.35 }}>
           {status}
         </div>
       ) : null}

@@ -449,18 +449,30 @@ export const sendClientShareEmail = async (shareToken, clientEmail = "") => {
   return { ok: true };
 };
 
-const notifyMessageEmail = (messageId) => {
-  if (!messageId || !isSupabaseConfigured || !supabase) return;
+const notifyMessageEmail = async (messageId) => {
+  if (!messageId || !isSupabaseConfigured || !supabase) {
+    return { ok: false, skipped: true, reason: "Notification courriel non disponible." };
+  }
 
-  supabase.functions.invoke("kaleido-notify-message", {
-    body: { messageId },
-  }).then(({ data, error }) => {
+  try {
+    const { data, error } = await supabase.functions.invoke("kaleido-notify-message", {
+      body: { messageId },
+    });
+    const reason = data?.reason || await getFunctionErrorReason(error);
     if (error || data?.ok === false) {
-      console.warn("[KALEIDO] email notification indisponible:", data?.reason || error?.message || error);
+      console.warn("[KALEIDO] email notification indisponible:", reason || error?.message || error);
+      return { ok: false, skipped: false, reason: reason || "Notification courriel non envoyee." };
     }
-  }).catch((error) => {
+
+    return {
+      ok: true,
+      skipped: data?.skipped === true,
+      reason: data?.reason || "",
+    };
+  } catch (error) {
     console.warn("[KALEIDO] email notification exception:", error?.message || error);
-  });
+    return { ok: false, skipped: false, reason: error?.message || "Notification courriel non envoyee." };
+  }
 };
 
 export const loadLatestClientMessageMap = async (shareTokens = []) => {
@@ -566,9 +578,9 @@ const sendClientMessageDirect = async ({
     return { ok: false, error, reason: error.message || "Le message n'a pas pu être envoyé." };
   }
 
-  notifyMessageEmail(data?.id);
+  const notification = await notifyMessageEmail(data?.id);
 
-  return { ok: true, message: data };
+  return { ok: true, message: data, notification };
 };
 
 export const sendClientMessage = async ({
@@ -621,7 +633,7 @@ export const sendClientMessage = async ({
     return fallback.ok ? fallback : { ...fallback, reason: fallback.reason || functionReason || "Le message n'a pas pu etre envoye." };
   }
 
-  notifyMessageEmail(data?.message?.id);
+  const notification = await notifyMessageEmail(data?.message?.id);
 
-  return { ok: true, message: data?.message };
+  return { ok: true, message: data?.message, notification };
 };
