@@ -31,6 +31,24 @@ setIsEditingNom(true);
 };
 const act = (e, fn) => { e.preventDefault(); e.stopPropagation(); fn(); };
 const countableRangs = partie.rangs.filter(r => !r.isNote);
+const countableIndexById = new Map(countableRangs.map((rang, index) => [rang.id, index]));
+const repeatMetaById = new Map();
+countableRangs.forEach((startRang, startIndex) => {
+const repeat = startRang.repeat;
+if (!repeat?.endRangId) return;
+const endIndex = countableIndexById.get(repeat.endRangId);
+if (!Number.isInteger(endIndex) || endIndex < startIndex) return;
+for (let index = startIndex; index <= endIndex; index += 1) {
+const rang = countableRangs[index];
+repeatMetaById.set(rang.id, {
+color: color.bg,
+infinite: repeat.infinite === true,
+isEnd: index === endIndex,
+isStart: index === startIndex,
+passages: repeat.passages,
+});
+}
+});
 const openRepeatDraft = (rangId) => {
 const startIndex = countableRangs.findIndex(r => r.id === rangId);
 if (startIndex < 0) return;
@@ -140,6 +158,7 @@ onDuplicate={(rangId) => onDuplicateRang(partie.id, rangId)}
 onMoveUp={(rangId) => onMoveRangUp(partie.id, rangId)}
 onMoveDown={(rangId) => onMoveRangDown(partie.id, rangId)}
 onCreateRepeat={openRepeatDraft}
+repeatMeta={!isNote ? repeatMetaById.get(rang.id) : null}
 isFirst={index === 0} isLast={index === partie.rangs.length - 1} />
 );
 });

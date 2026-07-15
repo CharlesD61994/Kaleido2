@@ -1,7 +1,7 @@
 ﻿import React, { useState } from "react";
 import Icon from "../icons/Icon";
 
-export default function RangItem({ rang, rangIndex, onUpdate, onDelete, onDuplicate, onMoveUp, onMoveDown, onCreateRepeat, isFirst, isLast }) {
+export default function RangItem({ rang, rangIndex, onUpdate, onDelete, onDuplicate, onMoveUp, onMoveDown, onCreateRepeat, isFirst, isLast, repeatMeta = null }) {
 const [isEditing, setIsEditing] = useState(false);
 const [tempInstruction, setTempInstruction] = useState(rang.instruction);
 const [tempMailles, setTempMailles] = useState(rang.mailles || "");
@@ -13,6 +13,15 @@ const handleSave = (e) => { e.preventDefault(); e.stopPropagation(); onUpdate(ra
 const handleCancel = (e) => { e.preventDefault(); e.stopPropagation(); setTempInstruction(rang.instruction); setTempMailles(rang.mailles || ""); setIsEditing(false); };
 const handleEditClick = (e) => { if (isEditing || isSwipedOpen) return; e.preventDefault(); e.stopPropagation(); setIsEditing(true); };
 const handleActionClick = (e, action) => { e.preventDefault(); e.stopPropagation(); setIsSwipedOpen(false); action(); };
+const repeatAccent = repeatMeta?.color || "#7C3AED";
+const repeatBadgeText = repeatMeta ? `↻ ${repeatMeta.infinite ? "∞" : `${repeatMeta.passages || 2}x`}` : "";
+const repeatPositionText = repeatMeta?.isStart && repeatMeta?.isEnd
+? "Rang répété"
+: repeatMeta?.isStart
+  ? "Début répétition"
+  : repeatMeta?.isEnd
+    ? "Fin répétition"
+    : "Dans la répétition";
 // Carte note/texte
 if (isNote) {
 return (
@@ -60,7 +69,14 @@ return (
 onTouchMove={e => { if (!isEditing) setSwipeCurrentX(e.touches[0].clientX); }}
 onTouchEnd={() => { if (!isEditing) { const d = swipeStartX - swipeCurrentX; if (d > 50) setIsSwipedOpen(true); else if (d < -50) setIsSwipedOpen(false); } }}
 onClick={() => { if (isSwipedOpen && !isEditing) setIsSwipedOpen(false); }}
-style={{ background: "var(--k-field)", border: isSwipedOpen ? "1px solid #7C3AED44" : "1px solid var(--k-border)", borderRadius: 12, padding: 12, marginBottom: 8, position: "relative", overflow: "hidden" }}>
+style={{ background: repeatMeta ? `color-mix(in srgb, ${repeatAccent} 10%, var(--k-field))` : "var(--k-field)", border: repeatMeta ? `1px solid ${repeatAccent}66` : isSwipedOpen ? "1px solid #7C3AED44" : "1px solid var(--k-border)", borderRadius: 12, padding: 12, marginBottom: 8, position: "relative", overflow: "hidden", boxShadow: repeatMeta ? `inset 3px 0 0 ${repeatAccent}, 0 0 0 1px ${repeatAccent}10` : "none" }}>
+{repeatMeta ? (
+<div style={{ position: "absolute", top: 8, right: 8, display: "flex", alignItems: "center", gap: 5, zIndex: 2 }}>
+<span style={{ borderRadius: 999, border: `1px solid ${repeatAccent}55`, background: `color-mix(in srgb, ${repeatAccent} 14%, var(--k-surface))`, color: repeatAccent, fontSize: 10, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "3px 7px", lineHeight: 1 }}>
+{repeatBadgeText}
+</span>
+</div>
+) : null}
 <div style={{ display: "flex", alignItems: "flex-start", gap: 12, transform: isSwipedOpen ? "translateX(-76px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
 <div style={{ background: "#7C3AED22", borderRadius: 8, padding: "8px 12px", minWidth: 40, textAlign: "center", flexShrink: 0 }}>
 <span style={{ color: "#A78BFA", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>{rangIndex + 1}</span>
@@ -81,6 +97,7 @@ style={{ background: "var(--k-field)", border: "1px solid #A78BFA44", borderRadi
 <div style={{ width: "100%", cursor: "pointer" }} onClick={handleEditClick}>
 <div style={{ color: "var(--k-text)", fontSize: 14, lineHeight: 1.5, marginBottom: 6, wordWrap: "break-word", whiteSpace: "pre-wrap" }}>{rang.instruction}</div>
 {rang.mailles && <div style={{ color: "#A78BFA", fontSize: 12, fontFamily: "monospace", marginBottom: 4 }}>{rang.mailles} mailles</div>}
+{repeatMeta ? <div style={{ color: repeatAccent, fontSize: 11, fontWeight: 800, marginBottom: 4 }}>{repeatPositionText}</div> : null}
 <div style={{ color: "#666", fontSize: 11, fontStyle: "italic" }}>{rang.repeat ? `Répétition ${rang.repeat.infinite ? "∞" : `${rang.repeat.passages || 2}x`} • ` : ""}Swipe ← pour actions • Clic pour modifier</div>
 </div>
 )}
