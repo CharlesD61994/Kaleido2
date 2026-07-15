@@ -70,16 +70,14 @@ onTouchMove={e => { if (!isEditing) setSwipeCurrentX(e.touches[0].clientX); }}
 onTouchEnd={() => { if (!isEditing) { const d = swipeStartX - swipeCurrentX; if (d > 50) setIsSwipedOpen(true); else if (d < -50) setIsSwipedOpen(false); } }}
 onClick={() => { if (isSwipedOpen && !isEditing) setIsSwipedOpen(false); }}
 style={{ background: repeatMeta ? `color-mix(in srgb, ${repeatAccent} 10%, var(--k-field))` : "var(--k-field)", border: repeatMeta ? `1px solid ${repeatAccent}66` : isSwipedOpen ? "1px solid #7C3AED44" : "1px solid var(--k-border)", borderRadius: 12, padding: 12, marginBottom: 8, position: "relative", overflow: "hidden", boxShadow: repeatMeta ? `inset 3px 0 0 ${repeatAccent}, 0 0 0 1px ${repeatAccent}10` : "none" }}>
+<div style={{ display: "flex", alignItems: "flex-start", gap: 12, transform: isSwipedOpen ? "translateX(-76px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
+<div style={{ background: "#7C3AED22", borderRadius: 8, padding: repeatMeta ? "7px 8px" : "8px 12px", minWidth: 40, textAlign: "center", flexShrink: 0 }}>
+<span style={{ color: "#A78BFA", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>{rangIndex + 1}</span>
 {repeatMeta ? (
-<div style={{ position: "absolute", top: 8, right: 8, display: "flex", alignItems: "center", gap: 5, zIndex: 2 }}>
-<span style={{ borderRadius: 999, border: `1px solid ${repeatAccent}55`, background: `color-mix(in srgb, ${repeatAccent} 14%, var(--k-surface))`, color: repeatAccent, fontSize: 10, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "3px 7px", lineHeight: 1 }}>
+<span style={{ display: "block", marginTop: 5, borderRadius: 999, border: `1px solid ${repeatAccent}55`, background: `color-mix(in srgb, ${repeatAccent} 14%, var(--k-surface))`, color: repeatAccent, fontSize: 10, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "3px 6px", lineHeight: 1, whiteSpace: "nowrap" }}>
 {repeatBadgeText}
 </span>
-</div>
 ) : null}
-<div style={{ display: "flex", alignItems: "flex-start", gap: 12, transform: isSwipedOpen ? "translateX(-76px)" : "translateX(0)", transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)" }}>
-<div style={{ background: "#7C3AED22", borderRadius: 8, padding: "8px 12px", minWidth: 40, textAlign: "center", flexShrink: 0 }}>
-<span style={{ color: "#A78BFA", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>{rangIndex + 1}</span>
 </div>
 <div style={{ flex: 1 }}>
 {isEditing ? (
