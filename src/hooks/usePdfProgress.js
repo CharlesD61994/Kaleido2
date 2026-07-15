@@ -74,7 +74,11 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const repeatDefinitions = getRepeatDefinitions();
   const getRepeatPassage = (repeat) => Math.max(1, Number(pdfRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const isRepeatCompleted = (repeat) => pdfRepeatStateRef.current?.[repeat.key]?.completed === true;
-  const getRepeatTotalPassages = (repeat) => repeat.infinite && isRepeatCompleted(repeat) ? getRepeatPassage(repeat) : repeat.passages;
+  const shouldCountRepeatExtra = (repeat) =>
+    !repeat.infinite
+    || isRepeatCompleted(repeat)
+    || getRepeatPassage(repeat) > 1;
+  const getRepeatTotalPassages = (repeat) => repeat.infinite && shouldCountRepeatExtra(repeat) ? getRepeatPassage(repeat) : repeat.passages;
   const getActiveRepeat = (targetRang) => repeatDefinitions.find((repeat) => targetRang >= repeat.startRang && targetRang <= repeat.endRang) || null;
   const reactivateInfiniteRepeatForRang = (targetRang) => {
     const repeat = repeatDefinitions.find((item) =>
@@ -128,19 +132,23 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     .filter(Boolean);
   const getPartieRepeatPassage = (repeat) => Math.max(1, Number(pdfPartieRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const isPartieRepeatCompleted = (repeat) => pdfPartieRepeatStateRef.current?.[repeat.key]?.completed === true;
-  const getPartieRepeatTotalPassages = (repeat) => repeat.infinite && isPartieRepeatCompleted(repeat) ? getPartieRepeatPassage(repeat) : repeat.passages;
+  const shouldCountPartieRepeatExtra = (repeat) =>
+    !repeat.infinite
+    || isPartieRepeatCompleted(repeat)
+    || getPartieRepeatPassage(repeat) > 1;
+  const getPartieRepeatTotalPassages = (repeat) => repeat.infinite && shouldCountPartieRepeatExtra(repeat) ? getPartieRepeatPassage(repeat) : repeat.passages;
   const getActivePartieRepeat = (partieIndex) => partieRepeatDefinitions.find((repeat) => partieIndex >= repeat.startPartieIndex && partieIndex <= repeat.endPartieIndex) || null;
   const getFixedRepeatExtraTotal = () => repeatDefinitions
-    .filter((repeat) => !repeat.infinite || isRepeatCompleted(repeat))
+    .filter(shouldCountRepeatExtra)
     .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
   const getFixedPartieRepeatExtraTotal = () => partieRepeatDefinitions
-    .filter((repeat) => !repeat.infinite || isPartieRepeatCompleted(repeat))
+    .filter(shouldCountPartieRepeatExtra)
     .reduce((sum, repeat) => sum + Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
   const getFixedRepeatExtraBefore = (targetRang) => repeatDefinitions
-    .filter((repeat) => (!repeat.infinite || isRepeatCompleted(repeat)) && repeat.endRang < targetRang)
+    .filter((repeat) => shouldCountRepeatExtra(repeat) && repeat.endRang < targetRang)
     .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
   const getFixedPartieRepeatExtraBefore = (targetRang) => partieRepeatDefinitions
-    .filter((repeat) => (!repeat.infinite || isPartieRepeatCompleted(repeat)) && repeat.endRang < targetRang)
+    .filter((repeat) => shouldCountPartieRepeatExtra(repeat) && repeat.endRang < targetRang)
     .reduce((sum, repeat) => sum + Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
   const getVirtualTotal = () => total;
   const getVirtualRang = (targetRang) => {

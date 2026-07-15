@@ -155,7 +155,11 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const repeatDefinitions = getRepeatDefinitions();
   const getRepeatPassage = (repeat) => Math.max(1, Number(rangRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const isRepeatCompleted = (repeat) => rangRepeatStateRef.current?.[repeat.key]?.completed === true;
-  const getRepeatTotalPassages = (repeat) => repeat.infinite && isRepeatCompleted(repeat) ? getRepeatPassage(repeat) : repeat.passages;
+  const shouldCountRepeatExtra = (repeat) =>
+    !repeat.infinite
+    || isRepeatCompleted(repeat)
+    || getRepeatPassage(repeat) > 1;
+  const getRepeatTotalPassages = (repeat) => repeat.infinite && shouldCountRepeatExtra(repeat) ? getRepeatPassage(repeat) : repeat.passages;
   const getActiveRepeat = (index) => repeatDefinitions.find((repeat) => index >= repeat.startIndex && index <= repeat.endIndex) || null;
   const partieRepeatDefinitions = patron.parties
     .map((partie, startPartieIndex) => {
@@ -185,7 +189,11 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     .filter(Boolean);
   const getPartieRepeatPassage = (repeat) => Math.max(1, Number(partieRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const isPartieRepeatCompleted = (repeat) => partieRepeatStateRef.current?.[repeat.key]?.completed === true;
-  const getPartieRepeatTotalPassages = (repeat) => repeat.infinite && isPartieRepeatCompleted(repeat) ? getPartieRepeatPassage(repeat) : repeat.passages;
+  const shouldCountPartieRepeatExtra = (repeat) =>
+    !repeat.infinite
+    || isPartieRepeatCompleted(repeat)
+    || getPartieRepeatPassage(repeat) > 1;
+  const getPartieRepeatTotalPassages = (repeat) => repeat.infinite && shouldCountPartieRepeatExtra(repeat) ? getPartieRepeatPassage(repeat) : repeat.passages;
   const getActivePartieRepeat = (partieIndex) => partieRepeatDefinitions.find((repeat) => partieIndex >= repeat.startPartieIndex && partieIndex <= repeat.endPartieIndex) || null;
   const getVirtualTotal = () => totalRangsForCount;
   const getVirtualCountAtIndex = (index) => {
@@ -538,17 +546,17 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const deleteCounter = (id) => setCounters(prev => prev.filter(c => c.id !== id));
   const activeRepeat = getActiveRepeat(currentIndex);
   const fixedRepeatExtraTotal = repeatDefinitions
-    .filter((repeat) => !repeat.infinite || isRepeatCompleted(repeat))
+    .filter(shouldCountRepeatExtra)
     .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
   const fixedPartieRepeatExtraTotal = partieRepeatDefinitions
-    .filter((repeat) => !repeat.infinite || isPartieRepeatCompleted(repeat))
+    .filter(shouldCountPartieRepeatExtra)
     .reduce((sum, repeat) => sum + getCountableLengthBetween(repeat.startIndex, repeat.endIndex) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
   const displayNumericTotalRangs = Math.max(1, totalRangsForCount + fixedRepeatExtraTotal + fixedPartieRepeatExtraTotal);
   const fixedRepeatExtraBeforeCurrent = repeatDefinitions
-    .filter((repeat) => (!repeat.infinite || isRepeatCompleted(repeat)) && repeat.endIndex < currentIndex)
+    .filter((repeat) => shouldCountRepeatExtra(repeat) && repeat.endIndex < currentIndex)
     .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
   const fixedPartieRepeatExtraBeforeCurrent = partieRepeatDefinitions
-    .filter((repeat) => (!repeat.infinite || isPartieRepeatCompleted(repeat)) && repeat.endIndex < currentIndex)
+    .filter((repeat) => shouldCountPartieRepeatExtra(repeat) && repeat.endIndex < currentIndex)
     .reduce((sum, repeat) => sum + getCountableLengthBetween(repeat.startIndex, repeat.endIndex) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
   const activeInfiniteRepeat = activeRepeat?.infinite && !isRepeatCompleted(activeRepeat) ? activeRepeat : null;
   const activeInfinitePartieRepeat = !activeInfiniteRepeat && activePartieRepeat?.infinite && !isPartieRepeatCompleted(activePartieRepeat) ? activePartieRepeat : null;
@@ -592,10 +600,10 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     : (currentPartieDisplayRangIndex + 1) / Math.max(1, currentPartieTotal);
   const buildProgressDisplayPayloadAtIndex = (targetIndex = currentIndex) => {
     const freshFixedRepeatExtraTotal = repeatDefinitions
-      .filter((repeat) => !repeat.infinite || isRepeatCompleted(repeat))
+      .filter(shouldCountRepeatExtra)
       .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
     const freshFixedPartieRepeatExtraTotal = partieRepeatDefinitions
-      .filter((repeat) => !repeat.infinite || isPartieRepeatCompleted(repeat))
+      .filter(shouldCountPartieRepeatExtra)
       .reduce((sum, repeat) => sum + getCountableLengthBetween(repeat.startIndex, repeat.endIndex) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
     const freshDisplayNumericTotalRangs = Math.max(1, totalRangsForCount + freshFixedRepeatExtraTotal + freshFixedPartieRepeatExtraTotal);
     const targetRepeat = getActiveRepeat(targetIndex);
@@ -617,10 +625,10 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
       return before + ((getPartieRepeatPassage(targetPartieRepeat) - 1) * length) + within;
     })() : null;
     const fixedRepeatExtraBeforeTarget = repeatDefinitions
-      .filter((repeat) => (!repeat.infinite || isRepeatCompleted(repeat)) && repeat.endIndex < targetIndex)
+      .filter((repeat) => shouldCountRepeatExtra(repeat) && repeat.endIndex < targetIndex)
       .reduce((sum, repeat) => sum + repeat.length * Math.max(0, getRepeatTotalPassages(repeat) - 1), 0);
     const fixedPartieRepeatExtraBeforeTarget = partieRepeatDefinitions
-      .filter((repeat) => (!repeat.infinite || isPartieRepeatCompleted(repeat)) && repeat.endIndex < targetIndex)
+      .filter((repeat) => shouldCountPartieRepeatExtra(repeat) && repeat.endIndex < targetIndex)
       .reduce((sum, repeat) => sum + getCountableLengthBetween(repeat.startIndex, repeat.endIndex) * Math.max(0, getPartieRepeatTotalPassages(repeat) - 1), 0);
     const targetDisplayCount = targetRepeatDisplayCount
       ?? targetPartieRepeatDisplayCount
