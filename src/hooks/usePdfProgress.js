@@ -42,8 +42,16 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
 
   const getRepeatDefinitions = () => pdfRepetitions
     .map((repeat, index) => {
-      const startRang = Math.max(1, Number(repeat.startRang) || 1);
-      const endRang = Math.max(startRang, Number(repeat.endRang) || startRang);
+      const partieIndex = repeat.partieId
+        ? pdfParties.findIndex((partie) => String(partie.id) === String(repeat.partieId))
+        : -1;
+      const partieOffset = partieIndex >= 0
+        ? pdfParties.slice(0, partieIndex).reduce((sum, partie) => sum + (Number(partie?.totalRangs) || 0), 0)
+        : 0;
+      const rawStartRang = Math.max(1, Number(repeat.startRang) || 1);
+      const rawEndRang = Math.max(rawStartRang, Number(repeat.endRang) || rawStartRang);
+      const startRang = Math.max(1, partieOffset + rawStartRang);
+      const endRang = Math.max(startRang, partieOffset + rawEndRang);
       const length = Math.max(1, endRang - startRang + 1);
       return {
         key: repeat.id || `pdf-repeat-${index}`,
