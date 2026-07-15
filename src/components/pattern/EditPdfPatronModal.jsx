@@ -29,6 +29,7 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
     const end = locateRepeatPartie(parseInt(repeat.endRang, 10) || start.localRang);
     return { ...repeat, partieId: start.partieId, startRang: start.localRang, endRang: end.partieId === start.partieId ? end.localRang : start.localRang };
   }));
+  const [repetitionDraft, setRepetitionDraft] = useState(null);
   const [partieRepetitions, setPartieRepetitions] = useState(patron.pdfPartieRepetitions || []);
   const [partieRepeatDraft, setPartieRepeatDraft] = useState(null);
   const [colorPickerPartie, setColorPickerPartie] = useState(null);
@@ -41,9 +42,27 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
     setRepetitions((prev) => prev.filter((repeat) => String(repeat.partieId) !== String(id)));
     setPartieRepetitions((prev) => prev.filter((repeat) => String(repeat.startPartieId) !== String(id) && String(repeat.endPartieId) !== String(id)));
   };
-  const addRepetition = () => setRepetitions((prev) => [...prev, { id: `pdf-repeat-${Date.now()}`, partieId: parties[0]?.id || "", startRang: 1, endRang: 1, passages: 2, infinite: false }]);
-  const updateRepetition = (id, field, value) => setRepetitions((prev) => prev.map((repeat) => (repeat.id === id ? { ...repeat, [field]: value } : repeat)));
-  const removeRepetition = (id) => setRepetitions((prev) => prev.filter((repeat) => repeat.id !== id));
+  const openRepetitionDraft = (repeat = null) => {
+    setRepetitionDraft(repeat ? { ...repeat } : { id: `pdf-repeat-${Date.now()}`, partieId: parties[0]?.id || "", startRang: "1", endRang: "1", passages: "2", infinite: false });
+  };
+  const saveRepetitionDraft = () => {
+    if (!repetitionDraft?.partieId) return;
+    const start = Math.max(1, parseInt(repetitionDraft.startRang, 10) || 1);
+    const end = Math.max(start, parseInt(repetitionDraft.endRang, 10) || start);
+    const nextRepeat = {
+      ...repetitionDraft,
+      startRang: start,
+      endRang: end,
+      passages: repetitionDraft.infinite ? null : Math.max(2, parseInt(repetitionDraft.passages, 10) || 2),
+      infinite: repetitionDraft.infinite === true,
+    };
+    setRepetitions((prev) => prev.some((repeat) => repeat.id === nextRepeat.id) ? prev.map((repeat) => (repeat.id === nextRepeat.id ? nextRepeat : repeat)) : [...prev, nextRepeat]);
+    setRepetitionDraft(null);
+  };
+  const removeRepetitionDraft = () => {
+    if (repetitionDraft?.id) setRepetitions((prev) => prev.filter((repeat) => repeat.id !== repetitionDraft.id));
+    setRepetitionDraft(null);
+  };
   const openPartieRepeatDraft = (repeat = null) => {
     const firstId = parties[0]?.id || "";
     const secondId = parties[Math.min(1, parties.length - 1)]?.id || firstId;
@@ -200,21 +219,17 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
               <>
                 <div style={{ ...repeatSectionStyle, borderColor: "#7C3AED33" }}>
                 <label style={{ ...repeatTitleStyle, color: "#7C3AED" }}>Répétitions de rangs</label>
-                <button onClick={addRepetition} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #7C3AED55", color: "#7C3AED", fontSize: 13, cursor: "pointer" }}>+ Ajouter une répétition de rangs</button>
-                {repetitions.map((repeat) => (
-                  <div key={repeat.id} style={repeatCardStyle}>
-                    <select value={repeat.partieId} onChange={(event) => updateRepetition(repeat.id, "partieId", event.target.value)} style={repeatInputStyle}>
-                      {parties.map((partie, index) => <option key={partie.id} value={partie.id}>{partie.nom || `Partie ${index + 1}`}</option>)}
-                    </select>
-                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 7 }}>
-                      <input value={repeat.startRang} onChange={(event) => updateRepetition(repeat.id, "startRang", event.target.value)} placeholder="Début" type="number" min="1" style={repeatInputStyle} />
-                      <input value={repeat.endRang} onChange={(event) => updateRepetition(repeat.id, "endRang", event.target.value)} placeholder="Fin" type="number" min="1" style={repeatInputStyle} />
-                    </div>
-                    <button type="button" onClick={() => updateRepetition(repeat.id, "infinite", !repeat.infinite)} style={{ ...repeatButtonStyle, border: `1px solid ${repeat.infinite ? "#7C3AED" : "var(--k-border)"}`, background: repeat.infinite ? "rgba(124,58,237,0.16)" : "var(--k-muted-fill)", color: repeat.infinite ? "#A78BFA" : "var(--k-muted)" }}>Jusqu'à satisfaction</button>
-                    {!repeat.infinite ? <input value={repeat.passages ?? 2} onChange={(event) => updateRepetition(repeat.id, "passages", event.target.value)} placeholder="Passages total" type="number" min="2" style={repeatInputStyle} /> : null}
-                    <button type="button" onClick={() => removeRepetition(repeat.id)} style={{ ...repeatButtonStyle, border: "1px solid rgba(239,68,68,0.35)", background: "rgba(239,68,68,0.12)", color: "#F87171" }}>Retirer la répétition</button>
-                  </div>
-                ))}
+                <button onClick={() => openRepetitionDraft()} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #7C3AED55", color: "#7C3AED", fontSize: 13, cursor: "pointer" }}>+ Ajouter une répétition de rangs</button>
+                {repetitions.map((repeat) => {
+                  const partieIndex = parties.findIndex((partie) => String(partie.id) === String(repeat.partieId));
+                  const partieName = parties[partieIndex]?.nom || `Partie ${partieIndex + 1}`;
+                  return (
+                    <button key={repeat.id} type="button" onClick={() => openRepetitionDraft(repeat)} style={{ ...repeatCardStyle, width: "100%", textAlign: "left", cursor: "pointer" }}>
+                      <span style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 900 }}>{partieName}</span>
+                      <span style={{ color: "var(--k-muted-2)", fontSize: 12 }}>Rangs {repeat.startRang} → {repeat.endRang} · {repeat.infinite ? "∞" : `${repeat.passages || 2}x`}</span>
+                    </button>
+                  );
+                })}
                 </div>
                 <div style={{ ...repeatSectionStyle, borderColor: "#16A34A33" }}>
                   <label style={{ ...repeatTitleStyle, color: "#16A34A" }}>Répétitions de parties</label>
@@ -239,6 +254,39 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
         ) : null}
 
         </div>
+
+        {repetitionDraft ? (
+          <div data-kaleido-modal-backdrop="true" onClick={() => setRepetitionDraft(null)} style={{ position: "fixed", inset: 0, zIndex: 370, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ width: "100%", maxWidth: 340, background: "var(--k-surface)", border: "1px solid #7C3AED44", borderRadius: 20, padding: 18, boxShadow: "0 18px 60px rgba(0,0,0,0.25)" }}>
+              <h4 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 17, margin: "0 0 14px", textAlign: "center" }}>Répétition de rangs</h4>
+              <label style={{ ...repeatTitleStyle, color: "#7C3AED", marginBottom: 6 }}>Partie</label>
+              <select value={repetitionDraft.partieId} onChange={(event) => setRepetitionDraft((current) => ({ ...current, partieId: event.target.value }))} style={{ ...repeatInputStyle, marginBottom: 10, padding: 12, fontSize: 16 }}>
+                {parties.map((partie, index) => <option key={partie.id} value={partie.id}>{partie.nom || `Partie ${index + 1}`}</option>)}
+              </select>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 10 }}>
+                <div>
+                  <label style={{ ...repeatTitleStyle, color: "#7C3AED", marginBottom: 6 }}>Début</label>
+                  <input type="number" min="1" value={repetitionDraft.startRang} onChange={(event) => setRepetitionDraft((current) => ({ ...current, startRang: event.target.value }))} style={{ ...repeatInputStyle, marginBottom: 10, padding: 12, fontSize: 16 }} />
+                </div>
+                <div>
+                  <label style={{ ...repeatTitleStyle, color: "#7C3AED", marginBottom: 6 }}>Fin</label>
+                  <input type="number" min="1" value={repetitionDraft.endRang} onChange={(event) => setRepetitionDraft((current) => ({ ...current, endRang: event.target.value }))} style={{ ...repeatInputStyle, marginBottom: 10, padding: 12, fontSize: 16 }} />
+                </div>
+              </div>
+              <button type="button" onClick={() => setRepetitionDraft((current) => ({ ...current, infinite: !current.infinite }))} style={{ ...repeatButtonStyle, marginBottom: 10, border: `1px solid ${repetitionDraft.infinite ? "#7C3AED" : "var(--k-border)"}`, background: repetitionDraft.infinite ? "rgba(124,58,237,0.16)" : "var(--k-muted-fill)", color: repetitionDraft.infinite ? "#A78BFA" : "var(--k-muted)" }}>Répéter jusqu'à satisfaction</button>
+              {!repetitionDraft.infinite ? (
+                <>
+                  <label style={{ ...repeatTitleStyle, color: "#7C3AED", marginBottom: 6 }}>Nombre de passages total</label>
+                  <input type="number" min="2" value={repetitionDraft.passages || "2"} onChange={(event) => setRepetitionDraft((current) => ({ ...current, passages: event.target.value }))} style={{ ...repeatInputStyle, marginBottom: 12, padding: 12, fontSize: 16 }} />
+                </>
+              ) : null}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button type="button" onClick={removeRepetitionDraft} style={{ flex: 1, borderRadius: 12, border: "1px solid rgba(239,68,68,0.35)", background: "rgba(239,68,68,0.12)", color: "#F87171", padding: "11px 12px", fontWeight: 800 }}>Retirer</button>
+                <button type="button" onClick={saveRepetitionDraft} style={{ flex: 1, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #7C3AED, #A78BFA)", color: "#fff", padding: "11px 12px", fontWeight: 900 }}>Sauvegarder</button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {partieRepeatDraft ? (
           <div data-kaleido-modal-backdrop="true" onClick={() => setPartieRepeatDraft(null)} style={{ position: "fixed", inset: 0, zIndex: 370, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>

@@ -797,8 +797,9 @@ final class KaleidoNativePdfHeaderView: UIView {
         let barX = circleView.frame.maxX + 8
         let barRight = bounds.width - right
         let barY = top + 75
-        let sectionRepeatMaxWidth = max(0, timerButton.frame.minX - barX - 8)
-        sectionRepeatButton.frame = CGRect(x: barX, y: timerButton.frame.minY, width: min(126, sectionRepeatMaxWidth), height: 20)
+        let sectionRepeatX = max(circleView.frame.maxX, barX - 8)
+        let sectionRepeatMaxWidth = max(0, timerButton.frame.minX - sectionRepeatX - 8)
+        sectionRepeatButton.frame = CGRect(x: sectionRepeatX, y: timerButton.frame.minY, width: min(126, sectionRepeatMaxWidth), height: 20)
         partButton.frame = CGRect(x: barX, y: barY - 31, width: max(60, barRight - barX - 54), height: 26)
         partCountLabel.frame = CGRect(x: barRight - 52, y: barY - 31, width: 52, height: 26)
         progressTrack.frame = CGRect(x: barX, y: barY, width: max(20, barRight - barX), height: 9)
