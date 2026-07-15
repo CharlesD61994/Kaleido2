@@ -257,7 +257,8 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
 
         {repetitionDraft ? (
           <div data-kaleido-modal-backdrop="true" onClick={() => setRepetitionDraft(null)} style={{ position: "fixed", inset: 0, zIndex: 370, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-            <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ width: "100%", maxWidth: 340, background: "var(--k-surface)", border: "1px solid #7C3AED44", borderRadius: 20, padding: 18, boxShadow: "0 18px 60px rgba(0,0,0,0.25)" }}>
+            <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ position: "relative", width: "100%", maxWidth: 340, background: "var(--k-surface)", border: "1px solid #7C3AED44", borderRadius: 20, padding: 18, boxShadow: "0 18px 60px rgba(0,0,0,0.25)" }}>
+              <button type="button" onClick={() => setRepetitionDraft(null)} aria-label="Fermer" style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text)", fontSize: 16, fontWeight: 900, lineHeight: 1, cursor: "pointer" }}>x</button>
               <h4 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 17, margin: "0 0 14px", textAlign: "center" }}>Répétition de rangs</h4>
               <label style={{ ...repeatTitleStyle, color: "#7C3AED", marginBottom: 6 }}>Partie</label>
               <select value={repetitionDraft.partieId} onChange={(event) => setRepetitionDraft((current) => ({ ...current, partieId: event.target.value }))} style={{ ...repeatInputStyle, marginBottom: 10, padding: 12, fontSize: 16 }}>
@@ -290,7 +291,8 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
 
         {partieRepeatDraft ? (
           <div data-kaleido-modal-backdrop="true" onClick={() => setPartieRepeatDraft(null)} style={{ position: "fixed", inset: 0, zIndex: 370, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-            <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ width: "100%", maxWidth: 340, background: "var(--k-surface)", border: "1px solid #16A34A44", borderRadius: 20, padding: 18, boxShadow: "0 18px 60px rgba(0,0,0,0.25)" }}>
+            <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ position: "relative", width: "100%", maxWidth: 340, background: "var(--k-surface)", border: "1px solid #16A34A44", borderRadius: 20, padding: 18, boxShadow: "0 18px 60px rgba(0,0,0,0.25)" }}>
+              <button type="button" onClick={() => setPartieRepeatDraft(null)} aria-label="Fermer" style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text)", fontSize: 16, fontWeight: 900, lineHeight: 1, cursor: "pointer" }}>x</button>
               <h4 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 17, margin: "0 0 14px", textAlign: "center" }}>Répétition de parties</h4>
               <label style={{ ...repeatTitleStyle, color: "#16A34A", marginBottom: 6 }}>Nom affiché</label>
               <input type="text" value={partieRepeatDraft.label || ""} onChange={(event) => setPartieRepeatDraft((current) => ({ ...current, label: event.target.value }))} placeholder="Pantoufle, bas..." style={{ ...repeatInputStyle, marginBottom: 10, padding: 12, fontSize: 16 }} />

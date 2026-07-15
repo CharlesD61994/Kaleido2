@@ -91,7 +91,7 @@ export default function PdfCounterCard({
               </div>
             ) : null}
             {sectionRepeatBadge ? (
-              <div style={{ position: "absolute", top: -12, left: -8, height: 20, minWidth: 92, maxWidth: "calc(100% - 96px)", borderRadius: 999, border: `1px solid ${color.bg}28`, background: `${color.bg}18`, color: color.bg, padding: "2px 10px", boxSizing: "border-box", fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", lineHeight: "15px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ position: "absolute", top: -12, left: 0, height: 20, minWidth: 92, maxWidth: "calc(100% - 104px)", borderRadius: 999, border: `1px solid ${color.bg}28`, background: `${color.bg}18`, color: color.bg, padding: "2px 10px", boxSizing: "border-box", fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", lineHeight: "15px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {sectionRepeatBadge.label}
               </div>
             ) : null}

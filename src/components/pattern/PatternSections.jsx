@@ -309,7 +309,8 @@ export function PartieSection({
 
       {repeatDraft && (
         <div style={{ position: "fixed", inset: 0, zIndex: 5000, background: "rgba(0,0,0,0.58)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setRepeatDraft(null)}>
-          <div style={{ width: "100%", maxWidth: 360, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, padding: 18, boxShadow: "0 24px 80px rgba(0,0,0,0.38)" }} onClick={(event) => event.stopPropagation()}>
+          <div style={{ position: "relative", width: "100%", maxWidth: 360, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, padding: 18, boxShadow: "0 24px 80px rgba(0,0,0,0.38)" }} onClick={(event) => event.stopPropagation()}>
+            <button type="button" onClick={() => setRepeatDraft(null)} aria-label="Fermer" style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text)", fontSize: 16, fontWeight: 900, lineHeight: 1, cursor: "pointer" }}>x</button>
             <h3 style={{ margin: "0 0 12px", color: "var(--k-text)", fontSize: 18, fontFamily: "'Syne', sans-serif" }}>Répétition de rangs</h3>
             <label style={{ display: "grid", gap: 6, color: "var(--k-muted)", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
               Jusqu'au rang
@@ -338,7 +339,8 @@ export function PartieSection({
 
       {partieRepeatDraft && (
         <div style={{ position: "fixed", inset: 0, zIndex: 5000, background: "rgba(0,0,0,0.58)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setPartieRepeatDraft(null)}>
-          <div style={{ width: "100%", maxWidth: 360, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, padding: 18, boxShadow: "0 24px 80px rgba(0,0,0,0.38)" }} onClick={(event) => event.stopPropagation()}>
+          <div style={{ position: "relative", width: "100%", maxWidth: 360, background: "var(--k-surface)", border: "1px solid var(--k-border)", borderRadius: 18, padding: 18, boxShadow: "0 24px 80px rgba(0,0,0,0.38)" }} onClick={(event) => event.stopPropagation()}>
+            <button type="button" onClick={() => setPartieRepeatDraft(null)} aria-label="Fermer" style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "1px solid var(--k-border)", background: "var(--k-muted-fill)", color: "var(--k-text)", fontSize: 16, fontWeight: 900, lineHeight: 1, cursor: "pointer" }}>x</button>
             <h3 style={{ margin: "0 0 12px", color: "var(--k-text)", fontSize: 18, fontFamily: "'Syne', sans-serif" }}>Répétition de parties</h3>
             <label style={{ display: "grid", gap: 6, color: "var(--k-muted)", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
               Nom affiché
