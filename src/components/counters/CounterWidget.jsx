@@ -80,6 +80,8 @@ const circleStroke = compact ? 6 : 4;
 const clientButtonTop = 71;
 const localRangNumber = Math.max(0, currentPartieRangIndex + 1);
 const showInlineControls = compact && typeof onPrevRang === "function" && typeof onNextRang === "function";
+const sectionRepeatText = sectionRepeatBadge?.label || "";
+const sectionRepeatMatch = sectionRepeatText.match(/^(.*?:)\s*(.+)$/);
 return (
 <div
 onTouchStart={e => setStartX(e.touches[0].clientX)}
@@ -126,7 +128,12 @@ strokeLinecap="round" style={{
 {compact && sectionRepeatBadge ? (
 <div style={{ position: "absolute", top: -12, left: -1, maxWidth: "calc(100% - 108px)", display: "inline-flex", height: 18, alignItems: "center", transform: "translateY(-2.5px)", zIndex: 5, pointerEvents: "none" }}>
 <div style={{ border: `1px solid ${currentPartieColor.light}44`, borderRadius: 999, background: `${currentPartieColor.bg}33`, color: "var(--k-text)", padding: "2px 8px", fontSize: 12, fontFamily: "monospace", fontWeight: 900, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxShadow: `0 0 16px ${currentPartieColor.bg}33` }}>
-{sectionRepeatBadge.label}
+{sectionRepeatMatch ? (
+  <>
+    <span>{sectionRepeatMatch[1]}</span>
+    <span style={{ marginLeft: 2 }}>{sectionRepeatMatch[2]}</span>
+  </>
+) : sectionRepeatBadge.label}
 </div>
 </div>
 ) : null}

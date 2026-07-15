@@ -522,7 +522,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     onClick: activeRepeat.infinite ? finishActiveInfiniteRepeat : undefined,
   } : null;
   const partieRepeatBadge = activePartieRepeat ? {
-    label: `${(activePartieRepeat.label || "Répétition").trim()}: ${activePartieRepeatPassage}/${activePartieRepeat.infinite ? "∞" : activePartieRepeat.passages}`,
+    label: `${(activePartieRepeat.label || "Répétition").trim()}: ${activePartieRepeatPassage}/${activePartieRepeat.infinite ? "∞" : activePartieRepeat.passages}`,
   } : null;
 
   return {
