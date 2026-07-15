@@ -40,6 +40,11 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const [pdfPartieRepeatState, setPdfPartieRepeatState] = useState(project?.pdfPartieRepeatState || {});
   const pdfPartieRepeatStateRef = useRef(project?.pdfPartieRepeatState || {});
 
+  const isRepeatInfinite = (repeat) =>
+    repeat?.infinite === true
+    || repeat?.infinite === "true"
+    || repeat?.passages == null;
+
   const getRepeatDefinitions = () => pdfRepetitions
     .map((repeat, index) => {
       const partieIndex = repeat.partieId
@@ -50,8 +55,11 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
         : 0;
       const rawStartRang = Math.max(1, Number(repeat.startRang) || 1);
       const rawEndRang = Math.max(rawStartRang, Number(repeat.endRang) || rawStartRang);
-      const startRang = Math.max(1, partieOffset + rawStartRang);
-      const endRang = Math.max(startRang, partieOffset + rawEndRang);
+      const partieTotal = partieIndex >= 0 ? Number(pdfParties[partieIndex]?.totalRangs) || 0 : 0;
+      const valuesAreLocalToPartie = partieIndex >= 0 && partieTotal > 0 && rawEndRang <= partieTotal;
+      const baseOffset = valuesAreLocalToPartie ? partieOffset : 0;
+      const startRang = Math.max(1, baseOffset + rawStartRang);
+      const endRang = Math.max(startRang, baseOffset + rawEndRang);
       const length = Math.max(1, endRang - startRang + 1);
       return {
         key: repeat.id || `pdf-repeat-${index}`,
@@ -59,7 +67,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
         endRang,
         length,
         passages: Math.max(2, Number(repeat.passages) || 2),
-        infinite: repeat.infinite === true,
+        infinite: isRepeatInfinite(repeat),
       };
     })
     .filter((repeat) => repeat.startRang <= total && repeat.endRang <= total);
@@ -307,20 +315,24 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     addPartieTime();
     const liveRang = rangRef.current;
     const activeRepeat = getActiveRepeat(liveRang);
-    if (activeRepeat && liveRang === activeRepeat.endRang) {
-      const passage = getRepeatPassage(activeRepeat);
-      const shouldLoop = activeRepeat.infinite || passage < activeRepeat.passages;
+    const endingRepeat = activeRepeat || repeatDefinitions.find((repeat) =>
+      !isRepeatCompleted(repeat)
+      && liveRang === repeat.endRang
+    );
+    if (endingRepeat && liveRang === endingRepeat.endRang && !isRepeatCompleted(endingRepeat)) {
+      const passage = getRepeatPassage(endingRepeat);
+      const shouldLoop = endingRepeat.infinite || passage < endingRepeat.passages;
       if (shouldLoop) {
         const nextState = {
           ...pdfRepeatStateRef.current,
-          [activeRepeat.key]: { passage: passage + 1 },
+          [endingRepeat.key]: { passage: passage + 1 },
         };
         pdfRepeatStateRef.current = nextState;
         setPdfRepeatState(nextState);
-        rangRef.current = activeRepeat.startRang;
-        if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(activeRepeat.startRang));
-        setRang(activeRepeat.startRang);
-        saveProgress(activeRepeat.startRang, total);
+        rangRef.current = endingRepeat.startRang;
+        if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(endingRepeat.startRang));
+        setRang(endingRepeat.startRang);
+        saveProgress(endingRepeat.startRang, total);
         return;
       }
     }
@@ -396,20 +408,20 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     const liveRang = rangRef.current;
     if (liveRang <= 1) return;
 
+    const newRang = liveRang - 1;
     const previousInfiniteRepeat = repeatDefinitions.find((repeat) =>
       repeat.infinite
       && !isRepeatCompleted(repeat)
-      && liveRang === repeat.endRang + 1
+      && newRang >= repeat.startRang
+      && newRang <= repeat.endRang
     );
     if (previousInfiniteRepeat) {
-      rangRef.current = previousInfiniteRepeat.endRang;
-      if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(previousInfiniteRepeat.endRang));
-      setRang(previousInfiniteRepeat.endRang);
-      saveProgress(previousInfiniteRepeat.endRang, total);
+      rangRef.current = newRang;
+      if (hasParties) setCurrentPartieIdx(getPartieIndexForRang(newRang));
+      setRang(newRang);
+      saveProgress(newRang, total);
       return;
     }
-
-    const newRang = liveRang - 1;
 
     if (hasParties && currentPartieIdx > 0) {
       let offset = 0;
