@@ -137,6 +137,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
               pdfPartieRangs: pdfPartieRangsRef.current,
               pdfRepeatState: pdfRepeatStateRef.current,
               pdfPartieRepeatState: pdfPartieRepeatStateRef.current,
+              ...getProgressDisplayPayload(),
             });
           }
           wasPausedByVisibilityRef.current = true;
@@ -238,6 +239,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
         pdfCurrentRang: nextRang,
         pdfRepeatState: pdfRepeatStateRef.current,
         pdfPartieRepeatState: pdfPartieRepeatStateRef.current,
+        ...buildProgressDisplayPayloadForRang(nextRang),
         ...extra,
       });
     }
@@ -519,6 +521,56 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     : rangDansPartie;
   const displayTotalPartieCourante = isInfiniteProgress ? "∞" : totalPartieCourante;
   const partProgressRatio = Math.max(0, Math.min(1, rangDansPartie / Math.max(1, totalPartieCourante)));
+  const buildProgressDisplayPayloadForRang = (targetRang = rang) => {
+    const targetPartieIndex = getPartieIndexForRang(targetRang);
+    const targetRepeat = getActiveRepeat(targetRang);
+    const targetPartieRepeat = getActivePartieRepeat(targetPartieIndex);
+    const targetInfiniteRepeat = targetRepeat?.infinite ? targetRepeat : null;
+    const targetInfinitePartieRepeat = !targetInfiniteRepeat && targetPartieRepeat?.infinite ? targetPartieRepeat : null;
+    const targetIsInfinite = Boolean(targetInfiniteRepeat || targetInfinitePartieRepeat);
+    const targetRepeatDisplayRang = targetRepeat ? (() => {
+      const before = Math.max(0, targetRepeat.startRang - 1);
+      const within = Math.max(1, targetRang - targetRepeat.startRang + 1);
+      return before + ((getRepeatPassage(targetRepeat) - 1) * targetRepeat.length) + within;
+    })() : null;
+    const targetPartieRepeatDisplayRang = !targetRepeat && targetPartieRepeat ? (() => {
+      const length = Math.max(1, targetPartieRepeat.endRang - targetPartieRepeat.startRang + 1);
+      const before = Math.max(0, targetPartieRepeat.startRang - 1);
+      const within = Math.max(1, targetRang - targetPartieRepeat.startRang + 1);
+      return before + ((getPartieRepeatPassage(targetPartieRepeat) - 1) * length) + within;
+    })() : null;
+    const targetDisplayRang = targetRepeatDisplayRang
+      ?? targetPartieRepeatDisplayRang
+      ?? (targetRang + getFixedRepeatExtraBefore(targetRang) + getFixedPartieRepeatExtraBefore(targetRang));
+    const targetInfiniteProgressStartRang = targetInfiniteRepeat
+      ? Math.max(0, targetInfiniteRepeat.startRang - 1)
+      : targetInfinitePartieRepeat
+        ? Math.max(0, targetInfinitePartieRepeat.startRang - 1)
+        : null;
+    const targetProgressRatio = targetIsInfinite
+      ? (targetInfiniteProgressStartRang || 0) / displayNumericTotal
+      : targetDisplayRang / displayNumericTotal;
+    return {
+      progressDisplay: {
+        rang: targetDisplayRang,
+        total: targetIsInfinite ? "∞" : displayNumericTotal,
+        progress: Math.round(Math.max(0, Math.min(1, targetProgressRatio)) * 100),
+        infinite: targetIsInfinite,
+        message: targetIsInfinite ? "Répétition jusqu'à satisfaction en cours. La progression sera mise à jour lorsque cette étape sera terminée." : "",
+      },
+    };
+  };
+  const getProgressDisplayPayload = () => ({
+    progressDisplay: {
+      rang: displayRang,
+      total: displayTotal,
+      progress: Math.round(Math.max(0, Math.min(1, globalProgressRatio)) * 100),
+      infinite: isInfiniteProgress,
+      message: isInfiniteProgress ? "Répétition jusqu'à satisfaction en cours. La progression sera mise à jour lorsque cette étape sera terminée." : "",
+      partRang: displayRangDansPartie,
+      partTotal: displayTotalPartieCourante,
+    },
+  });
   const activePartieRepeatPassage = activePartieRepeat ? getPartieRepeatPassage(activePartieRepeat) : 1;
   const repeatBadge = activeRepeat ? {
     label: `↻ ${getRepeatPassage(activeRepeat)}/${activeRepeat.infinite ? "∞" : activeRepeat.passages}`,

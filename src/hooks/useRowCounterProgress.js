@@ -76,6 +76,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
                 partieTimes: partieTimesRef.current,
                 rangRepeatState: rangRepeatStateRef.current,
                 partieRepeatState: partieRepeatStateRef.current,
+                ...getProgressDisplayPayload(),
               }
             );
           }
@@ -285,6 +286,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
         partieTimes: partieTimesRef.current,
         rangRepeatState: rangRepeatStateRef.current,
         partieRepeatState: partieRepeatStateRef.current,
+        ...buildProgressDisplayPayloadAtIndex(safeIndex),
       });
     }
   };
@@ -310,6 +312,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
             partieTimes: partieTimesRef.current,
             rangRepeatState: rangRepeatStateRef.current,
             partieRepeatState: partieRepeatStateRef.current,
+            ...getProgressDisplayPayload(),
           }
         );
       }
@@ -404,6 +407,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
         partieTimes: partieTimesRef.current,
         rangRepeatState: rangRepeatStateRef.current,
         partieRepeatState: partieRepeatStateRef.current,
+        ...getProgressDisplayPayload(),
         status: "termine",
         completedAt: new Date().toISOString(),
       });
@@ -567,6 +571,63 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const partProgressRatio = isInfiniteProgress
     ? Math.min(1, (currentPartieDisplayRangIndex + 1) / Math.max(1, currentPartieTotal))
     : (currentPartieDisplayRangIndex + 1) / Math.max(1, currentPartieTotal);
+  const buildProgressDisplayPayloadAtIndex = (targetIndex = currentIndex) => {
+    const targetRepeat = getActiveRepeat(targetIndex);
+    const targetRang = allRangs[targetIndex];
+    const targetPartieIndex = patron.parties.findIndex((partie) => partie.id === targetRang?.partieId);
+    const targetPartieRepeat = getActivePartieRepeat(targetPartieIndex);
+    const targetInfiniteRepeat = targetRepeat?.infinite ? targetRepeat : null;
+    const targetInfinitePartieRepeat = !targetInfiniteRepeat && targetPartieRepeat?.infinite ? targetPartieRepeat : null;
+    const targetIsInfinite = Boolean(targetInfiniteRepeat || targetInfinitePartieRepeat);
+    const targetRepeatDisplayCount = targetRepeat ? (() => {
+      const before = allRangs.slice(0, targetRepeat.startIndex).filter(r => !r.isNote).length;
+      const within = getCountableLengthBetween(targetRepeat.startIndex, targetIndex);
+      return before + ((getRepeatPassage(targetRepeat) - 1) * targetRepeat.length) + within;
+    })() : null;
+    const targetPartieRepeatDisplayCount = !targetRepeat && targetPartieRepeat ? (() => {
+      const before = allRangs.slice(0, targetPartieRepeat.startIndex).filter(r => !r.isNote).length;
+      const length = getCountableLengthBetween(targetPartieRepeat.startIndex, targetPartieRepeat.endIndex);
+      const within = getCountableLengthBetween(targetPartieRepeat.startIndex, targetIndex);
+      return before + ((getPartieRepeatPassage(targetPartieRepeat) - 1) * length) + within;
+    })() : null;
+    const fixedRepeatExtraBeforeTarget = repeatDefinitions
+      .filter((repeat) => !repeat.infinite && repeat.endIndex < targetIndex)
+      .reduce((sum, repeat) => sum + repeat.length * Math.max(0, repeat.passages - 1), 0);
+    const fixedPartieRepeatExtraBeforeTarget = partieRepeatDefinitions
+      .filter((repeat) => !repeat.infinite && repeat.endIndex < targetIndex)
+      .reduce((sum, repeat) => sum + getCountableLengthBetween(repeat.startIndex, repeat.endIndex) * Math.max(0, repeat.passages - 1), 0);
+    const targetDisplayCount = targetRepeatDisplayCount
+      ?? targetPartieRepeatDisplayCount
+      ?? (getVirtualCountAtIndex(targetIndex) + fixedRepeatExtraBeforeTarget + fixedPartieRepeatExtraBeforeTarget);
+    const targetInfiniteStartCount = targetInfiniteRepeat
+      ? allRangs.slice(0, targetInfiniteRepeat.startIndex).filter(r => !r.isNote).length
+      : targetInfinitePartieRepeat
+        ? allRangs.slice(0, targetInfinitePartieRepeat.startIndex).filter(r => !r.isNote).length
+        : null;
+    const targetProgressRatio = targetIsInfinite
+      ? (targetInfiniteStartCount || 0) / displayNumericTotalRangs
+      : targetDisplayCount / displayNumericTotalRangs;
+    return {
+      progressDisplay: {
+        rang: targetDisplayCount,
+        total: targetIsInfinite ? "∞" : displayNumericTotalRangs,
+        progress: Math.round(Math.max(0, Math.min(1, targetProgressRatio)) * 100),
+        infinite: targetIsInfinite,
+        message: targetIsInfinite ? "Répétition jusqu'à satisfaction en cours. La progression sera mise à jour lorsque cette étape sera terminée." : "",
+      },
+    };
+  };
+  const getProgressDisplayPayload = () => ({
+    progressDisplay: {
+      rang: displayCurrentCount,
+      total: displayTotalRangs,
+      progress: Math.round(Math.max(0, Math.min(1, globalProgressRatio)) * 100),
+      infinite: isInfiniteProgress,
+      message: isInfiniteProgress ? "Répétition jusqu'à satisfaction en cours. La progression sera mise à jour lorsque cette étape sera terminée." : "",
+      partRang: displayCurrentPartieRang,
+      partTotal: displayCurrentPartieTotal,
+    },
+  });
   const activePartieRepeatPassage = activePartieRepeat ? getPartieRepeatPassage(activePartieRepeat) : 1;
   const repeatBadge = activeRepeat ? {
     label: `↻ ${getRepeatPassage(activeRepeat)}/${activeRepeat.infinite ? "∞" : activeRepeat.passages}`,

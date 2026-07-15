@@ -153,7 +153,7 @@ strokeLinecap="round" style={{
 </div>
 ) : null}
 {repeatBadge ? (
-<button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: 10, top: showInlineControls ? 61 : 72, minWidth: 58, height: 32, borderRadius: 999, border: `1px solid ${currentPartieColor.bg}44`, background: `${currentPartieColor.bg}18`, color: currentPartieColor.bg, fontSize: 13, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
+<button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: -8, top: showInlineControls ? 61 : 72, minWidth: 58, height: 32, borderRadius: 999, border: `1px solid ${currentPartieColor.bg}44`, background: `${currentPartieColor.bg}18`, color: currentPartieColor.bg, fontSize: 13, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
 {repeatBadge.label}
 </button>
 ) : null}

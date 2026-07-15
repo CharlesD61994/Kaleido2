@@ -134,6 +134,7 @@ export const buildClientProjectPayload = (project = {}, tokenOverride = "") => {
       rang: Number(project.rang) || 0,
       total: Number(project.total) || 0,
       elapsedTime: Number(project.elapsedTime) || 0,
+      progressDisplay: project.progressDisplay || null,
       partieTimes: project.partieTimes || {},
       partieCurrentRangGlobalIds: project.partieCurrentRangGlobalIds || {},
       pdfPartieRangs: project.pdfPartieRangs || {},

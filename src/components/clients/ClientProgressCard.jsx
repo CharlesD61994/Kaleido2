@@ -15,6 +15,13 @@ export default function ClientProgressCard({ color, progress, project, statusLab
   const stats = getProjectStats(project);
   const isCompleted = project?.status === "termine";
   const accentTextColor = getReadableColorText(color);
+  const progressDisplay = project?.progressDisplay && typeof project.progressDisplay === "object" ? project.progressDisplay : null;
+  const displayedProgress = Number.isFinite(Number(progressDisplay?.progress))
+    ? Math.max(0, Math.min(100, Math.round(Number(progressDisplay.progress))))
+    : progress;
+  const displayedRowsDone = progressDisplay?.rang ?? stats.rowsDone;
+  const displayedTotalRows = progressDisplay?.total ?? (stats.totalRows || stats.rowsDone);
+  const isInfiniteProgress = progressDisplay?.infinite === true || displayedTotalRows === "∞";
 
   return (
     <ClientSectionCard
@@ -34,14 +41,14 @@ export default function ClientProgressCard({ color, progress, project, statusLab
             textShadow: accentTextColor === "#fff" ? "0 1px 2px rgba(0,0,0,0.30)" : "none",
           }}
         >
-          {progress}%
+          {isInfiniteProgress ? "∞" : `${displayedProgress}%`}
         </div>
       }
     >
       <div style={{ height: 9, borderRadius: 999, background: "var(--k-muted-fill-2)", overflow: "hidden" }}>
         <div
           style={{
-            width: `${progress}%`,
+            width: `${displayedProgress}%`,
             height: "100%",
             borderRadius: 999,
             background: `linear-gradient(90deg, ${color.bg}, ${color.light})`,
@@ -50,8 +57,13 @@ export default function ClientProgressCard({ color, progress, project, statusLab
           }}
         />
       </div>
+      {isInfiniteProgress ? (
+        <div style={{ marginTop: 10, color: "var(--k-muted-2)", fontSize: 12, lineHeight: 1.4, background: "var(--k-muted-fill)", border: "1px solid var(--k-border)", borderRadius: 12, padding: "9px 11px" }}>
+          {progressDisplay?.message || "Répétition jusqu'à satisfaction en cours. La progression sera mise à jour lorsque cette étape sera terminée."}
+        </div>
+      ) : null}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 13 }}>
-        <StatTile label="Rangs" value={`${stats.rowsDone}/${stats.totalRows || stats.rowsDone}`} color="var(--k-text)" />
+        <StatTile label="Rangs" value={`${displayedRowsDone}/${displayedTotalRows || displayedRowsDone}`} color="var(--k-text)" />
         <StatTile label="Temps total" value={stats.elapsedTimeLabel} color="var(--k-text)" />
         {isCompleted ? <StatTile label="Moyenne" value={stats.averageTimeLabel} color="#22D3EE" /> : null}
         <StatTile label={isCompleted ? "Type" : "Statut"} value={isCompleted ? stats.typeLabel : statusLabel} color={isCompleted ? "#C4B5FD" : "var(--k-text)"} />
