@@ -88,6 +88,18 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     .filter(Boolean);
   const getPartieRepeatPassage = (repeat) => Math.max(1, Number(pdfPartieRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const getActivePartieRepeat = (partieIndex) => partieRepeatDefinitions.find((repeat) => partieIndex >= repeat.startPartieIndex && partieIndex <= repeat.endPartieIndex) || null;
+  const getFixedRepeatExtraTotal = () => repeatDefinitions
+    .filter((repeat) => !repeat.infinite)
+    .reduce((sum, repeat) => sum + repeat.length * Math.max(0, repeat.passages - 1), 0);
+  const getFixedPartieRepeatExtraTotal = () => partieRepeatDefinitions
+    .filter((repeat) => !repeat.infinite)
+    .reduce((sum, repeat) => sum + Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, repeat.passages - 1), 0);
+  const getFixedRepeatExtraBefore = (targetRang) => repeatDefinitions
+    .filter((repeat) => !repeat.infinite && repeat.endRang < targetRang)
+    .reduce((sum, repeat) => sum + repeat.length * Math.max(0, repeat.passages - 1), 0);
+  const getFixedPartieRepeatExtraBefore = (targetRang) => partieRepeatDefinitions
+    .filter((repeat) => !repeat.infinite && repeat.endRang < targetRang)
+    .reduce((sum, repeat) => sum + Math.max(0, repeat.endRang - repeat.startRang + 1) * Math.max(0, repeat.passages - 1), 0);
   const getVirtualTotal = () => total;
   const getVirtualRang = (targetRang) => {
     return Math.max(1, Math.min(total || 1, Number(targetRang) || 1));
@@ -473,6 +485,40 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   };
   const activeRepeat = getActiveRepeat(rang);
   const activePartieRepeat = getActivePartieRepeat(currentPartieIdx);
+  const displayNumericTotal = Math.max(1, total + getFixedRepeatExtraTotal() + getFixedPartieRepeatExtraTotal());
+  const activeInfiniteRepeat = activeRepeat?.infinite ? activeRepeat : null;
+  const activeInfinitePartieRepeat = !activeInfiniteRepeat && activePartieRepeat?.infinite ? activePartieRepeat : null;
+  const isInfiniteProgress = Boolean(activeInfiniteRepeat || activeInfinitePartieRepeat);
+  const activeRepeatDisplayRang = activeRepeat ? (() => {
+    const before = Math.max(0, activeRepeat.startRang - 1);
+    const within = Math.max(1, rang - activeRepeat.startRang + 1);
+    return before + ((getRepeatPassage(activeRepeat) - 1) * activeRepeat.length) + within;
+  })() : null;
+  const activePartieRepeatDisplayRang = !activeRepeat && activePartieRepeat ? (() => {
+    const length = Math.max(1, activePartieRepeat.endRang - activePartieRepeat.startRang + 1);
+    const before = Math.max(0, activePartieRepeat.startRang - 1);
+    const within = Math.max(1, rang - activePartieRepeat.startRang + 1);
+    return before + ((getPartieRepeatPassage(activePartieRepeat) - 1) * length) + within;
+  })() : null;
+  const displayRang = activeRepeatDisplayRang
+    ?? activePartieRepeatDisplayRang
+    ?? (rang + getFixedRepeatExtraBefore(rang) + getFixedPartieRepeatExtraBefore(rang));
+  const infiniteProgressStartRang = activeInfiniteRepeat
+    ? Math.max(0, activeInfiniteRepeat.startRang - 1)
+    : activeInfinitePartieRepeat
+      ? Math.max(0, activeInfinitePartieRepeat.startRang - 1)
+      : null;
+  const displayTotal = isInfiniteProgress ? "∞" : displayNumericTotal;
+  const globalProgressRatio = isInfiniteProgress
+    ? (infiniteProgressStartRang || 0) / displayNumericTotal
+    : displayRang / displayNumericTotal;
+  const displayRangDansPartie = isInfiniteProgress
+    ? activeInfiniteRepeat
+      ? Math.max(1, rangDansPartie + ((getRepeatPassage(activeInfiniteRepeat) - 1) * activeInfiniteRepeat.length))
+      : Math.max(1, (rang - activeInfinitePartieRepeat.startRang + 1) + ((getPartieRepeatPassage(activeInfinitePartieRepeat) - 1) * Math.max(1, activeInfinitePartieRepeat.endRang - activeInfinitePartieRepeat.startRang + 1)))
+    : rangDansPartie;
+  const displayTotalPartieCourante = isInfiniteProgress ? "∞" : totalPartieCourante;
+  const partProgressRatio = Math.max(0, Math.min(1, rangDansPartie / Math.max(1, totalPartieCourante)));
   const activePartieRepeatPassage = activePartieRepeat ? getPartieRepeatPassage(activePartieRepeat) : 1;
   const repeatBadge = activeRepeat ? {
     label: `↻ ${getRepeatPassage(activeRepeat)}/${activeRepeat.infinite ? "∞" : activeRepeat.passages}`,
@@ -494,6 +540,11 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     deleteCounter,
     elapsedTime,
     formatTime,
+    displayRang,
+    displayRangDansPartie,
+    displayTotal,
+    displayTotalPartieCourante,
+    globalProgressRatio,
     handleBack,
     incrementRang,
     isTimerRunning,
@@ -504,6 +555,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     resetTimer,
     repeatBadge,
     partieRepeatBadge,
+    partProgressRatio,
     repeatStateKey: JSON.stringify(pdfRepeatState),
     partieRepeatStateKey: JSON.stringify(pdfPartieRepeatState),
     goToPartieIndex,

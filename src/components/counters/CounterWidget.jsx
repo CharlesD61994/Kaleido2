@@ -66,7 +66,7 @@ style={{ background: "#DC2626", border: "none", borderRadius: 6, padding: "4px 5
 // ═══════════════════════════════════════════════════════════════
 // COMPTEUR DE RANGS (composant indépendant — corrige le bug reset)
 // ═══════════════════════════════════════════════════════════════
-export function ProgressionSwipeCard({ currentPartieColor, currentIndex, totalRangs, circ_r, circ_c, currentPartie, currentPartieRangIndex, currentPartieTotal, onAddCounter, currentCountIndex, compact = false, timerProps = null, clientButton = null, repeatBadge = null, sectionRepeatBadge = null, onPrevRang = null, onNextRang = null, canPrev = true, canNext = true }) {
+export function ProgressionSwipeCard({ currentPartieColor, currentIndex, totalRangs, displayTotalRangs = null, displayCurrentCount = null, globalProgressRatio = null, circ_r, circ_c, currentPartie, currentPartieRangIndex, currentPartieTotal, displayCurrentPartieTotal = null, displayCurrentPartieRang = null, partProgressRatio = null, onAddCounter, currentCountIndex, compact = false, timerProps = null, clientButton = null, repeatBadge = null, sectionRepeatBadge = null, onPrevRang = null, onNextRang = null, canPrev = true, canNext = true }) {
 const [swiped, setSwiped] = useState(false);
 const [startX, setStartX] = useState(0);
 const circleSize = 95;
@@ -79,6 +79,16 @@ const barHeight = 9;
 const circleStroke = compact ? 6 : 4;
 const clientButtonTop = 71;
 const localRangNumber = Math.max(0, currentPartieRangIndex + 1);
+const displayGlobalTotal = displayTotalRangs ?? totalRangs;
+const displayGlobalCount = displayCurrentCount ?? Math.max(0, currentCountIndex + 1);
+const displayPartieTotal = displayCurrentPartieTotal ?? currentPartieTotal;
+const displayPartieRang = displayCurrentPartieRang ?? localRangNumber;
+const safeGlobalProgress = typeof globalProgressRatio === "number"
+  ? Math.max(0, Math.min(1, globalProgressRatio))
+  : Math.max(0, Math.min(1, Math.max(0, currentCountIndex + 1) / Math.max(1, totalRangs)));
+const safePartProgress = typeof partProgressRatio === "number"
+  ? Math.max(0, Math.min(1, partProgressRatio))
+  : Math.max(0, Math.min(1, localRangNumber / Math.max(1, currentPartieTotal)));
 const showInlineControls = compact && typeof onPrevRang === "function" && typeof onNextRang === "function";
 const sectionRepeatText = sectionRepeatBadge?.label || "";
 const sectionRepeatMatch = sectionRepeatText.match(/^(.*?:)\s*(.+)$/);
@@ -98,7 +108,7 @@ style={{ display: "flex", alignItems: "center", gap: compact ? 10 : 16, paddingB
 <svg width={circleSize} height={circleSize} style={{ transform: "rotate(-90deg)" }}>
 <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="var(--k-muted-fill-2)" strokeWidth={circleStroke} fill="none" />
 <circle cx={circleCenter} cy={circleCenter} r={circleRadius} stroke="url(#kg)" strokeWidth={circleStroke} fill="none"
-strokeDasharray={circleCirc} strokeDashoffset={circleCirc * (1 - Math.max(0, currentCountIndex + 1) / totalRangs)}
+strokeDasharray={circleCirc} strokeDashoffset={circleCirc * (1 - safeGlobalProgress)}
 strokeLinecap="round" style={{
   transition: "stroke-dashoffset 0.56s cubic-bezier(0.22, 1, 0.36, 1)",
   color: currentPartieColor.light,
@@ -111,11 +121,11 @@ strokeLinecap="round" style={{
 </linearGradient></defs>
 </svg>
 <div style={{ position: "absolute", top:0, left:0, right:0, bottom:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
-<div style={{ color: "var(--k-text)", fontSize: countSize, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{Math.max(0, currentCountIndex + 1)}</div>
-<div style={{ color: currentPartieColor.bg, fontSize: compact ? 13 : 12, fontFamily: "monospace", marginTop: compact ? 1 : 3, fontWeight: 800 }}>/ {totalRangs}</div>
+<div style={{ color: "var(--k-text)", fontSize: countSize, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{displayGlobalCount}</div>
+<div style={{ color: currentPartieColor.bg, fontSize: compact ? 13 : 12, fontFamily: "monospace", marginTop: compact ? 1 : 3, fontWeight: 800 }}>/ {displayGlobalTotal}</div>
 </div>
 </div>
-{!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
+{!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(safeGlobalProgress * 100)}%</div>}
 </div>
 {clientButton && compact && !repeatBadge ? (
 <div style={{ position: "absolute", left: circleSize + 13, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
@@ -151,11 +161,11 @@ strokeLinecap="round" style={{
 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compact ? 4 : 6, gap: compact ? 14 : 10 }}>
 <div style={{ color: currentPartieColor.bg, fontSize: compact ? 16 : 15, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPartie?.nom}</div>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-<div style={{ color: currentPartieColor.bg, fontSize: compact ? 14 : 13, fontFamily: "monospace", fontWeight: 800 }}>{localRangNumber}/{currentPartieTotal}</div>
+<div style={{ color: currentPartieColor.bg, fontSize: compact ? 14 : 13, fontFamily: "monospace", fontWeight: 800 }}>{displayPartieRang}/{displayPartieTotal}</div>
 </div>
 </div>
 <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: barHeight, overflow: "hidden" }}>
-<div style={{ background: `linear-gradient(90deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, width: `${localRangNumber / currentPartieTotal * 100}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${currentPartieColor.bg}44` }} />
+<div style={{ background: `linear-gradient(90deg, ${currentPartieColor.bg}, ${currentPartieColor.light})`, width: `${safePartProgress * 100}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)", boxShadow: `0 0 18px ${currentPartieColor.bg}44` }} />
 </div>
 {showInlineControls ? (
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 13 }}>

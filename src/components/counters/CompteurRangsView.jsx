@@ -24,11 +24,16 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
     currentPartieColor,
     currentPartieRangIndex,
     currentPartieTotal,
+    displayCurrentCount,
+    displayCurrentPartieRang,
+    displayCurrentPartieTotal,
+    displayTotalRangs,
     currentRang,
     deleteCounter,
     elapsedTime,
     formatTime,
     goToPartie,
+    globalProgressRatio,
     handleBackToHub,
     hasParties,
     instructionHighlights,
@@ -36,6 +41,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
     nextRang,
     patron,
     partieRepeatBadge,
+    partProgressRatio,
     prevRang,
     resetTimer,
     repeatBadge,
@@ -108,11 +114,17 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
               currentPartieColor={currentPartieColor}
               currentIndex={currentIndex}
               totalRangs={totalRangs}
+              displayTotalRangs={displayTotalRangs}
+              displayCurrentCount={displayCurrentCount}
+              globalProgressRatio={globalProgressRatio}
               circ_r={circ_r}
               circ_c={circ_c}
               currentPartie={currentPartie}
               currentPartieRangIndex={currentPartieRangIndex}
               currentPartieTotal={currentPartieTotal}
+              displayCurrentPartieRang={displayCurrentPartieRang}
+              displayCurrentPartieTotal={displayCurrentPartieTotal}
+              partProgressRatio={partProgressRatio}
               onAddCounter={addCounter}
               currentCountIndex={currentCountIndex}
               compact

@@ -5,10 +5,16 @@ export default function PdfCounterCard({
   color,
   currentPartie,
   totalPartieCourante,
+  displayTotalPartieCourante = null,
   rangDansPartie,
+  displayRangDansPartie = null,
   rang,
+  displayRang = null,
   total,
+  displayTotal = null,
   pct,
+  globalProgressRatio = null,
+  partProgressRatio = null,
   decrementRang,
   incrementRang,
   addCounter,
@@ -42,6 +48,16 @@ export default function PdfCounterCard({
     const localProgress = currentPartie && totalPartieCourante > 0
       ? Math.round((rangDansPartie / totalPartieCourante) * 100)
       : pct;
+    const displayGlobalRang = displayRang ?? rang;
+    const displayGlobalTotal = displayTotal ?? (total > 0 ? total : "-");
+    const displayPartRang = displayRangDansPartie ?? rangDansPartie;
+    const displayPartTotal = displayTotalPartieCourante ?? totalPartieCourante;
+    const safeGlobalProgress = typeof globalProgressRatio === "number"
+      ? Math.max(0, Math.min(1, globalProgressRatio))
+      : Math.max(0, Math.min(1, pct / 100));
+    const safeLocalProgress = typeof partProgressRatio === "number"
+      ? Math.round(Math.max(0, Math.min(1, partProgressRatio)) * 100)
+      : localProgress;
 
     return (
       <div
@@ -66,14 +82,14 @@ export default function PdfCounterCard({
                     strokeWidth={circleStroke}
                     fill="none"
                     strokeDasharray={circleCirc}
-                    strokeDashoffset={circleCirc * (1 - pct / 100)}
+                    strokeDashoffset={circleCirc * (1 - safeGlobalProgress)}
                     strokeLinecap="round"
                     style={{ transition: "stroke-dashoffset 0.52s cubic-bezier(0.22, 1, 0.36, 1)" }}
                   />
                 </svg>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{rang}</span>
-                  <span style={{ color: color.bg, fontSize: 13, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {total > 0 ? total : "-"}</span>
+                  <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{displayGlobalRang}</span>
+                  <span style={{ color: color.bg, fontSize: 13, fontFamily: "monospace", marginTop: 1, fontWeight: 800 }}>/ {displayGlobalTotal}</span>
                 </div>
               </div>
             </div>
@@ -126,14 +142,14 @@ export default function PdfCounterCard({
                 >
                   {currentPartie?.nom || "Progression"}
                 </button>
-                <span style={{ color: color.bg, fontSize: 14, fontFamily: "monospace", fontWeight: 800, flexShrink: 0 }}>{currentPartie ? `${rangDansPartie}/${totalPartieCourante}` : `${pct}%`}</span>
+                <span style={{ color: color.bg, fontSize: 14, fontFamily: "monospace", fontWeight: 800, flexShrink: 0 }}>{currentPartie ? `${displayPartRang}/${displayPartTotal}` : `${pct}%`}</span>
               </div>
               <div style={{ background: "var(--k-muted-fill-2)", borderRadius: 12, height: barHeight, overflow: "hidden", marginBottom: 9, boxShadow: `inset 0 0 0 1px ${color.bg}18` }}>
-                <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${localProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)" }} />
+                <div style={{ background: `linear-gradient(90deg, ${color.bg}, ${color.light})`, width: `${safeLocalProgress}%`, height: "100%", transition: "width 0.56s cubic-bezier(0.22, 1, 0.36, 1)" }} />
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}>
                 <button onClick={decrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
-                <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
+                <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? displayPartRang : displayGlobalRang}</span>
                 <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                 {clientButton && repeatBadge ? (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 9, transform: "translateY(1px)", flexShrink: 0 }}>

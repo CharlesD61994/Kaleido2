@@ -709,7 +709,13 @@ final class KaleidoNativePdfHeaderView: UIView {
         let total = intValue(object?["total"])
         let partRang = intValue(object?["rangDansPartie"])
         let partTotal = intValue(object?["totalPartieCourante"])
+        let displayRang = stringValue(object?["displayRang"], fallback: "\(rang)")
+        let displayTotal = stringValue(object?["displayTotal"], fallback: total > 0 ? "\(total)" : "-")
+        let displayPartRang = stringValue(object?["displayRangDansPartie"], fallback: "\(partRang)")
+        let displayPartTotal = stringValue(object?["displayTotalPartieCourante"], fallback: partTotal > 0 ? "\(partTotal)" : "-")
         let pct = max(0, min(100, intValue(object?["pct"])))
+        let hasGlobalProgressRatio = object?["globalProgressRatio"] != nil
+        let globalProgressRatio = max(0, min(1, CGFloat(doubleValue(object?["globalProgressRatio"]))))
         let timeText = (object?["timeText"] as? String) ?? "00:00:00"
         let repeatBadgeLabel = (object?["repeatBadgeLabel"] as? String) ?? ""
         let sectionRepeatBadgeLabel = (object?["sectionRepeatBadgeLabel"] as? String) ?? ""
@@ -723,12 +729,12 @@ final class KaleidoNativePdfHeaderView: UIView {
         backgroundColor = background
         progressTrack.backgroundColor = trackColor
         globalLabel.textColor = accent
-        circleView.update(accent: accent, accentLight: accentLight, textColor: textColor, trackColor: trackColor, current: rang, total: total, percent: CGFloat(pct) / 100)
+        circleView.update(accent: accent, accentLight: accentLight, textColor: textColor, trackColor: trackColor, currentText: displayRang, totalText: displayTotal, percent: hasGlobalProgressRatio ? globalProgressRatio : CGFloat(pct) / 100)
         partButton.setTitle(partName, for: .normal)
         partButton.setTitleColor(accent, for: .normal)
-        partCountLabel.text = partTotal > 0 ? "\(partRang)/\(partTotal)" : "\(pct)%"
+        partCountLabel.text = partTotal > 0 ? "\(displayPartRang)/\(displayPartTotal)" : "\(pct)%"
         partCountLabel.textColor = accent
-        countLabel.text = partTotal > 0 ? "\(partRang)" : "\(rang)"
+        countLabel.text = partTotal > 0 ? displayPartRang : displayRang
         countLabel.textColor = textColor
         progressFill.backgroundColor = accent
 
@@ -851,6 +857,14 @@ final class KaleidoNativePdfHeaderView: UIView {
         return false
     }
 
+    private func stringValue(_ value: Any?, fallback: String) -> String {
+        if let string = value as? String, !string.isEmpty { return string }
+        if let int = value as? Int { return "\(int)" }
+        if let double = value as? Double { return "\(Int(double))" }
+        if let number = value as? NSNumber { return "\(number.intValue)" }
+        return fallback
+    }
+
     @objc private func decrement() { onAction?("decrementRang") }
     @objc private func increment() { onAction?("incrementRang") }
     @objc private func toggleTimerMenu() {
@@ -896,14 +910,14 @@ final class KaleidoNativeCircleView: UIView {
         addSubview(totalLabel)
     }
 
-    func update(accent: UIColor, accentLight: UIColor, textColor: UIColor, trackColor: UIColor, current: Int, total: Int, percent: CGFloat) {
+    func update(accent: UIColor, accentLight: UIColor, textColor: UIColor, trackColor: UIColor, currentText: String, totalText: String, percent: CGFloat) {
         self.accent = accent
         self.textColor = textColor
         self.trackColor = trackColor
         self.percent = max(0, min(1, percent))
-        currentLabel.text = "\(current)"
+        currentLabel.text = currentText
         currentLabel.textColor = textColor
-        totalLabel.text = "/ \(total > 0 ? "\(total)" : "-")"
+        totalLabel.text = "/ \(totalText)"
         totalLabel.textColor = accent
         progress.strokeColor = accent.cgColor
         setNeedsLayout()

@@ -80,10 +80,16 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     deleteCounter,
     elapsedTime,
     formatTime,
+    displayRang,
+    displayRangDansPartie,
+    displayTotal,
+    displayTotalPartieCourante,
+    globalProgressRatio,
     handleBack,
     incrementRang,
     isTimerRunning,
     pct,
+    partProgressRatio,
     pdfParties,
     rang,
     rangDansPartie,
@@ -121,9 +127,11 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
   }, [elapsedTime, onSaveProgress, rang, total]);
 
   const nativeHeaderState = React.useMemo(() => {
-    const localProgress = currentPartie && totalPartieCourante > 0
-      ? Math.round((rangDansPartie / totalPartieCourante) * 100)
-      : pct;
+    const localProgress = typeof partProgressRatio === "number"
+      ? Math.round(Math.max(0, Math.min(1, partProgressRatio)) * 100)
+      : currentPartie && totalPartieCourante > 0
+        ? Math.round((rangDansPartie / totalPartieCourante) * 100)
+        : pct;
     const isLightTheme = themeMode !== "dark";
     return {
       themeMode,
@@ -137,7 +145,13 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
       rangDansPartie,
       rang,
       total,
+      displayTotalPartieCourante,
+      displayRangDansPartie,
+      displayRang,
+      displayTotal,
       pct,
+      globalProgressRatio,
+      partProgressRatio,
       localProgress,
       timeText: formatTime(elapsedTime),
       isTimerRunning,
@@ -148,7 +162,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
       sectionRepeatBadgeLabel: partieRepeatBadge?.label || "",
       sectionRepeatBadgeKey: partieRepeatBadge?.label || "",
     };
-  }, [color.bg, color.light, currentPartie?.nom, elapsedTime, formatTime, isTimerRunning, partieRepeatBadge?.label, partieRepeatStateKey, pct, project?.client, rang, rangDansPartie, repeatBadge?.label, repeatStateKey, themeMode, total, totalPartieCourante, unreadClientMessageCount]);
+  }, [color.bg, color.light, currentPartie?.nom, displayRang, displayRangDansPartie, displayTotal, displayTotalPartieCourante, elapsedTime, formatTime, globalProgressRatio, isTimerRunning, partieRepeatBadge?.label, partieRepeatStateKey, partProgressRatio, pct, project?.client, rang, rangDansPartie, repeatBadge?.label, repeatStateKey, themeMode, total, totalPartieCourante, unreadClientMessageCount]);
 
   const handleNativePdfAction = React.useCallback((action) => {
     if (action === "finishRepeat") {
@@ -188,10 +202,16 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
               color={color}
               currentPartie={currentPartie}
               totalPartieCourante={totalPartieCourante}
+              displayTotalPartieCourante={displayTotalPartieCourante}
               rangDansPartie={rangDansPartie}
+              displayRangDansPartie={displayRangDansPartie}
               rang={rang}
+              displayRang={displayRang}
               total={total}
+              displayTotal={displayTotal}
               pct={pct}
+              globalProgressRatio={globalProgressRatio}
+              partProgressRatio={partProgressRatio}
               decrementRang={decrementRang}
               incrementRang={incrementRang}
               addCounter={addCounter}
