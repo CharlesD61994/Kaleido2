@@ -6,6 +6,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const hasParties = pdfParties.length > 0;
   const total = project?.total || 0;
   const pdfRepetitions = project?.pdfRepetitions || [];
+  const pdfPartieRepetitions = project?.pdfPartieRepetitions || [];
   const initialRang = Math.max(1, Number(project?.pdfCurrentRang) || Number(project?.rang) || 1);
   const getPartieIndexForRang = (targetRang = 1) => {
     if (!hasParties || targetRang <= 1) return 0;
@@ -36,6 +37,8 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const [showFinishRepeatModal, setShowFinishRepeatModal] = useState(false);
   const [pdfRepeatState, setPdfRepeatState] = useState(project?.pdfRepeatState || {});
   const pdfRepeatStateRef = useRef(project?.pdfRepeatState || {});
+  const [pdfPartieRepeatState, setPdfPartieRepeatState] = useState(project?.pdfPartieRepeatState || {});
+  const pdfPartieRepeatStateRef = useRef(project?.pdfPartieRepeatState || {});
 
   const getRepeatDefinitions = () => pdfRepetitions
     .map((repeat, index) => {
@@ -55,6 +58,36 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const repeatDefinitions = getRepeatDefinitions();
   const getRepeatPassage = (repeat) => Math.max(1, Number(pdfRepeatStateRef.current?.[repeat.key]?.passage) || 1);
   const getActiveRepeat = (targetRang) => repeatDefinitions.find((repeat) => targetRang >= repeat.startRang && targetRang <= repeat.endRang) || null;
+  const getPartieStartRang = (partieIndex) => {
+    if (!hasParties) return 1;
+    return pdfParties.slice(0, Math.max(0, partieIndex)).reduce((sum, partie) => sum + (Number(partie?.totalRangs) || 0), 0) + 1;
+  };
+  const getPartieEndRang = (partieIndex) => {
+    if (!hasParties) return total || 1;
+    return getPartieStartRang(partieIndex) + (Number(pdfParties[partieIndex]?.totalRangs) || 0) - 1;
+  };
+  const partieRepeatDefinitions = pdfPartieRepetitions
+    .map((repeat, index) => {
+      const startPartieIndex = pdfParties.findIndex((partie) => String(partie.id) === String(repeat.startPartieId));
+      const endPartieIndex = pdfParties.findIndex((partie) => String(partie.id) === String(repeat.endPartieId));
+      if (startPartieIndex < 0 || endPartieIndex < startPartieIndex) return null;
+      const startRang = getPartieStartRang(startPartieIndex);
+      const endRang = getPartieEndRang(endPartieIndex);
+      if (startRang < 1 || endRang < startRang || endRang > total) return null;
+      return {
+        key: repeat.id || `pdf-partie-repeat-${index}`,
+        label: repeat.label || "",
+        startPartieIndex,
+        endPartieIndex,
+        startRang,
+        endRang,
+        passages: Math.max(2, Number(repeat.passages) || 2),
+        infinite: repeat.infinite === true,
+      };
+    })
+    .filter(Boolean);
+  const getPartieRepeatPassage = (repeat) => Math.max(1, Number(pdfPartieRepeatStateRef.current?.[repeat.key]?.passage) || 1);
+  const getActivePartieRepeat = (partieIndex) => partieRepeatDefinitions.find((repeat) => partieIndex >= repeat.startPartieIndex && partieIndex <= repeat.endPartieIndex) || null;
   const getVirtualTotal = () => total;
   const getVirtualRang = (targetRang) => {
     return Math.max(1, Math.min(total || 1, Number(targetRang) || 1));
@@ -90,6 +123,8 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
             onSaveProgress(rangRef.current, total, nextElapsed, {
               partieTimes: partieTimesRef.current,
               pdfPartieRangs: pdfPartieRangsRef.current,
+              pdfRepeatState: pdfRepeatStateRef.current,
+              pdfPartieRepeatState: pdfPartieRepeatStateRef.current,
             });
           }
           wasPausedByVisibilityRef.current = true;
@@ -190,6 +225,7 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
         pdfPartieRangs: pdfPartieRangsRef.current,
         pdfCurrentRang: nextRang,
         pdfRepeatState: pdfRepeatStateRef.current,
+        pdfPartieRepeatState: pdfPartieRepeatStateRef.current,
         ...extra,
       });
     }
@@ -244,7 +280,6 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const incrementRang = () => {
     addPartieTime();
     const liveRang = rangRef.current;
-    if (total > 0 && liveRang >= total) return;
     const activeRepeat = getActiveRepeat(liveRang);
     if (activeRepeat && liveRang === activeRepeat.endRang) {
       const passage = getRepeatPassage(activeRepeat);
@@ -264,11 +299,40 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
       }
     }
 
+    const tryLoopPartieRepeatAtRang = (targetRang) => {
+      if (!hasParties) return false;
+      const livePartieIndex = getPartieIndexForRang(targetRang);
+      const activePartieRepeat = getActivePartieRepeat(livePartieIndex);
+      if (!activePartieRepeat || activePartieRepeat.endPartieIndex !== livePartieIndex || activePartieRepeat.endRang !== targetRang) return false;
+      const passage = getPartieRepeatPassage(activePartieRepeat);
+      const shouldLoop = activePartieRepeat.infinite || passage < activePartieRepeat.passages;
+      if (!shouldLoop) return false;
+      const nextState = {
+        ...pdfPartieRepeatStateRef.current,
+        [activePartieRepeat.key]: { passage: passage + 1 },
+      };
+      pdfPartieRepeatStateRef.current = nextState;
+      setPdfPartieRepeatState(nextState);
+      rangRef.current = activePartieRepeat.startRang;
+      setCurrentPartieIdx(activePartieRepeat.startPartieIndex);
+      setRang(activePartieRepeat.startRang);
+      saveProgress(activePartieRepeat.startRang, total);
+      if (navigator.vibrate) navigator.vibrate(15);
+      return true;
+    };
+
+    if (total > 0 && liveRang >= total) {
+      if (tryLoopPartieRepeatAtRang(liveRang)) return;
+      setShowFinModal(true);
+      return;
+    }
+
     if (hasParties && currentPartie) {
       let offset = 0;
       for (let i = 0; i < currentPartieIdx; i++) offset += pdfParties[i].totalRangs;
       const rangLocal = liveRang - offset;
       if (rangLocal >= currentPartie.totalRangs) {
+        if (tryLoopPartieRepeatAtRang(liveRang)) return;
         if (currentPartieIdx < pdfParties.length - 1) {
           setShowNextPartieModal(true);
         } else if (total > 0 && liveRang >= total) {
@@ -408,9 +472,14 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     return `${String(h).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
   };
   const activeRepeat = getActiveRepeat(rang);
+  const activePartieRepeat = getActivePartieRepeat(currentPartieIdx);
+  const activePartieRepeatPassage = activePartieRepeat ? getPartieRepeatPassage(activePartieRepeat) : 1;
   const repeatBadge = activeRepeat ? {
     label: `↻ ${getRepeatPassage(activeRepeat)}/${activeRepeat.infinite ? "∞" : activeRepeat.passages}`,
     onClick: activeRepeat.infinite ? finishActiveInfiniteRepeat : undefined,
+  } : null;
+  const partieRepeatBadge = activePartieRepeat ? {
+    label: `${(activePartieRepeat.label || "Répétition").trim()} ${activePartieRepeatPassage}/${activePartieRepeat.infinite ? "∞" : activePartieRepeat.passages}`,
   } : null;
 
   return {
@@ -434,7 +503,9 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
     rangDansPartie,
     resetTimer,
     repeatBadge,
+    partieRepeatBadge,
     repeatStateKey: JSON.stringify(pdfRepeatState),
+    partieRepeatStateKey: JSON.stringify(pdfPartieRepeatState),
     goToPartieIndex,
     setCurrentPartieIdx: setCurrentPartieIdxWithTime,
     setRang: setRangWithProgress,

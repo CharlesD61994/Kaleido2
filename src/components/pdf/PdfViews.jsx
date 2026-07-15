@@ -88,7 +88,9 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
     rang,
     rangDansPartie,
     repeatBadge,
+    partieRepeatBadge,
     repeatStateKey,
+    partieRepeatStateKey,
     resetTimer,
     goToPartieIndex,
     setCurrentPartieIdx,
@@ -143,8 +145,10 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
       unreadClientMessageCount,
       repeatBadgeLabel: repeatBadge?.label || "",
       repeatBadgeKey: repeatBadge?.label || "",
+      sectionRepeatBadgeLabel: partieRepeatBadge?.label || "",
+      sectionRepeatBadgeKey: partieRepeatBadge?.label || "",
     };
-  }, [color.bg, color.light, currentPartie?.nom, elapsedTime, formatTime, isTimerRunning, pct, project?.client, rang, rangDansPartie, repeatBadge?.label, repeatStateKey, themeMode, total, totalPartieCourante, unreadClientMessageCount]);
+  }, [color.bg, color.light, currentPartie?.nom, elapsedTime, formatTime, isTimerRunning, partieRepeatBadge?.label, partieRepeatStateKey, pct, project?.client, rang, rangDansPartie, repeatBadge?.label, repeatStateKey, themeMode, total, totalPartieCourante, unreadClientMessageCount]);
 
   const handleNativePdfAction = React.useCallback((action) => {
     if (action === "finishRepeat") {
@@ -201,6 +205,7 @@ export default function PdfViewerView({ project, onNavigateHub, onSaveProgress, 
                 onResetTimer: resetTimer,
               }}
               repeatBadge={repeatBadge}
+              sectionRepeatBadge={partieRepeatBadge}
             />
           )}
         />

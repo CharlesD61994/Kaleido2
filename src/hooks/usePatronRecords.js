@@ -58,6 +58,7 @@ export default function usePatronRecords({
           pdfId: updatedPatron.pdfId,
           pdfParties: updatedPatron.pdfParties || [],
           pdfRepetitions: updatedPatron.pdfRepetitions || [],
+          pdfPartieRepetitions: updatedPatron.pdfPartieRepetitions || [],
           total: updatedPatron.total || 1,
         };
       };

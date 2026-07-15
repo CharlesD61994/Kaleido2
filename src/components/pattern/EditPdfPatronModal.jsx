@@ -29,15 +29,44 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
     const end = locateRepeatPartie(parseInt(repeat.endRang, 10) || start.localRang);
     return { ...repeat, partieId: start.partieId, startRang: start.localRang, endRang: end.partieId === start.partieId ? end.localRang : start.localRang };
   }));
+  const [partieRepetitions, setPartieRepetitions] = useState(patron.pdfPartieRepetitions || []);
+  const [partieRepeatDraft, setPartieRepeatDraft] = useState(null);
   const [colorPickerPartie, setColorPickerPartie] = useState(null);
   const getRandomColorIdx = () => Math.floor(Math.random() * KALEIDOSCOPE_COLORS.length);
 
   const addPartie = () => setParties((prev) => [...prev, { id: Date.now(), nom: "", rangs: "", colorIdx: getRandomColorIdx(), continuesFromPrevious: false }]);
   const updatePartie = (id, field, value) => setParties((prev) => prev.map((partie) => (partie.id === id ? { ...partie, [field]: value } : partie)));
-  const removePartie = (id) => setParties((prev) => prev.filter((partie) => partie.id !== id));
+  const removePartie = (id) => {
+    setParties((prev) => prev.filter((partie) => partie.id !== id));
+    setRepetitions((prev) => prev.filter((repeat) => String(repeat.partieId) !== String(id)));
+    setPartieRepetitions((prev) => prev.filter((repeat) => String(repeat.startPartieId) !== String(id) && String(repeat.endPartieId) !== String(id)));
+  };
   const addRepetition = () => setRepetitions((prev) => [...prev, { id: `pdf-repeat-${Date.now()}`, partieId: parties[0]?.id || "", startRang: 1, endRang: 1, passages: 2, infinite: false }]);
   const updateRepetition = (id, field, value) => setRepetitions((prev) => prev.map((repeat) => (repeat.id === id ? { ...repeat, [field]: value } : repeat)));
   const removeRepetition = (id) => setRepetitions((prev) => prev.filter((repeat) => repeat.id !== id));
+  const openPartieRepeatDraft = (repeat = null) => {
+    const firstId = parties[0]?.id || "";
+    const secondId = parties[Math.min(1, parties.length - 1)]?.id || firstId;
+    setPartieRepeatDraft(repeat ? { ...repeat } : { id: `pdf-partie-repeat-${Date.now()}`, label: "", startPartieId: firstId, endPartieId: secondId, passages: "2", infinite: false });
+  };
+  const savePartieRepeatDraft = () => {
+    if (!partieRepeatDraft?.startPartieId || !partieRepeatDraft?.endPartieId) return;
+    const startIndex = parties.findIndex((partie) => String(partie.id) === String(partieRepeatDraft.startPartieId));
+    const endIndex = parties.findIndex((partie) => String(partie.id) === String(partieRepeatDraft.endPartieId));
+    if (startIndex < 0 || endIndex < startIndex) return;
+    const nextRepeat = {
+      ...partieRepeatDraft,
+      label: (partieRepeatDraft.label || "").trim(),
+      passages: partieRepeatDraft.infinite ? null : Math.max(2, parseInt(partieRepeatDraft.passages, 10) || 2),
+      infinite: partieRepeatDraft.infinite === true,
+    };
+    setPartieRepetitions((prev) => prev.some((repeat) => repeat.id === nextRepeat.id) ? prev.map((repeat) => (repeat.id === nextRepeat.id ? nextRepeat : repeat)) : [...prev, nextRepeat]);
+    setPartieRepeatDraft(null);
+  };
+  const removePartieRepeatDraft = () => {
+    if (partieRepeatDraft?.id) setPartieRepetitions((prev) => prev.filter((repeat) => repeat.id !== partieRepeatDraft.id));
+    setPartieRepeatDraft(null);
+  };
   const totalFromParties = parties.reduce((sum, partie) => sum + (parseInt(partie.rangs) || 0), 0);
   const total = configRangs ? (parties.length > 0 ? totalFromParties : parseInt(totalRangs) || 0) : 0;
   const rootStyle = asPage
@@ -52,6 +81,8 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
   const repeatCardStyle = { display: "grid", gap: 7, marginTop: 10, padding: 9, borderRadius: 12, background: "var(--k-surface)", border: "1px solid var(--k-border)", boxSizing: "border-box", overflow: "hidden" };
   const repeatInputStyle = { width: "100%", minWidth: 0, boxSizing: "border-box", background: "var(--k-field)", border: "1px solid var(--k-border)", borderRadius: 9, padding: "8px 9px", color: "var(--k-text)", fontSize: 14 };
   const repeatButtonStyle = { width: "100%", boxSizing: "border-box", borderRadius: 9, padding: "8px 9px", fontSize: 13, fontWeight: 800, cursor: "pointer" };
+  const repeatSectionStyle = { marginTop: 12, padding: 12, borderRadius: 14, background: "var(--k-surface)", border: "1px solid var(--k-border)" };
+  const repeatTitleStyle = { color: "#0891B2", fontSize: 11, fontFamily: "monospace", display: "block", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 };
   const buildPdfRepetitions = () => repetitions.map((repeat, index) => {
     const partieIndex = Math.max(0, parties.findIndex((partie) => String(partie.id) === String(repeat.partieId)));
     const offset = parties.slice(0, partieIndex).reduce((sum, partie) => sum + (parseInt(partie.rangs, 10) || 0), 0);
@@ -65,18 +96,28 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
       infinite: repeat.infinite === true,
     };
   });
+  const buildPdfPartieRepetitions = () => partieRepetitions
+    .map((repeat, index) => ({
+      id: repeat.id || `pdf-partie-repeat-${Date.now()}-${index}`,
+      label: (repeat.label || "").trim(),
+      startPartieId: repeat.startPartieId,
+      endPartieId: repeat.endPartieId,
+      passages: repeat.infinite ? null : Math.max(2, parseInt(repeat.passages, 10) || 2),
+      infinite: repeat.infinite === true,
+    }))
+    .filter((repeat) => repeat.startPartieId && repeat.endPartieId);
 
   const handleSave = () => {
     const pdfParties = parties
       .filter((partie) => partie.nom.trim())
       .map((partie, index) => ({
-        id: index + 1,
+        id: partie.id || index + 1,
         nom: partie.nom.trim(),
         totalRangs: parseInt(partie.rangs) || 0,
         colorIdx: Number.isInteger(partie.colorIdx) ? partie.colorIdx : index % KALEIDOSCOPE_COLORS.length,
         continuesFromPrevious: index > 0 && partie.continuesFromPrevious === true,
       }));
-    onSave({ name: name.trim(), total, pdfParties, pdfRepetitions: buildPdfRepetitions() });
+    onSave({ name: name.trim(), total, pdfParties, pdfRepetitions: buildPdfRepetitions(), pdfPartieRepetitions: buildPdfPartieRepetitions() });
   };
 
   return (
@@ -114,7 +155,8 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
               </div>
             ) : null}
 
-            <label style={{ color: "#0891B2", fontSize: 11, fontFamily: "monospace", display: "block", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Parties</label>
+            <div style={repeatSectionStyle}>
+            <label style={repeatTitleStyle}>Parties</label>
             {parties.map((partie, index) => {
               const color = KALEIDOSCOPE_COLORS[(partie.colorIdx ?? index) % KALEIDOSCOPE_COLORS.length];
               return (
@@ -153,9 +195,12 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
             ) : null}
 
             <button onClick={addPartie} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #0891B244", color: "#0891B2", fontSize: 13, cursor: "pointer", marginTop: 4 }}>+ Ajouter une partie</button>
+            </div>
             {parties.length > 0 ? (
               <>
-                <button onClick={addRepetition} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #7C3AED55", color: "#7C3AED", fontSize: 13, cursor: "pointer", marginTop: 8 }}>+ Ajouter une répétition</button>
+                <div style={{ ...repeatSectionStyle, borderColor: "#7C3AED33" }}>
+                <label style={{ ...repeatTitleStyle, color: "#7C3AED" }}>Répétitions de rangs</label>
+                <button onClick={addRepetition} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #7C3AED55", color: "#7C3AED", fontSize: 13, cursor: "pointer" }}>+ Ajouter une répétition de rangs</button>
                 {repetitions.map((repeat) => (
                   <div key={repeat.id} style={repeatCardStyle}>
                     <select value={repeat.partieId} onChange={(event) => updateRepetition(repeat.id, "partieId", event.target.value)} style={repeatInputStyle}>
@@ -170,6 +215,23 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
                     <button type="button" onClick={() => removeRepetition(repeat.id)} style={{ ...repeatButtonStyle, border: "1px solid rgba(239,68,68,0.35)", background: "rgba(239,68,68,0.12)", color: "#F87171" }}>Retirer la répétition</button>
                   </div>
                 ))}
+                </div>
+                <div style={{ ...repeatSectionStyle, borderColor: "#16A34A33" }}>
+                  <label style={{ ...repeatTitleStyle, color: "#16A34A" }}>Répétitions de parties</label>
+                  <button onClick={() => openPartieRepeatDraft()} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "none", border: "1px dashed #16A34A55", color: "#16A34A", fontSize: 13, cursor: "pointer" }}>+ Ajouter une répétition de parties</button>
+                  {partieRepetitions.map((repeat) => {
+                    const startIndex = parties.findIndex((partie) => String(partie.id) === String(repeat.startPartieId));
+                    const endIndex = parties.findIndex((partie) => String(partie.id) === String(repeat.endPartieId));
+                    const startName = parties[startIndex]?.nom || `Partie ${startIndex + 1}`;
+                    const endName = parties[endIndex]?.nom || `Partie ${endIndex + 1}`;
+                    return (
+                      <button key={repeat.id} type="button" onClick={() => openPartieRepeatDraft(repeat)} style={{ ...repeatCardStyle, width: "100%", textAlign: "left", cursor: "pointer" }}>
+                        <span style={{ color: "var(--k-text)", fontSize: 13, fontWeight: 900 }}>{repeat.label || "Répétition de parties"} {repeat.infinite ? "∞" : `${repeat.passages || 2}x`}</span>
+                        <span style={{ color: "var(--k-muted-2)", fontSize: 12 }}>{startName} → {endName}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </>
             ) : null}
             {parties.length > 0 ? <div style={{ color: "var(--k-muted-2)", fontSize: 12, textAlign: "center", marginTop: 10 }}>Total : {totalFromParties} rangs</div> : null}
@@ -177,6 +239,44 @@ export default function EditPdfPatronModal({ asPage = false, patron, onClose, on
         ) : null}
 
         </div>
+
+        {partieRepeatDraft ? (
+          <div data-kaleido-modal-backdrop="true" onClick={() => setPartieRepeatDraft(null)} style={{ position: "fixed", inset: 0, zIndex: 370, background: "var(--k-modal-backdrop)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div data-kaleido-modal-card="true" onClick={(event) => event.stopPropagation()} style={{ width: "100%", maxWidth: 340, background: "var(--k-surface)", border: "1px solid #16A34A44", borderRadius: 20, padding: 18, boxShadow: "0 18px 60px rgba(0,0,0,0.25)" }}>
+              <h4 style={{ color: "var(--k-text)", fontFamily: "'Syne', sans-serif", fontSize: 17, margin: "0 0 14px", textAlign: "center" }}>Répétition de parties</h4>
+              <label style={{ ...repeatTitleStyle, color: "#16A34A", marginBottom: 6 }}>Nom affiché</label>
+              <input type="text" value={partieRepeatDraft.label || ""} onChange={(event) => setPartieRepeatDraft((current) => ({ ...current, label: event.target.value }))} placeholder="Pantoufle, bas..." style={{ ...repeatInputStyle, marginBottom: 10, padding: 12, fontSize: 16 }} />
+              <label style={{ ...repeatTitleStyle, color: "#16A34A", marginBottom: 6 }}>À partir de la partie</label>
+              <select value={partieRepeatDraft.startPartieId} onChange={(event) => {
+                const startPartieId = event.target.value;
+                const startIndex = parties.findIndex((partie) => String(partie.id) === String(startPartieId));
+                const currentEndIndex = parties.findIndex((partie) => String(partie.id) === String(partieRepeatDraft.endPartieId));
+                setPartieRepeatDraft((current) => ({ ...current, startPartieId, endPartieId: currentEndIndex >= startIndex ? current.endPartieId : startPartieId }));
+              }} style={{ ...repeatInputStyle, marginBottom: 10, padding: 12, fontSize: 16 }}>
+                {parties.map((partie, index) => <option key={partie.id} value={partie.id}>{partie.nom || `Partie ${index + 1}`}</option>)}
+              </select>
+              <label style={{ ...repeatTitleStyle, color: "#16A34A", marginBottom: 6 }}>Jusqu'à la partie</label>
+              <select value={partieRepeatDraft.endPartieId} onChange={(event) => setPartieRepeatDraft((current) => ({ ...current, endPartieId: event.target.value }))} style={{ ...repeatInputStyle, marginBottom: 10, padding: 12, fontSize: 16 }}>
+                {parties.map((partie, index) => {
+                  const startIndex = parties.findIndex((item) => String(item.id) === String(partieRepeatDraft.startPartieId));
+                  if (index < startIndex) return null;
+                  return <option key={partie.id} value={partie.id}>{partie.nom || `Partie ${index + 1}`}</option>;
+                })}
+              </select>
+              <button type="button" onClick={() => setPartieRepeatDraft((current) => ({ ...current, infinite: !current.infinite }))} style={{ ...repeatButtonStyle, marginBottom: 10, border: `1px solid ${partieRepeatDraft.infinite ? "#16A34A" : "var(--k-border)"}`, background: partieRepeatDraft.infinite ? "rgba(22,163,74,0.16)" : "var(--k-muted-fill)", color: partieRepeatDraft.infinite ? "#22C55E" : "var(--k-muted)" }}>Répéter jusqu'à satisfaction</button>
+              {!partieRepeatDraft.infinite ? (
+                <>
+                  <label style={{ ...repeatTitleStyle, color: "#16A34A", marginBottom: 6 }}>Nombre de passages total</label>
+                  <input type="number" min="2" value={partieRepeatDraft.passages || "2"} onChange={(event) => setPartieRepeatDraft((current) => ({ ...current, passages: event.target.value }))} style={{ ...repeatInputStyle, marginBottom: 12, padding: 12, fontSize: 16 }} />
+                </>
+              ) : null}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button type="button" onClick={removePartieRepeatDraft} style={{ flex: 1, borderRadius: 12, border: "1px solid rgba(239,68,68,0.35)", background: "rgba(239,68,68,0.12)", color: "#F87171", padding: "11px 12px", fontWeight: 800 }}>Retirer</button>
+                <button type="button" onClick={savePartieRepeatDraft} style={{ flex: 1, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #16A34A, #22C55E)", color: "#fff", padding: "11px 12px", fontWeight: 900 }}>Sauvegarder</button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         <div style={{ flexShrink: 0, display: "flex", gap: 12, padding: "12px 20px calc(env(safe-area-inset-bottom, 0px) + 18px)", borderTop: "1px solid var(--k-border)", background: "var(--k-surface)" }}>
           <button onClick={onClose} style={{ flex: 1, padding: "14px", borderRadius: 14, border: "1px solid var(--k-border)", background: "none", color: "var(--k-muted)", fontSize: 14, cursor: "pointer" }}>Annuler</button>

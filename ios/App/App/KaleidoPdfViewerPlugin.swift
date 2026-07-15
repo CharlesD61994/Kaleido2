@@ -600,12 +600,14 @@ final class KaleidoNativePdfHeaderView: UIView {
     private let timerToggleButton = UIButton(type: .system)
     private let timerResetButton = UIButton(type: .system)
     private let repeatButton = UIButton(type: .system)
+    private let sectionRepeatButton = UIButton(type: .system)
     private let clientButton = UIButton(type: .system)
     private let unreadBadge = UILabel()
 
     private var localProgress: CGFloat = 0
     private var hasClient = false
     private var hasRepeatBadge = false
+    private var hasSectionRepeatBadge = false
     private var isTimerMenuOpen = false
     private var isTimerRunning = false
 
@@ -675,6 +677,11 @@ final class KaleidoNativePdfHeaderView: UIView {
         repeatButton.contentEdgeInsets = UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
         repeatButton.addTarget(self, action: #selector(finishRepeat), for: .touchUpInside)
 
+        sectionRepeatButton.titleLabel?.font = KaleidoNativeFont.dmSans(size: 12, weightValue: 800, fallbackWeight: .bold)
+        sectionRepeatButton.layer.cornerRadius = 10
+        sectionRepeatButton.clipsToBounds = true
+        sectionRepeatButton.contentEdgeInsets = UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
+
         clientButton.layer.cornerRadius = 11
         clientButton.clipsToBounds = true
         clientButton.setImage(UIImage(systemName: "person.fill"), for: .normal)
@@ -688,7 +695,7 @@ final class KaleidoNativePdfHeaderView: UIView {
         unreadBadge.layer.cornerRadius = 8
         unreadBadge.clipsToBounds = true
 
-        [globalLabel, circleView, partButton, partCountLabel, progressTrack, minusButton, countLabel, plusButton, timerButton, timerMenu, repeatButton, clientButton, unreadBadge].forEach(addSubview)
+        [globalLabel, circleView, partButton, partCountLabel, progressTrack, minusButton, countLabel, plusButton, timerButton, timerMenu, repeatButton, sectionRepeatButton, clientButton, unreadBadge].forEach(addSubview)
     }
 
     func update(with object: JSObject?) {
@@ -705,9 +712,11 @@ final class KaleidoNativePdfHeaderView: UIView {
         let pct = max(0, min(100, intValue(object?["pct"])))
         let timeText = (object?["timeText"] as? String) ?? "00:00:00"
         let repeatBadgeLabel = (object?["repeatBadgeLabel"] as? String) ?? ""
+        let sectionRepeatBadgeLabel = (object?["sectionRepeatBadgeLabel"] as? String) ?? ""
         let unread = intValue(object?["unreadClientMessageCount"])
         hasClient = boolValue(object?["hasClient"])
         hasRepeatBadge = !repeatBadgeLabel.isEmpty
+        hasSectionRepeatBadge = !sectionRepeatBadgeLabel.isEmpty
         isTimerRunning = boolValue(object?["isTimerRunning"])
         localProgress = CGFloat(max(0, min(100, intValue(object?["localProgress"])))) / 100
 
@@ -753,6 +762,13 @@ final class KaleidoNativePdfHeaderView: UIView {
         repeatButton.layer.borderWidth = 1
         repeatButton.layer.borderColor = accent.withAlphaComponent(0.40).cgColor
 
+        sectionRepeatButton.isHidden = !hasSectionRepeatBadge
+        sectionRepeatButton.setTitle(sectionRepeatBadgeLabel, for: .normal)
+        sectionRepeatButton.setTitleColor(accent, for: .normal)
+        sectionRepeatButton.backgroundColor = accent.withAlphaComponent(0.12)
+        sectionRepeatButton.layer.borderWidth = 1
+        sectionRepeatButton.layer.borderColor = accent.withAlphaComponent(0.28).cgColor
+
         clientButton.isHidden = !hasClient
         clientButton.backgroundColor = unread > 0 ? UIColor(red: 0.957, green: 0.247, blue: 0.369, alpha: 0.18) : accent.withAlphaComponent(0.10)
         clientButton.layer.borderWidth = 1.7
@@ -781,6 +797,8 @@ final class KaleidoNativePdfHeaderView: UIView {
         let barX = circleView.frame.maxX + 8
         let barRight = bounds.width - right
         let barY = top + 75
+        let sectionRepeatMaxWidth = max(0, timerButton.frame.minX - barX - 8)
+        sectionRepeatButton.frame = CGRect(x: barX, y: timerButton.frame.minY, width: min(126, sectionRepeatMaxWidth), height: 20)
         partButton.frame = CGRect(x: barX, y: barY - 31, width: max(60, barRight - barX - 54), height: 26)
         partCountLabel.frame = CGRect(x: barRight - 52, y: barY - 31, width: 52, height: 26)
         progressTrack.frame = CGRect(x: barX, y: barY, width: max(20, barRight - barX), height: 9)

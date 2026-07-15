@@ -6,7 +6,7 @@ export default function useLibraryPdfImport({
   database,
   setShowLibraryImportModal,
 }) {
-  const handleCreatePdfPatron = async (name, pdfData, total, partiesConfig, repetitionsConfig = []) => {
+  const handleCreatePdfPatron = async (name, pdfData, total, partiesConfig, repetitionsConfig = [], partieRepetitionsConfig = []) => {
     const newId = (database.settings.lastPatronId || 0) + 1;
     const colorIdx = Math.floor(Math.random() * KALEIDOSCOPE_COLORS.length);
     const pdfId = `patron_pdf_${newId}`;
@@ -20,7 +20,7 @@ export default function useLibraryPdfImport({
     const pdfParties = partiesConfig
       .filter((partie) => partie.nom.trim())
       .map((partie, index) => ({
-        id: index + 1,
+        id: partie.id || index + 1,
         nom: partie.nom.trim(),
         totalRangs: parseInt(partie.rangs) || 0,
         colorIdx: Number.isInteger(partie.colorIdx) ? partie.colorIdx : index % KALEIDOSCOPE_COLORS.length,
@@ -37,6 +37,7 @@ export default function useLibraryPdfImport({
       total,
       pdfParties,
       pdfRepetitions: repetitionsConfig,
+      pdfPartieRepetitions: partieRepetitionsConfig,
       createdAt: new Date().toISOString(),
     };
 
