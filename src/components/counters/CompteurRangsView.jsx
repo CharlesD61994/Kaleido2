@@ -35,6 +35,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
     isTimerRunning,
     nextRang,
     patron,
+    partieRepeatBadge,
     prevRang,
     resetTimer,
     repeatBadge,
@@ -122,6 +123,7 @@ export default function CompteurRangsView({ project, onNavigateHub, onNavigateEd
                 onResetTimer: resetTimer,
               }}
               repeatBadge={repeatBadge}
+              sectionRepeatBadge={partieRepeatBadge}
               onPrevRang={prevRang}
               onNextRang={nextRang}
               canPrev={currentIndex > 0}

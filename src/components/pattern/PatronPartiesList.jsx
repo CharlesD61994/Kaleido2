@@ -10,6 +10,7 @@ function getPartieRepeatMeta(parties, targetIndex) {
     if (targetIndex >= startIndex && targetIndex <= endIndex) {
       return {
         colorIdx: parties[startIndex]?.colorIdx,
+        label: repeat.label || "",
         infinite: repeat.infinite === true,
         isEnd: targetIndex === endIndex,
         isStart: targetIndex === startIndex,

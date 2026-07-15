@@ -170,6 +170,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
       if (startIndex < 0 || endIndex < startIndex) return null;
       return {
         key: repeat.id || `partie-repeat-${partie.id}`,
+        label: repeat.label || "",
         startIndex,
         endIndex,
         startPartieIndex,
@@ -519,9 +520,9 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
   const repeatBadge = activeRepeat ? {
     label: `↻ ${getRepeatPassage(activeRepeat)}/${activeRepeat.infinite ? "∞" : activeRepeat.passages}`,
     onClick: activeRepeat.infinite ? finishActiveInfiniteRepeat : undefined,
-  } : activePartieRepeat ? {
-    label: `↻ ${activePartieRepeatPassage}/${activePartieRepeat.infinite ? "∞" : activePartieRepeat.passages}`,
-    onClick: undefined,
+  } : null;
+  const partieRepeatBadge = activePartieRepeat ? {
+    label: `${(activePartieRepeat.label || "Répétition").trim()} ${activePartieRepeatPassage}/${activePartieRepeat.infinite ? "∞" : activePartieRepeat.passages}`,
   } : null;
 
   return {
@@ -552,6 +553,7 @@ export default function useRowCounterProgress({ project, onNavigateHub, onSavePr
     prevRang,
     resetTimer,
     repeatBadge,
+    partieRepeatBadge,
     setShowNextPartieModal,
     setShowPrevPartieModal,
     setShowFinModal,

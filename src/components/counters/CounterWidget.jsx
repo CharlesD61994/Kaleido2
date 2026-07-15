@@ -66,7 +66,7 @@ style={{ background: "#DC2626", border: "none", borderRadius: 6, padding: "4px 5
 // ═══════════════════════════════════════════════════════════════
 // COMPTEUR DE RANGS (composant indépendant — corrige le bug reset)
 // ═══════════════════════════════════════════════════════════════
-export function ProgressionSwipeCard({ currentPartieColor, currentIndex, totalRangs, circ_r, circ_c, currentPartie, currentPartieRangIndex, currentPartieTotal, onAddCounter, currentCountIndex, compact = false, timerProps = null, clientButton = null, repeatBadge = null, onPrevRang = null, onNextRang = null, canPrev = true, canNext = true }) {
+export function ProgressionSwipeCard({ currentPartieColor, currentIndex, totalRangs, circ_r, circ_c, currentPartie, currentPartieRangIndex, currentPartieTotal, onAddCounter, currentCountIndex, compact = false, timerProps = null, clientButton = null, repeatBadge = null, sectionRepeatBadge = null, onPrevRang = null, onNextRang = null, canPrev = true, canNext = true }) {
 const [swiped, setSwiped] = useState(false);
 const [startX, setStartX] = useState(0);
 const circleSize = 95;
@@ -123,6 +123,13 @@ strokeLinecap="round" style={{
 </div>
 {/* Barre partie */}
 <div style={{ flex: 1, minWidth: 0, maxWidth: "none", position: "relative" }}>
+{compact && sectionRepeatBadge ? (
+<div style={{ position: "absolute", top: -12, left: 0, maxWidth: "calc(100% - 108px)", height: 21, display: "flex", alignItems: "center", zIndex: 5, pointerEvents: "none" }}>
+<div style={{ borderRadius: 999, border: `1px solid ${currentPartieColor.bg}44`, background: `${currentPartieColor.bg}18`, color: currentPartieColor.bg, padding: "3px 8px", fontSize: 11, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxShadow: `0 8px 18px ${currentPartieColor.bg}14` }}>
+{sectionRepeatBadge.label}
+</div>
+</div>
+) : null}
 {compact && timerProps ? (
 <div style={{ position: "absolute", top: -12, right: 0 }}>
 <TimerPill {...timerProps} color={currentPartieColor} />
