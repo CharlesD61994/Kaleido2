@@ -523,10 +523,10 @@ export default function usePdfProgress({ project, onNavigateHub, onSaveProgress 
   const globalProgressRatio = displayRang / displayNumericTotal;
   const getFrozenInfiniteProgressRang = (repeat, partieRepeat, baseRang = rang) => {
     if (repeat) {
-      return Math.max(0, repeat.startRang - 1) + getFixedRepeatExtraBefore(repeat.startRang) + getFixedPartieRepeatExtraBefore(repeat.startRang);
+      return repeat.endRang + getFixedRepeatExtraBefore(repeat.endRang) + getFixedPartieRepeatExtraBefore(repeat.endRang);
     }
     if (partieRepeat) {
-      return Math.max(0, partieRepeat.startRang - 1) + getFixedRepeatExtraBefore(partieRepeat.startRang) + getFixedPartieRepeatExtraBefore(partieRepeat.startRang);
+      return partieRepeat.endRang + getFixedRepeatExtraBefore(partieRepeat.endRang) + getFixedPartieRepeatExtraBefore(partieRepeat.endRang);
     }
     return baseRang + getFixedRepeatExtraBefore(baseRang) + getFixedPartieRepeatExtraBefore(baseRang);
   };
