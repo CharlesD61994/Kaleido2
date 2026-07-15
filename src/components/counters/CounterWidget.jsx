@@ -115,7 +115,7 @@ strokeLinecap="round" style={{
 </div>
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
-{clientButton && compact ? (
+{clientButton && compact && !repeatBadge ? (
 <div style={{ position: "absolute", left: circleSize + 9, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
@@ -136,7 +136,7 @@ strokeLinecap="round" style={{
 </div>
 ) : null}
 {repeatBadge ? (
-<button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: 0, top: showInlineControls ? 61 : 72, minWidth: 58, height: 32, borderRadius: 999, border: `1px solid ${currentPartieColor.bg}44`, background: `${currentPartieColor.bg}18`, color: currentPartieColor.bg, fontSize: 13, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
+<button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: 10, top: showInlineControls ? 61 : 72, minWidth: 58, height: 32, borderRadius: 999, border: `1px solid ${currentPartieColor.bg}44`, background: `${currentPartieColor.bg}18`, color: currentPartieColor.bg, fontSize: 13, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
 {repeatBadge.label}
 </button>
 ) : null}
@@ -155,6 +155,11 @@ strokeLinecap="round" style={{
 <button type="button" onClick={onPrevRang} disabled={!canPrev} style={{ width: 40, height: 40, borderRadius: "50%", background: canPrev ? `${currentPartieColor.bg}24` : "var(--k-muted-fill)", border: `1.5px solid ${currentPartieColor.bg}55`, color: canPrev ? currentPartieColor.bg : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canPrev ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
 <button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 40, height: 40, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
+{clientButton && repeatBadge ? (
+<div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 2, flexShrink: 0 }}>
+{clientButton}
+</div>
+) : null}
 </div>
 ) : null}
 </div>

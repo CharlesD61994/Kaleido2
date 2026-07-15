@@ -811,10 +811,14 @@ final class KaleidoNativePdfHeaderView: UIView {
         minusButton.frame = CGRect(x: countLabel.frame.minX - buttonSize - 8, y: controlsY, width: buttonSize, height: buttonSize)
         plusButton.frame = CGRect(x: countLabel.frame.maxX + 8, y: controlsY, width: buttonSize, height: buttonSize)
 
-        clientButton.frame = CGRect(x: circleView.frame.maxX + 10, y: controlsY + 1, width: 34, height: 34)
         let repeatWidth: CGFloat = 58
-        let repeatX = max(circleView.frame.maxX - 4, minusButton.frame.minX - repeatWidth - 22)
+        let repeatX = max(circleView.frame.maxX - 4, minusButton.frame.minX - repeatWidth - 12)
         repeatButton.frame = CGRect(x: repeatX, y: controlsY + 5, width: repeatWidth, height: 30)
+        if hasRepeatBadge {
+            clientButton.frame = CGRect(x: plusButton.frame.maxX + 8, y: controlsY + 3, width: 34, height: 34)
+        } else {
+            clientButton.frame = CGRect(x: circleView.frame.maxX + 10, y: controlsY + 1, width: 34, height: 34)
+        }
         unreadBadge.frame = CGRect(x: clientButton.frame.maxX - 9, y: clientButton.frame.minY - 5, width: 17, height: 15)
     }
 

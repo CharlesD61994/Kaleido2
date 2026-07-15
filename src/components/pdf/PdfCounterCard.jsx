@@ -77,7 +77,7 @@ export default function PdfCounterCard({
                 </div>
               </div>
             </div>
-            {clientButton ? (
+            {clientButton && !repeatBadge ? (
               <div style={{ position: "absolute", left: circleSize + 9, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
@@ -96,7 +96,7 @@ export default function PdfCounterCard({
               </div>
             ) : null}
             {repeatBadge ? (
-              <button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: -6, top: 72, minWidth: 46, height: 30, borderRadius: 999, border: `1px solid ${color.bg}44`, background: `${color.bg}18`, color: color.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
+              <button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: 4, top: 72, minWidth: 46, height: 30, borderRadius: 999, border: `1px solid ${color.bg}44`, background: `${color.bg}18`, color: color.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
                 {repeatBadge.label}
               </button>
             ) : null}
@@ -135,6 +135,11 @@ export default function PdfCounterCard({
                 <button onClick={decrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `${color.bg}24`, border: `1.5px solid ${color.bg}55`, color: color.bg, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
                 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{currentPartie ? rangDansPartie : rang}</span>
                 <button onClick={incrementRang} style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                {clientButton && repeatBadge ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 2, flexShrink: 0 }}>
+                    {clientButton}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
