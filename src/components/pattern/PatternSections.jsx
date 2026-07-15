@@ -158,8 +158,8 @@ export function PartieSection({
         background: disabled ? "var(--k-muted-fill)" : background,
         border: "none",
         borderRadius: 7,
-        width: 30,
-        height: 30,
+        width: 28,
+        height: 28,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -183,13 +183,13 @@ export function PartieSection({
     <div style={{ background: partieRepeatMeta ? `color-mix(in srgb, ${partieRepeatColor.bg} 8%, var(--k-surface))` : "var(--k-surface)", border: partieRepeatMeta ? `1px solid ${partieRepeatColor.bg}66` : `1px solid ${color.light}22`, borderRadius: 16, padding: 16, marginBottom: 16, boxShadow: partieRepeatMeta ? `inset 3px 0 0 ${partieRepeatColor.bg}, 0 0 0 1px ${partieRepeatColor.bg}10` : "none" }}>
       <div style={{ display: "grid", gap: 8, marginBottom: isCollapsed ? 0 : 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ position: "relative", flexShrink: 0, width: partieRepeatMeta ? 78 : 38, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+          <div style={{ position: "relative", flexShrink: 0, width: 38, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div
               onClick={() => setShowColorPicker((current) => !current)}
               style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, cursor: "pointer", border: "2px solid rgba(255,255,255,0.3)", flexShrink: 0 }}
             />
             {partieRepeatMeta ? (
-              <span style={{ maxWidth: 78, borderRadius: 999, border: `1px solid ${partieRepeatColor.bg}55`, background: `color-mix(in srgb, ${partieRepeatColor.bg} 14%, var(--k-surface))`, color: partieRepeatColor.bg, fontSize: 9, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "2px 6px", lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ position: "absolute", top: 30, left: "50%", transform: "translateX(-50%)", maxWidth: 74, borderRadius: 999, border: `1px solid ${partieRepeatColor.bg}55`, background: `color-mix(in srgb, ${partieRepeatColor.bg} 14%, var(--k-surface))`, color: partieRepeatColor.bg, fontSize: 9, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "2px 6px", lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", zIndex: 2 }}>
                 ↻ {repeatBadgeText}
               </span>
             ) : null}
@@ -210,7 +210,7 @@ export function PartieSection({
           </div>
 
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "flex-start", minWidth: 0 }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", minWidth: 0 }}>
               {isEditingNom ? (
                 <input
                   value={tempNom}
@@ -229,10 +229,10 @@ export function PartieSection({
                   onClick={(event) => event.stopPropagation()}
                   onFocus={(event) => { event.stopPropagation(); event.target.select(); }}
                   autoFocus
-                  style={{ background: "none", border: "none", outline: "none", color: "var(--k-text)", fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", textAlign: "left", width: "100%" }}
+                  style={{ background: "none", border: "none", outline: "none", color: "var(--k-text)", fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", textAlign: "center", width: "100%" }}
                 />
               ) : (
-                <h3 onClick={handleStartEditNom} style={{ color: "var(--k-text)", margin: 0, fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", textAlign: "left", lineHeight: 1.15, wordBreak: "break-word", maxWidth: "100%" }}>
+                <h3 onClick={handleStartEditNom} style={{ color: "var(--k-text)", margin: 0, fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", textAlign: "center", lineHeight: 1.15, wordBreak: "break-word", maxWidth: "100%" }}>
                   {displayNom}
                 </h3>
               )}
