@@ -124,8 +124,8 @@ strokeLinecap="round" style={{
 {/* Barre partie */}
 <div style={{ flex: 1, minWidth: 0, maxWidth: "none", position: "relative" }}>
 {compact && sectionRepeatBadge ? (
-<div style={{ position: "absolute", top: -12, left: 0, maxWidth: "calc(100% - 108px)", height: 21, display: "flex", alignItems: "center", zIndex: 5, pointerEvents: "none" }}>
-<div style={{ borderRadius: 999, border: `1px solid ${currentPartieColor.bg}44`, background: `${currentPartieColor.bg}18`, color: currentPartieColor.bg, padding: "3px 8px", fontSize: 11, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxShadow: `0 8px 18px ${currentPartieColor.bg}14` }}>
+<div style={{ position: "absolute", top: -12, left: 0, maxWidth: "calc(100% - 108px)", display: "inline-flex", height: 18, alignItems: "center", transform: "translateY(-8px)", zIndex: 5, pointerEvents: "none" }}>
+<div style={{ border: `1px solid ${currentPartieColor.light}44`, borderRadius: 999, background: `${currentPartieColor.bg}33`, color: "var(--k-text)", padding: "2px 8px", fontSize: 12, fontFamily: "monospace", fontWeight: 900, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxShadow: `0 0 16px ${currentPartieColor.bg}33` }}>
 {sectionRepeatBadge.label}
 </div>
 </div>

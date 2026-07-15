@@ -176,18 +176,23 @@ export function PartieSection({
 
   const repeatLabel = partieRepeatMeta?.label?.trim();
   const repeatBadgeText = partieRepeatMeta
-    ? `${repeatLabel ? `${repeatLabel} ` : ""}${partieRepeatMeta.infinite ? "∞" : `${partieRepeatMeta.passages || 2}x`} · ${partieRepeatMeta.isStart && partieRepeatMeta.isEnd ? "partie répétée" : partieRepeatMeta.isStart ? "début" : partieRepeatMeta.isEnd ? "fin" : "bloc"}`
+    ? `${repeatLabel ? `${repeatLabel} ` : ""}${partieRepeatMeta.infinite ? "∞" : `${partieRepeatMeta.passages || 2}x`}`
     : "";
 
   return (
     <div style={{ background: partieRepeatMeta ? `color-mix(in srgb, ${partieRepeatColor.bg} 8%, var(--k-surface))` : "var(--k-surface)", border: partieRepeatMeta ? `1px solid ${partieRepeatColor.bg}66` : `1px solid ${color.light}22`, borderRadius: 16, padding: 16, marginBottom: 16, boxShadow: partieRepeatMeta ? `inset 3px 0 0 ${partieRepeatColor.bg}, 0 0 0 1px ${partieRepeatColor.bg}10` : "none" }}>
       <div style={{ display: "grid", gap: 8, marginBottom: isCollapsed ? 0 : 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ position: "relative", flexShrink: 0 }}>
+          <div style={{ position: "relative", flexShrink: 0, width: partieRepeatMeta ? 78 : 38, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
             <div
               onClick={() => setShowColorPicker((current) => !current)}
               style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${color.bg}, ${color.light})`, cursor: "pointer", border: "2px solid rgba(255,255,255,0.3)", flexShrink: 0 }}
             />
+            {partieRepeatMeta ? (
+              <span style={{ maxWidth: 78, borderRadius: 999, border: `1px solid ${partieRepeatColor.bg}55`, background: `color-mix(in srgb, ${partieRepeatColor.bg} 14%, var(--k-surface))`, color: partieRepeatColor.bg, fontSize: 9, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "2px 6px", lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                ↻ {repeatBadgeText}
+              </span>
+            ) : null}
             {showColorPicker && (
               <>
                 <div onClick={(event) => { event.stopPropagation(); setShowColorPicker(false); }} style={{ position: "fixed", inset: 0, zIndex: 50 }} />
@@ -227,15 +232,10 @@ export function PartieSection({
                   style={{ background: "none", border: "none", outline: "none", color: "var(--k-text)", fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", textAlign: "left", width: "100%" }}
                 />
               ) : (
-                <h3 onClick={handleStartEditNom} style={{ color: "var(--k-text)", margin: 0, fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
+                <h3 onClick={handleStartEditNom} style={{ color: "var(--k-text)", margin: 0, fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", textAlign: "left", lineHeight: 1.15, wordBreak: "break-word", maxWidth: "100%" }}>
                   {displayNom}
                 </h3>
               )}
-              {partieRepeatMeta ? (
-                <span style={{ marginTop: 5, borderRadius: 999, border: `1px solid ${partieRepeatColor.bg}55`, background: `color-mix(in srgb, ${partieRepeatColor.bg} 14%, var(--k-surface))`, color: partieRepeatColor.bg, fontSize: 10, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", padding: "3px 7px", lineHeight: 1 }}>
-                  ↻ {repeatBadgeText}
-                </span>
-              ) : null}
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
               <span style={{ color: "var(--k-text)", fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif" }}>{countableRangs.length}</span>
@@ -254,13 +254,9 @@ export function PartieSection({
         </div>
 
         {!isCollapsed && (
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
-            <button type="button" onClick={(event) => act(event, () => onDuplicate(partie.id))} style={{ border: `1px solid ${color.bg}44`, borderRadius: 10, background: `${color.bg}18`, color: color.bg, padding: "7px 10px", fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: "pointer" }}>
-              ⧉ Dupliquer
-            </button>
-            <button type="button" onClick={(event) => act(event, openPartieRepeatDraft)} style={{ border: `1px solid ${partie.partieRepeat ? "#16A34A66" : `${color.bg}44`}`, borderRadius: 10, background: partie.partieRepeat ? "rgba(22,163,74,0.16)" : `${color.bg}18`, color: partie.partieRepeat ? "#16A34A" : color.bg, padding: "7px 10px", fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: "pointer" }}>
-              ↻ Répétition
-            </button>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 4 }}>
+            {actionButton({ label: "⧉", onClick: () => onDuplicate(partie.id), title: "Dupliquer" })}
+            {actionButton({ label: "↻", onClick: openPartieRepeatDraft, background: partie.partieRepeat ? "#16A34A" : color.bg, title: "Répétition de parties" })}
           </div>
         )}
       </div>
