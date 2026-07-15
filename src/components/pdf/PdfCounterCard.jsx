@@ -112,12 +112,12 @@ export default function PdfCounterCard({
               </div>
             ) : null}
             {repeatBadge ? (
-              <button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: 4, top: 72, minWidth: 46, height: 30, borderRadius: 999, border: `1px solid ${color.bg}44`, background: `${color.bg}18`, color: color.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
+              <button type="button" onClick={repeatBadge.onClick} style={{ position: "absolute", left: 8, top: 72, minWidth: 46, height: 30, borderRadius: 999, border: `1px solid ${color.bg}44`, background: `${color.bg}18`, color: color.bg, fontSize: 12, fontWeight: 900, fontFamily: "'DM Sans', sans-serif", cursor: repeatBadge.onClick ? "pointer" : "default", zIndex: 5 }}>
                 {repeatBadge.label}
               </button>
             ) : null}
             {clientButton && repeatBadge ? (
-              <div style={{ position: "absolute", left: "calc(50% + 78px)", top: 82, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+              <div style={{ position: "absolute", left: "calc(50% + 82px)", top: 79, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
                 {clientButton}
               </div>
             ) : null}
