@@ -227,7 +227,7 @@ export function PartieSection({
                   style={{ background: "none", border: "none", outline: "none", color: "var(--k-text)", fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", textAlign: "center", width: "100%" }}
                 />
               ) : (
-                <h3 onClick={handleStartEditNom} style={{ color: "var(--k-text)", margin: 0, fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", textAlign: "center", lineHeight: 1.15, wordBreak: "break-word", maxWidth: "100%" }}>
+                <h3 onClick={handleStartEditNom} style={{ color: "var(--k-text)", margin: 0, fontSize: 15, fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", textAlign: "center", lineHeight: 1.15, wordBreak: "normal", overflowWrap: "normal", textWrap: "balance", maxWidth: "100%" }}>
                   {displayNom}
                 </h3>
               )}
