@@ -116,7 +116,7 @@ strokeLinecap="round" style={{
 {!compact && <div style={{ color: "var(--k-muted-2)", fontSize: 10, fontFamily: "monospace" }}>{Math.round(Math.max(0, currentCountIndex + 1)/totalRangs*100)}%</div>}
 </div>
 {clientButton && compact && !repeatBadge ? (
-<div style={{ position: "absolute", left: circleSize + 9, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
+<div style={{ position: "absolute", left: circleSize + 13, top: clientButtonTop, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4 }}>
 {clientButton}
 </div>
 ) : null}
@@ -156,7 +156,7 @@ strokeLinecap="round" style={{
 <span style={{ color: "var(--k-text)", fontSize: 32, fontWeight: 700, fontFamily: "'Syne', sans-serif", minWidth: 40, textAlign: "center", lineHeight: 1 }}>{localRangNumber}</span>
 <button type="button" onClick={onNextRang} disabled={!canNext} style={{ width: 40, height: 40, borderRadius: "50%", background: canNext ? `linear-gradient(135deg, ${currentPartieColor.bg}, ${currentPartieColor.light})` : "var(--k-muted-fill)", border: "none", color: canNext ? "#fff" : "#5B5A66", fontSize: 22, fontWeight: 700, cursor: canNext ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: canNext ? `0 3px 10px ${currentPartieColor.bg}55` : "none" }}>+</button>
 {clientButton && repeatBadge ? (
-<div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 2, flexShrink: 0 }}>
+<div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 6, flexShrink: 0 }}>
 {clientButton}
 </div>
 ) : null}
