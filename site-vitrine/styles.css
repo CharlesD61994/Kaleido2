@@ -481,13 +481,13 @@ a {
 
 .category-row {
   display: flex;
-  gap: 18px;
+  gap: 10px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   margin: 0 -24px;
-  padding: 2px 24px 8px;
+  padding: 14px 24px 10px;
 }
 
 .category-row::-webkit-scrollbar {
@@ -495,7 +495,7 @@ a {
 }
 
 .category-card {
-  flex: 0 0 88px;
+  flex: 0 0 84px;
   border: 0;
   background: transparent;
   padding: 0;
