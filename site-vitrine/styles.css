@@ -270,12 +270,10 @@ a {
 }
 
 .hero {
-  min-height: 438px;
-  padding: 28px 28px 24px;
+  min-height: 0;
+  padding: 28px 28px 30px;
   display: grid;
-  grid-template-columns: 48% 52%;
-  column-gap: 0;
-  align-items: center;
+  gap: 22px;
   overflow: hidden;
   background:
     radial-gradient(circle at 76% 28%, rgba(48, 199, 201, 0.14), transparent 28%),
@@ -284,7 +282,7 @@ a {
 
 .hero-copy {
   z-index: 2;
-  max-width: 190px;
+  max-width: none;
 }
 
 .eyebrow {
@@ -299,9 +297,9 @@ a {
 .hero h1 {
   margin: 0;
   font-family: "Syne", serif;
-  font-size: clamp(33px, 8.6vw, 42px);
-  line-height: 0.96;
-  letter-spacing: -0.025em;
+  font-size: clamp(42px, 11vw, 56px);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
 }
 
 .hero h1 span {
@@ -343,7 +341,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 18px;
-  margin-top: 24px;
+  margin-top: 22px;
   min-height: 58px;
   padding: 0 28px;
   border-radius: 20px;
@@ -368,16 +366,24 @@ a {
 }
 
 .hero-showcase {
-  align-self: stretch;
-  min-height: 380px;
   position: relative;
+  display: flex;
+  gap: 12px;
+  margin: 0 -28px;
+  padding: 16px 28px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hero-showcase::-webkit-scrollbar {
+  display: none;
 }
 
 .hero-showcase::before {
   content: "";
   position: absolute;
-  inset: 26px -86px 24px -18px;
-  border-radius: 42px;
+  inset: 0 10px;
+  border-radius: 30px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(255, 253, 250, 0.42)),
     radial-gradient(circle at 35% 35%, rgba(48, 199, 201, 0.24), transparent 32%),
@@ -389,12 +395,15 @@ a {
 }
 
 .showcase-card {
-  position: absolute;
+  position: relative;
+  z-index: 1;
+  flex: 0 0 158px;
   display: grid;
-  gap: 6px;
-  min-width: 150px;
-  padding: 14px;
-  border-radius: 18px;
+  align-content: start;
+  gap: 7px;
+  min-height: 130px;
+  padding: 12px;
+  border-radius: 16px;
   color: var(--k-ink);
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(16, 39, 68, 0.09);
@@ -403,20 +412,20 @@ a {
 }
 
 .showcase-card strong {
-  font-size: 16px;
-  line-height: 1.05;
+  font-size: 14px;
+  line-height: 1.08;
 }
 
 .showcase-card small {
   color: var(--k-muted);
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.25;
   font-weight: 700;
 }
 
 .showcase-step {
   width: max-content;
-  padding: 4px 9px;
+  padding: 4px 8px;
   border-radius: 999px;
   color: white;
   font-size: 11px;
@@ -426,27 +435,21 @@ a {
 }
 
 .showcase-card-main {
-  left: 10px;
-  top: 56px;
-  transform: rotate(-3deg);
+  transform: rotate(-1.5deg);
   box-shadow:
     0 0 0 1px rgba(240, 91, 79, 0.26),
     0 16px 32px rgba(240, 91, 79, 0.12);
 }
 
 .showcase-card-progress {
-  right: -10px;
-  top: 150px;
-  transform: rotate(2deg);
+  transform: translateY(8px) rotate(1deg);
   box-shadow:
     0 0 0 1px rgba(48, 199, 201, 0.32),
     0 16px 32px rgba(48, 199, 201, 0.13);
 }
 
 .showcase-card-soft {
-  left: 28px;
-  bottom: 42px;
-  transform: rotate(2deg);
+  transform: rotate(1.5deg);
   box-shadow:
     0 0 0 1px rgba(243, 181, 27, 0.30),
     0 16px 32px rgba(243, 181, 27, 0.12);
