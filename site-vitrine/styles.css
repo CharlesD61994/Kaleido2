@@ -284,6 +284,7 @@ a {
 
 .hero-copy {
   z-index: 2;
+  max-width: 190px;
 }
 
 .eyebrow {
@@ -298,9 +299,9 @@ a {
 .hero h1 {
   margin: 0;
   font-family: "Syne", serif;
-  font-size: clamp(36px, 9.6vw, 47px);
-  line-height: 0.94;
-  letter-spacing: -0.035em;
+  font-size: clamp(33px, 8.6vw, 42px);
+  line-height: 0.96;
+  letter-spacing: -0.025em;
 }
 
 .hero h1 span {
