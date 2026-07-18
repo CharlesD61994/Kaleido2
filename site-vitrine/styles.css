@@ -431,7 +431,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 
 .section-heading h2 {
@@ -486,8 +486,8 @@ a {
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
-  margin: 0 -24px;
-  padding: 14px 24px 10px;
+  margin: 0 -26px;
+  padding: 10px 34px 10px;
 }
 
 .category-row::-webkit-scrollbar {
