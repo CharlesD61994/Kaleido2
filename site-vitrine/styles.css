@@ -96,7 +96,6 @@ a {
   backdrop-filter: blur(18px);
 }
 
-.icon-button,
 .search-button,
 .cart-button,
 .heart-button {
@@ -107,18 +106,9 @@ a {
   padding: 0;
 }
 
-.icon-button {
-  width: 26px;
-  height: 21px;
-  display: grid;
-  align-content: space-between;
-}
-
-.icon-button span {
-  display: block;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--k-ink);
+.topbar-spacer {
+  width: 66px;
+  flex: 0 0 66px;
 }
 
 .brand {
@@ -911,22 +901,33 @@ a {
 }
 
 .home-icon {
-  border: 2px solid currentColor;
-  border-top: 0;
-  border-radius: 4px;
-  transform: translateY(5px);
+  transform: translateY(1px);
 }
 
 .home-icon::before {
   content: "";
   position: absolute;
-  width: 18px;
-  height: 18px;
+  left: 4px;
+  top: 1px;
+  width: 13px;
+  height: 13px;
   border-left: 2px solid currentColor;
   border-top: 2px solid currentColor;
   transform: rotate(45deg);
-  left: 3px;
-  top: -9px;
+  border-radius: 2px 0 0 0;
+}
+
+.home-icon::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  width: 14px;
+  height: 11px;
+  border: 2px solid currentColor;
+  border-top: 0;
+  border-radius: 2px 2px 5px 5px;
+  background: transparent;
 }
 
 .grid-icon {
