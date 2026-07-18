@@ -367,7 +367,10 @@ a {
 
 .hero-showcase {
   position: relative;
-  min-height: 218px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 0;
   padding: 18px;
 }
 
@@ -387,14 +390,14 @@ a {
 }
 
 .showcase-card {
-  position: absolute;
+  position: relative;
   z-index: 1;
   display: grid;
   align-content: start;
-  gap: 7px;
-  width: min(180px, 50%);
-  min-height: 116px;
-  padding: 12px;
+  gap: 8px;
+  min-width: 0;
+  min-height: 156px;
+  padding: 12px 10px;
   border-radius: 16px;
   color: var(--k-ink);
   background: rgba(255, 255, 255, 0.78);
@@ -404,14 +407,14 @@ a {
 }
 
 .showcase-card strong {
-  font-size: 14px;
-  line-height: 1.08;
+  font-size: 13px;
+  line-height: 1.12;
 }
 
 .showcase-card small {
   color: var(--k-muted);
-  font-size: 10px;
-  line-height: 1.25;
+  font-size: 9.5px;
+  line-height: 1.22;
   font-weight: 700;
 }
 
@@ -427,30 +430,24 @@ a {
 }
 
 .showcase-card-main {
-  left: 18px;
-  top: 18px;
   z-index: 1;
-  transform: rotate(-3deg);
+  transform: translateY(0) rotate(-1.5deg);
   box-shadow:
     0 0 0 1px rgba(240, 91, 79, 0.26),
     0 16px 32px rgba(240, 91, 79, 0.12);
 }
 
 .showcase-card-progress {
-  left: 50%;
-  top: 52px;
   z-index: 2;
-  transform: translateX(-50%) rotate(1deg);
+  transform: translateY(12px) rotate(0.8deg);
   box-shadow:
     0 0 0 1px rgba(48, 199, 201, 0.32),
     0 16px 32px rgba(48, 199, 201, 0.13);
 }
 
 .showcase-card-soft {
-  right: 18px;
-  top: 86px;
   z-index: 3;
-  transform: rotate(3deg);
+  transform: translateY(24px) rotate(1.5deg);
   box-shadow:
     0 0 0 1px rgba(243, 181, 27, 0.30),
     0 16px 32px rgba(243, 181, 27, 0.12);
