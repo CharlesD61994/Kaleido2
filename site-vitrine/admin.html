@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atelier Kaleido - Admin boutique</title>
+    <meta
+      name="description"
+      content="Espace admin Atelier Kaleido pour préparer les fiches produits de la boutique."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <main class="phone-shell" aria-label="Admin mobile Atelier Kaleido">
+      <section class="storefront admin-storefront">
+        <header class="topbar admin-topbar" aria-label="Navigation admin">
+          <a class="brand" href="./index.html" aria-label="Retour à la vitrine Atelier Kaleido">
+            <img src="./assets/kaleido-logo.jpg" alt="" />
+            <span>Atelier<br />Kaleido</span>
+          </a>
+
+          <a class="admin-public-link" href="./index.html">Vitrine</a>
+        </header>
+
+        <section class="admin-hero" aria-labelledby="admin-title">
+          <p class="eyebrow">Espace privé</p>
+          <h1 id="admin-title">Créer les fiches produits</h1>
+          <p>
+            Préparez les produits, choisissez leurs options, puis branchez Shopify quand les fiches sont prêtes.
+          </p>
+        </section>
+
+        <section class="admin-panel option-library" aria-labelledby="options-title">
+          <div class="admin-section-heading">
+            <div>
+              <span class="admin-kicker">Variables globales</span>
+              <h2 id="options-title">Options disponibles</h2>
+            </div>
+          </div>
+
+          <div class="option-chip-grid" id="optionLibrary" aria-label="Options réutilisables"></div>
+        </section>
+
+        <section class="admin-panel product-builder" aria-labelledby="builder-title">
+          <div class="admin-section-heading">
+            <div>
+              <span class="admin-kicker">Nouvelle fiche</span>
+              <h2 id="builder-title">Produit boutique</h2>
+            </div>
+          </div>
+
+          <form class="admin-form" id="productForm">
+            <label>
+              Nom du produit
+              <input name="name" type="text" placeholder="Pantoufles douillettes" required />
+            </label>
+
+            <div class="admin-two-columns">
+              <label>
+                Catégorie
+                <select name="category">
+                  <option>Pantoufles</option>
+                  <option>Bas</option>
+                  <option>Doudous</option>
+                  <option>Accessoires</option>
+                  <option>Bébé</option>
+                </select>
+              </label>
+
+              <label>
+                Prix à partir de
+                <input name="price" type="text" inputmode="decimal" placeholder="42,00 $" />
+              </label>
+            </div>
+
+            <label>
+              Description courte
+              <textarea
+                name="description"
+                rows="4"
+                placeholder="Une création douce, personnalisable et faite à la main avec suivi Kaleido."
+              ></textarea>
+            </label>
+
+            <fieldset>
+              <legend>Options du produit</legend>
+              <div class="option-select-grid" id="optionSelector"></div>
+            </fieldset>
+
+            <label>
+              Lien ou ID Shopify
+              <input name="shopify" type="text" placeholder="À ajouter plus tard" />
+            </label>
+
+            <div class="admin-actions">
+              <button class="buy-button" type="submit">Enregistrer le brouillon</button>
+              <button class="secondary-button" type="reset">Réinitialiser</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="admin-panel live-preview" aria-labelledby="preview-title">
+          <div class="admin-section-heading">
+            <div>
+              <span class="admin-kicker">Aperçu client</span>
+              <h2 id="preview-title">Carte générée</h2>
+            </div>
+          </div>
+
+          <article class="product-card glow-coral admin-preview-card">
+            <button class="heart-button" type="button" aria-label="Ajouter aux favoris"></button>
+            <div class="product-image product-slippers"></div>
+            <div class="product-info">
+              <h3 id="previewName">Pantoufles douillettes</h3>
+              <p>À partir de <strong id="previewPrice">42,00 $</strong></p>
+              <div class="swatches" aria-label="Couleurs disponibles">
+                <span style="--swatch:#f05b4f"></span>
+                <span style="--swatch:#30c7c9"></span>
+                <span style="--swatch:#f2d9c9"></span>
+                <button type="button" aria-label="Voir plus de couleurs">+</button>
+              </div>
+            </div>
+          </article>
+
+          <div class="preview-options" id="previewOptions"></div>
+        </section>
+
+        <section class="admin-panel draft-products" aria-labelledby="drafts-title">
+          <div class="admin-section-heading">
+            <div>
+              <span class="admin-kicker">Brouillons locaux</span>
+              <h2 id="drafts-title">Produits préparés</h2>
+            </div>
+            <button class="clear-drafts" id="clearDrafts" type="button">Vider</button>
+          </div>
+
+          <div class="draft-list" id="draftList"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./admin.js"></script>
+  </body>
+</html>
