@@ -558,13 +558,13 @@ a {
 }
 
 .photo-slippers::before {
-  width: 56px;
+  width: 52px;
   height: 37px;
   border-radius: 50% 45% 35% 40%;
   background: repeating-linear-gradient(90deg, #eadfcb 0 4px, #fff2dc 5px 9px);
-  left: 13px;
+  left: 18px;
   top: 30px;
-  box-shadow: 13px -9px 0 -2px #ded0b9;
+  box-shadow: 11px -9px 0 -2px #ded0b9;
 }
 
 .photo-socks::before {
