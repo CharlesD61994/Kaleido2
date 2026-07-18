@@ -155,7 +155,7 @@ a {
 .top-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .search-button {
@@ -167,7 +167,7 @@ a {
 }
 
 .cart-button {
-  width: 44px;
+  width: 39px;
   height: 36px;
   position: relative;
 }
