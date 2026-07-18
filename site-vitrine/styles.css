@@ -874,10 +874,19 @@ a {
   display: grid;
   justify-items: center;
   align-content: center;
+  grid-template-rows: 22px auto 3px;
   gap: 3px;
   color: var(--k-ink);
   font-size: 11px;
   font-weight: 800;
+}
+
+.bottom-nav a::after {
+  content: "";
+  width: 24px;
+  height: 3px;
+  border-radius: 999px;
+  background: transparent;
 }
 
 .bottom-nav a.active {
@@ -885,10 +894,6 @@ a {
 }
 
 .bottom-nav a.active::after {
-  content: "";
-  width: 24px;
-  height: 3px;
-  border-radius: 999px;
   background: var(--k-coral);
   box-shadow: 0 0 11px rgba(240, 91, 79, 0.55);
 }
@@ -898,36 +903,14 @@ a {
   height: 22px;
   display: block;
   position: relative;
+  align-self: center;
+  justify-self: center;
 }
 
 .home-icon {
-  transform: translateY(1px);
-}
-
-.home-icon::before {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 13px;
-  height: 13px;
-  border-left: 2px solid currentColor;
-  border-top: 2px solid currentColor;
-  transform: rotate(45deg);
-  border-radius: 2px 0 0 0;
-}
-
-.home-icon::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 9px;
-  width: 14px;
-  height: 11px;
-  border: 2px solid currentColor;
-  border-top: 0;
-  border-radius: 2px 2px 5px 5px;
-  background: transparent;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.8 12 3.4l9 7.4'/%3E%3Cpath d='M5.5 10.2V20h13V10.2'/%3E%3Cpath d='M9.5 20v-5h5v5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.8 12 3.4l9 7.4'/%3E%3Cpath d='M5.5 10.2V20h13V10.2'/%3E%3Cpath d='M9.5 20v-5h5v5'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .grid-icon {
@@ -941,9 +924,12 @@ a {
 }
 
 .fav-icon::before {
-  content: "♡";
-  font-size: 33px;
-  line-height: 19px;
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.8 4.6c-2-1.8-5.1-1.5-6.9.6L12 7.4l-1.9-2.2C8.3 3.1 5.2 2.8 3.2 4.6c-2.3 2-2.4 5.6-.3 7.8L12 21l9.1-8.6c2.1-2.2 2-5.8-.3-7.8Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.8 4.6c-2-1.8-5.1-1.5-6.9.6L12 7.4l-1.9-2.2C8.3 3.1 5.2 2.8 3.2 4.6c-2.3 2-2.4 5.6-.3 7.8L12 21l9.1-8.6c2.1-2.2 2-5.8-.3-7.8Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .box-icon {
