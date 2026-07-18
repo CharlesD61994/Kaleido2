@@ -111,7 +111,7 @@
           </div>
 
           <div class="product-grid">
-            <article class="product-card glow-coral">
+            <article class="product-card glow-coral" data-product-open="pantoufles" role="button" tabindex="0">
               <button class="heart-button" type="button" aria-label="Ajouter aux favoris"></button>
               <div class="product-image product-slippers"></div>
               <div class="product-info">
@@ -183,6 +183,56 @@
               <small>À chaque étape</small>
             </div>
           </article>
+        </section>
+
+        <section class="product-detail" data-product-detail="pantoufles" aria-label="Fiche produit Pantoufles douillettes" hidden>
+          <div class="detail-header">
+            <button class="detail-back" type="button" aria-label="Retour au catalogue">
+              <span aria-hidden="true">←</span>
+            </button>
+            <span class="detail-kicker">Produit fait main</span>
+          </div>
+
+          <div class="detail-hero">
+            <img src="./assets/product-pantoufles-kaleido.png" alt="Pantoufles douillettes faites à la main" />
+            <button class="heart-button detail-heart" type="button" aria-label="Ajouter aux favoris"></button>
+          </div>
+
+          <div class="detail-content">
+            <p class="eyebrow detail-eyebrow">Avec suivi Kaleido</p>
+            <h2>Pantoufles douillettes</h2>
+            <p class="detail-price">À partir de <strong>42,00 $</strong></p>
+            <p class="detail-copy">
+              Une paire confortable, douce et colorée, réalisée à la main selon vos préférences.
+              Chaque commande inclut un lien privé pour suivre la production et poser vos questions.
+            </p>
+
+            <div class="detail-panel">
+              <span class="panel-label">Couleurs populaires</span>
+              <div class="detail-swatches" aria-label="Couleurs disponibles">
+                <button style="--swatch:#f05b4f" type="button" aria-label="Corail"></button>
+                <button style="--swatch:#30c7c9" type="button" aria-label="Turquoise"></button>
+                <button style="--swatch:#f2d9c9" type="button" aria-label="Crème rosée"></button>
+                <button style="--swatch:#f3b51b" type="button" aria-label="Miel"></button>
+              </div>
+            </div>
+
+            <div class="detail-panel tracking-panel">
+              <span class="panel-label">Votre commande</span>
+              <div class="tracking-steps">
+                <span>Catalogue</span>
+                <span>Production</span>
+                <span>Produit final</span>
+              </div>
+              <div class="detail-progress"><span></span></div>
+              <small>Le suivi privé sera envoyé après la confirmation de la commande.</small>
+            </div>
+
+            <div class="detail-actions">
+              <button class="buy-button" type="button">Commander avec Shopify</button>
+              <button class="secondary-button" type="button">Demander une couleur</button>
+            </div>
+          </div>
         </section>
 
         <nav class="bottom-nav" aria-label="Navigation mobile">
