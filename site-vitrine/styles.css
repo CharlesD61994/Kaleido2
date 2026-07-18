@@ -578,6 +578,7 @@ a {
   gap: 10px;
   justify-items: center;
   scroll-snap-align: start;
+  transition: transform 180ms ease;
 }
 
 .category-card:first-child {
@@ -596,9 +597,24 @@ a {
   border: 3px solid white;
   box-shadow:
     0 0 0 2px var(--ring),
-    0 0 14px color-mix(in srgb, var(--ring), transparent 35%);
+    0 0 18px color-mix(in srgb, var(--ring), transparent 30%),
+    0 12px 24px rgba(16, 39, 68, 0.10);
   position: relative;
   overflow: hidden;
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.category-card:hover .category-photo,
+.category-card:focus-visible .category-photo {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 2px var(--ring),
+    0 0 24px color-mix(in srgb, var(--ring), transparent 20%),
+    0 16px 30px rgba(16, 39, 68, 0.14);
+}
+
+.category-card:active {
+  transform: scale(0.965);
 }
 
 .category-photo::before,

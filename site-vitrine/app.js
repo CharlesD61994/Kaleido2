@@ -1,4 +1,4 @@
-const productCards = document.querySelectorAll(".product-card");
+const pressableCards = document.querySelectorAll(".product-card, .category-card");
 const storefront = document.querySelector(".storefront");
 const menuButton = document.querySelector(".menu-button");
 const sideMenu = document.querySelector(".side-menu");
@@ -19,7 +19,7 @@ sideMenu?.querySelectorAll("a").forEach((link) => {
   link.addEventListener("click", closeMenu);
 });
 
-productCards.forEach((card) => {
+pressableCards.forEach((card) => {
   card.addEventListener("pointerdown", () => {
     card.style.transform = "scale(0.985)";
   });
