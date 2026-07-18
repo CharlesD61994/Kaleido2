@@ -860,8 +860,8 @@ a {
   bottom: 0;
   transform: translateX(-50%);
   width: min(100%, 430px);
-  height: 72px;
-  padding: 8px 20px 9px;
+  height: 80px;
+  padding: 10px 20px 11px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
@@ -874,10 +874,10 @@ a {
   display: grid;
   justify-items: center;
   align-content: center;
-  grid-template-rows: 25px auto 3px;
-  gap: 3px;
+  grid-template-rows: 28px auto 3px;
+  gap: 4px;
   color: var(--k-ink);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -899,8 +899,8 @@ a {
 }
 
 .nav-icon {
-  width: 23px;
-  height: 23px;
+  width: 27px;
+  height: 27px;
   display: block;
   position: relative;
   align-self: center;
