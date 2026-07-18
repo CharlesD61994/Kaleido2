@@ -486,8 +486,8 @@ a {
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
-  margin: 0 -26px 0 -14px;
-  padding: 10px 26px 10px 24px;
+  margin: 0 -26px 0 0;
+  padding: 10px 26px 10px 16px;
 }
 
 .category-row::-webkit-scrollbar {
