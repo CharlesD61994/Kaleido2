@@ -1,4 +1,23 @@
 const productCards = document.querySelectorAll(".product-card");
+const storefront = document.querySelector(".storefront");
+const menuButton = document.querySelector(".menu-button");
+const sideMenu = document.querySelector(".side-menu");
+
+const closeMenu = () => {
+  storefront?.classList.remove("menu-open");
+  menuButton?.setAttribute("aria-expanded", "false");
+  sideMenu?.setAttribute("aria-hidden", "true");
+};
+
+menuButton?.addEventListener("click", () => {
+  const isOpen = storefront?.classList.toggle("menu-open") ?? false;
+  menuButton.setAttribute("aria-expanded", String(isOpen));
+  sideMenu?.setAttribute("aria-hidden", String(!isOpen));
+});
+
+sideMenu?.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", closeMenu);
+});
 
 productCards.forEach((card) => {
   card.addEventListener("pointerdown", () => {

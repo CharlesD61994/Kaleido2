@@ -14,7 +14,7 @@
     <main class="phone-shell" aria-label="Maquette mobile Atelier Kaleido">
       <section class="storefront">
         <header class="topbar" aria-label="Navigation principale">
-          <button class="menu-button" type="button" aria-label="Ouvrir le menu">
+          <button class="menu-button" type="button" aria-label="Ouvrir le menu" aria-expanded="false">
             <span></span>
             <span></span>
             <span></span>
@@ -33,6 +33,13 @@
             </button>
           </div>
         </header>
+
+        <nav class="side-menu" aria-label="Menu secondaire" aria-hidden="true">
+          <a href="#patrons">Tous les patrons</a>
+          <a href="#categories-title">Catégories</a>
+          <a href="https://app.atelierkaleido.ca">Suivre mon projet</a>
+          <a href="#contact">Contact</a>
+        </nav>
 
         <section id="accueil" class="hero">
           <div class="hero-copy">
@@ -148,7 +155,7 @@
           </div>
         </section>
 
-        <section class="trust-strip" aria-label="Atouts Atelier Kaleido">
+        <section id="contact" class="trust-strip" aria-label="Atouts Atelier Kaleido">
           <article>
             <span class="trust-icon yarn-icon"></span>
             <div>
