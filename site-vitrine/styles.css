@@ -57,7 +57,7 @@ a {
 
 .storefront {
   min-height: 100vh;
-  padding: 10px 0 92px;
+  padding: 0 0 74px;
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.68)),
     radial-gradient(circle at 18% 20%, rgba(240, 91, 79, 0.10), transparent 35%),
@@ -86,8 +86,8 @@ a {
 }
 
 .topbar {
-  height: 106px;
-  padding: 38px 25px 14px;
+  height: 78px;
+  padding: 18px 22px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,8 +108,8 @@ a {
 }
 
 .icon-button {
-  width: 32px;
-  height: 28px;
+  width: 26px;
+  height: 21px;
   display: grid;
   align-content: space-between;
 }
@@ -124,13 +124,13 @@ a {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  transform: translateX(6px);
+  gap: 8px;
+  transform: translateX(2px);
 }
 
 .brand img {
-  width: 52px;
-  height: 52px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
   box-shadow:
@@ -141,7 +141,7 @@ a {
 
 .brand span {
   font-family: "Syne", serif;
-  font-size: 25px;
+  font-size: 20px;
   line-height: 0.88;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -151,21 +151,21 @@ a {
 .top-actions {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
 }
 
 .search-button {
-  width: 34px;
-  height: 34px;
+  width: 27px;
+  height: 27px;
   position: relative;
 }
 
 .search-button span {
   position: absolute;
-  left: 4px;
-  top: 3px;
-  width: 22px;
-  height: 22px;
+  left: 3px;
+  top: 2px;
+  width: 18px;
+  height: 18px;
   border: 2px solid var(--k-ink);
   border-radius: 50%;
 }
@@ -173,18 +173,18 @@ a {
 .search-button span::after {
   content: "";
   position: absolute;
-  width: 11px;
+  width: 9px;
   height: 2px;
   background: var(--k-ink);
-  right: -8px;
-  bottom: -5px;
+  right: -7px;
+  bottom: -4px;
   transform: rotate(45deg);
   border-radius: 99px;
 }
 
 .cart-button {
-  width: 30px;
-  height: 36px;
+  width: 25px;
+  height: 30px;
   border: 2px solid var(--k-ink);
   border-radius: 8px 8px 10px 10px;
   position: relative;
@@ -193,10 +193,10 @@ a {
 .cart-button::before {
   content: "";
   position: absolute;
-  left: 7px;
-  top: -10px;
-  width: 12px;
-  height: 14px;
+  left: 6px;
+  top: -9px;
+  width: 10px;
+  height: 12px;
   border: 2px solid var(--k-ink);
   border-bottom: 0;
   border-radius: 999px 999px 0 0;
@@ -204,23 +204,23 @@ a {
 
 .cart-count {
   position: absolute;
-  right: -10px;
-  top: -13px;
-  min-width: 24px;
-  height: 24px;
+  right: -9px;
+  top: -12px;
+  min-width: 21px;
+  height: 21px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--k-coral);
   color: white;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 11px;
   box-shadow: 0 0 15px rgba(240, 91, 79, 0.65);
 }
 
 .hero {
-  min-height: 500px;
-  padding: 36px 30px 28px;
+  min-height: 438px;
+  padding: 28px 28px 24px;
   display: grid;
   grid-template-columns: 48% 52%;
   align-items: center;
@@ -625,14 +625,14 @@ a {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .product-card {
   background: rgba(255, 255, 255, 0.76);
   border: 1px solid rgba(16, 39, 68, 0.10);
-  border-radius: 15px;
+  border-radius: 18px;
   overflow: hidden;
   min-width: 0;
   position: relative;
@@ -671,7 +671,7 @@ a {
 }
 
 .product-image {
-  height: 174px;
+  height: 205px;
   position: relative;
   overflow: hidden;
   background:
@@ -732,13 +732,13 @@ a {
 }
 
 .product-info {
-  padding: 14px 12px 12px;
+  padding: 15px 14px 14px;
 }
 
 .product-info h3 {
   margin: 0 0 8px;
   color: var(--k-ink);
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.08;
   font-weight: 900;
 }
@@ -746,7 +746,7 @@ a {
 .product-info p {
   margin: 0 0 12px;
   color: var(--k-text);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .product-info strong {
@@ -870,8 +870,8 @@ a {
   bottom: 0;
   transform: translateX(-50%);
   width: min(100%, 430px);
-  height: 86px;
-  padding: 8px 20px 14px;
+  height: 68px;
+  padding: 7px 20px 8px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
@@ -884,9 +884,9 @@ a {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 5px;
+  gap: 3px;
   color: var(--k-ink);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -896,7 +896,7 @@ a {
 
 .bottom-nav a.active::after {
   content: "";
-  width: 28px;
+  width: 24px;
   height: 3px;
   border-radius: 999px;
   background: var(--k-coral);
@@ -904,8 +904,8 @@ a {
 }
 
 .nav-icon {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   display: block;
   position: relative;
 }
@@ -931,18 +931,18 @@ a {
 
 .grid-icon {
   background:
-    linear-gradient(currentColor 0 0) 0 0 / 11px 11px,
-    linear-gradient(currentColor 0 0) 17px 0 / 11px 11px,
-    linear-gradient(currentColor 0 0) 0 17px / 11px 11px,
-    linear-gradient(currentColor 0 0) 17px 17px / 11px 11px;
+    linear-gradient(currentColor 0 0) 0 0 / 9px 9px,
+    linear-gradient(currentColor 0 0) 13px 0 / 9px 9px,
+    linear-gradient(currentColor 0 0) 0 13px / 9px 9px,
+    linear-gradient(currentColor 0 0) 13px 13px / 9px 9px;
   background-repeat: no-repeat;
   opacity: 0.95;
 }
 
 .fav-icon::before {
   content: "♡";
-  font-size: 41px;
-  line-height: 25px;
+  font-size: 33px;
+  line-height: 19px;
 }
 
 .box-icon {
@@ -987,12 +987,8 @@ a {
     padding-right: 24px;
   }
 
-  .product-grid {
-    gap: 9px;
-  }
-
   .product-info h3 {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .trust-strip {
