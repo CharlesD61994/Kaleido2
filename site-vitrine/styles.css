@@ -860,8 +860,8 @@ a {
   bottom: 0;
   transform: translateX(-50%);
   width: min(100%, 430px);
-  height: 68px;
-  padding: 7px 20px 8px;
+  height: 72px;
+  padding: 8px 20px 9px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
@@ -874,7 +874,7 @@ a {
   display: grid;
   justify-items: center;
   align-content: center;
-  grid-template-rows: 22px auto 3px;
+  grid-template-rows: 25px auto 3px;
   gap: 3px;
   color: var(--k-ink);
   font-size: 11px;
@@ -899,8 +899,8 @@ a {
 }
 
 .nav-icon {
-  width: 22px;
-  height: 22px;
+  width: 23px;
+  height: 23px;
   display: block;
   position: relative;
   align-self: center;
@@ -909,6 +909,7 @@ a {
 
 .home-icon {
   background: currentColor;
+  transform: scale(1.16);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.8 12 3.4l9 7.4'/%3E%3Cpath d='M5.5 10.2V20h13V10.2'/%3E%3Cpath d='M9.5 20v-5h5v5'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.8 12 3.4l9 7.4'/%3E%3Cpath d='M5.5 10.2V20h13V10.2'/%3E%3Cpath d='M9.5 20v-5h5v5'/%3E%3C/svg%3E") center / contain no-repeat;
 }
@@ -926,7 +927,7 @@ a {
 .fav-icon::before {
   content: "";
   position: absolute;
-  inset: 1px;
+  inset: -1px;
   background: currentColor;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.8 4.6c-2-1.8-5.1-1.5-6.9.6L12 7.4l-1.9-2.2C8.3 3.1 5.2 2.8 3.2 4.6c-2.3 2-2.4 5.6-.3 7.8L12 21l9.1-8.6c2.1-2.2 2-5.8-.3-7.8Z'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.8 4.6c-2-1.8-5.1-1.5-6.9.6L12 7.4l-1.9-2.2C8.3 3.1 5.2 2.8 3.2 4.6c-2.3 2-2.4 5.6-.3 7.8L12 21l9.1-8.6c2.1-2.2 2-5.8-.3-7.8Z'/%3E%3C/svg%3E") center / contain no-repeat;
