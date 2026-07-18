@@ -486,8 +486,8 @@ a {
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
-  margin: 0 -26px 0 0;
-  padding: 10px 26px 10px 0;
+  margin: 0;
+  padding: 10px 4px 10px 10px;
 }
 
 .category-row::-webkit-scrollbar {
@@ -511,7 +511,7 @@ a {
 }
 
 .category-card:first-child {
-  margin-left: 22px;
+  margin-left: 0;
 }
 
 .category-photo {
