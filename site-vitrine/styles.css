@@ -367,7 +367,7 @@ a {
 
 .hero-showcase {
   position: relative;
-  min-height: 270px;
+  min-height: 218px;
   padding: 18px;
 }
 
@@ -392,8 +392,7 @@ a {
   display: grid;
   align-content: start;
   gap: 7px;
-  left: 50%;
-  width: min(280px, 84%);
+  width: min(180px, 50%);
   min-height: 116px;
   padding: 12px;
   border-radius: 16px;
@@ -428,16 +427,18 @@ a {
 }
 
 .showcase-card-main {
+  left: 18px;
   top: 18px;
   z-index: 1;
-  transform: translateX(-50%) rotate(-2deg);
+  transform: rotate(-3deg);
   box-shadow:
     0 0 0 1px rgba(240, 91, 79, 0.26),
     0 16px 32px rgba(240, 91, 79, 0.12);
 }
 
 .showcase-card-progress {
-  top: 82px;
+  left: 50%;
+  top: 52px;
   z-index: 2;
   transform: translateX(-50%) rotate(1deg);
   box-shadow:
@@ -446,9 +447,10 @@ a {
 }
 
 .showcase-card-soft {
-  top: 146px;
+  right: 18px;
+  top: 86px;
   z-index: 3;
-  transform: translateX(-50%) rotate(2deg);
+  transform: rotate(3deg);
   box-shadow:
     0 0 0 1px rgba(243, 181, 27, 0.30),
     0 16px 32px rgba(243, 181, 27, 0.12);
