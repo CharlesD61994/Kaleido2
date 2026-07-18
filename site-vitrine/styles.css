@@ -485,10 +485,10 @@ a {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
-  scroll-padding-left: 28px;
+  scroll-padding-left: 20px;
   scrollbar-width: none;
-  margin: 0;
-  padding: 10px 4px 10px 28px;
+  margin: 0 -26px 0 -20px;
+  padding: 10px 26px 10px 20px;
 }
 
 .category-row::-webkit-scrollbar {
