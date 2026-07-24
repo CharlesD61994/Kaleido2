@@ -154,9 +154,11 @@ const colorCardMarkup = (color, sectionName) => `
     aria-label="Gérer ${color.label}"
   >
     <span class="color-check" aria-hidden="true"></span>
-    <span class="color-name-button">
-      ${color.label}
+    <span class="color-card-copy">
+      <strong>${color.label}</strong>
+      <small>${getColorPhotos(color).length ? `${getColorPhotos(color).length} photo(s)` : "Aucune photo"}</small>
     </span>
+    <span class="color-card-action" aria-hidden="true">Gérer</span>
     ${activeColorMenuId === `${sectionName}:${color.id}` ? colorMenuMarkup(color, sectionName) : ""}
   </div>
 `;
@@ -168,8 +170,8 @@ const renderColorManagementModal = () => {
 
   colorManageTitle.textContent = section ? section.title : "Gérer les couleurs";
   colorManageDescription.textContent = section
-    ? `${colors.length} couleur(s) offerte(s) dans ${section.title.toLowerCase()}.`
-    : "Ajoute les couleurs offertes pour cette option.";
+    ? `Ajoute et organise les choix de ${section.title.toLowerCase()} proposés aux clients.`
+    : "Ajoute et organise les couleurs offertes pour cette option.";
   colorManageGrid.innerHTML = colors.length
     ? colors.map((color) => colorCardMarkup(color, section.name)).join("")
     : '<p class="empty-colors">Aucune couleur ajoutée pour le moment.</p>';
@@ -197,9 +199,12 @@ const renderColorSections = () => {
         <fieldset class="color-section" data-color-section="${section.name}">
           <legend>${section.title}</legend>
           <button class="color-summary-card" type="button" data-manage-color-section="${section.name}">
-            <span>
-              <strong>${colors.length} couleur(s)</strong>
-              <small>${colors.length ? "Cliquer pour gérer les choix" : "Aucune couleur ajoutée"}</small>
+            <span class="color-summary-icon" aria-hidden="true">
+              ${previewColors.map((color) => `<i style="--swatch:${color.value}"></i>`).join("")}
+            </span>
+            <span class="color-summary-copy">
+              <strong>${section.title}</strong>
+              <small>${colors.length ? `${colors.length} couleur(s) offerte(s)` : "À configurer"}</small>
             </span>
             <span class="summary-swatches" aria-hidden="true">
               ${
@@ -208,6 +213,7 @@ const renderColorSections = () => {
                   : "<i></i>"
               }
             </span>
+            <span class="color-summary-action">Gérer</span>
           </button>
         </fieldset>
       `;
