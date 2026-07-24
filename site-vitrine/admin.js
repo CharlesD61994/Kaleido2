@@ -47,6 +47,7 @@ let selectedColorsBySection = { mainColors: [], accentColors: [] };
 let editingColorContext = null;
 let managingColorSection = null;
 let photoColorContext = null;
+let colorManageView = "list";
 
 const readJson = (key, fallback) => {
   try {
@@ -165,6 +166,81 @@ const renderColorManagementModal = () => {
   if (!colorManageGrid || !colorManageTitle || !colorManageDescription) return;
   const section = colorSectionsConfig.find((item) => item.name === managingColorSection);
   const colors = section ? readCustomColors(section.name) : [];
+  const modalAddRow = colorManageModal?.querySelector(".modal-color-add");
+
+  if (modalAddRow) modalAddRow.hidden = colorManageView !== "list";
+
+  if (colorManageView === "edit") {
+    const color = getColorFromContext(editingColorContext);
+    colorManageTitle.textContent = "Modifier la couleur";
+    colorManageDescription.textContent = color
+      ? `Ajuste le nom et la teinte de ${color.label}.`
+      : "Ajuste le nom et la teinte de cette couleur.";
+    colorManageGrid.innerHTML = color
+      ? `
+          <div class="color-subview">
+            <button class="secondary-button color-subview-back" type="button" data-back-color-manage>Retour aux couleurs</button>
+            <label>
+              Nom
+              <input id="colorInlineEditName" type="text" value="${color.label}" />
+            </label>
+            <label>
+              Couleur
+              <input id="colorInlineEditValue" type="color" value="${color.value}" />
+            </label>
+            <div class="admin-modal-actions">
+              <button class="secondary-button" type="button" data-back-color-manage>Annuler</button>
+              <button class="buy-button" type="button" data-save-color-edit>Enregistrer</button>
+            </div>
+          </div>
+        `
+      : '<p class="empty-colors">Cette couleur n’est plus disponible.</p>';
+    requestAnimationFrame(() => document.querySelector("#colorInlineEditName")?.focus());
+    return;
+  }
+
+  if (colorManageView === "photos") {
+    const color = getColorFromContext(photoColorContext);
+    const photos = color ? getColorPhotos(color) : [];
+    colorManageTitle.textContent = "Photos associées";
+    colorManageDescription.textContent = color
+      ? `Photos associées à ${color.label}.`
+      : "Ajoute les photos des pelotes pour aider les clients à visualiser la couleur.";
+    colorManageGrid.innerHTML = `
+      <div class="color-subview">
+        <button class="secondary-button color-subview-back" type="button" data-back-color-manage>Retour aux couleurs</button>
+        <label class="photo-drop modal-photo-drop">
+          <input id="colorInlinePhotoInput" type="file" accept="image/*" multiple />
+          <span>Ajouter des photos</span>
+          <small>Tu peux en sélectionner plusieurs à la fois.</small>
+        </label>
+        <div class="modal-photo-grid">
+          ${
+            photos.length
+              ? photos
+                  .map(
+                    (photo) => `
+                      <article class="modal-photo-card">
+                        ${
+                          photo.url
+                            ? `<img src="${photo.url}" alt="${photo.name}" />`
+                            : `<div class="modal-photo-placeholder" style="--swatch:${color.value}"></div>`
+                        }
+                        <div>
+                          <strong>${photo.name}</strong>
+                          <button type="button" data-delete-color-photo="${photo.id}">Supprimer</button>
+                        </div>
+                      </article>
+                    `,
+                  )
+                  .join("")
+              : '<p class="empty-drafts">Aucune photo associée pour le moment.</p>'
+          }
+        </div>
+      </div>
+    `;
+    return;
+  }
 
   colorManageTitle.textContent = section ? section.title : "Gérer les couleurs";
   colorManageDescription.textContent = section
@@ -362,24 +438,26 @@ const addCustomColor = (sectionName = managingColorSection) => {
 
 const editCustomColor = (colorId, sectionName) => {
   const color = readCustomColors(sectionName).find((item) => item.id === colorId);
-  if (!color || !colorEditModal || !colorEditName || !colorEditValue) return;
+  if (!color) return;
 
   editingColorContext = { colorId, sectionName };
   activeColorMenuId = null;
-  colorEditName.value = color.label;
-  colorEditValue.value = color.value;
-  colorEditModal.hidden = false;
-  requestAnimationFrame(() => colorEditName.focus());
+  colorManageView = "edit";
+  renderColorManagementModal();
 };
 
 const closeColorEditModal = () => {
   editingColorContext = null;
-  if (colorEditModal) colorEditModal.hidden = true;
+  colorManageView = "list";
+  renderColorManagementModal();
 };
 
 const openColorManageModal = (sectionName) => {
   managingColorSection = sectionName;
   activeColorMenuId = null;
+  editingColorContext = null;
+  photoColorContext = null;
+  colorManageView = "list";
   if (colorManageModal) colorManageModal.hidden = false;
   renderColorManagementModal();
 };
@@ -387,19 +465,26 @@ const openColorManageModal = (sectionName) => {
 const closeColorManageModal = () => {
   managingColorSection = null;
   activeColorMenuId = null;
+  editingColorContext = null;
+  photoColorContext = null;
+  colorManageView = "list";
   if (colorManageModal) colorManageModal.hidden = true;
   if (modalColorLabel) modalColorLabel.value = "";
 };
 
 const saveColorEdit = () => {
-  if (!editingColorContext || !colorEditName || !colorEditValue) return;
+  const inlineName = document.querySelector("#colorInlineEditName");
+  const inlineValue = document.querySelector("#colorInlineEditValue");
+  const nameInput = inlineName || colorEditName;
+  const valueInput = inlineValue || colorEditValue;
+  if (!editingColorContext || !nameInput || !valueInput) return;
   const { colorId, sectionName } = editingColorContext;
 
   saveCustomColors(
     sectionName,
     readCustomColors(sectionName).map((item) =>
       item.id === colorId
-        ? { ...item, label: colorEditName.value.trim() || item.label, value: colorEditValue.value || item.value }
+        ? { ...item, label: nameInput.value.trim() || item.label, value: valueInput.value || item.value }
         : item,
     ),
   );
@@ -432,19 +517,19 @@ const deleteCustomColor = (colorId, sectionName) => {
 
 const openColorPhotoModal = (colorId, sectionName) => {
   const color = readCustomColors(sectionName).find((item) => item.id === colorId);
-  if (!color || !colorPhotoModal) return;
+  if (!color) return;
 
   photoColorContext = { colorId, sectionName };
   activeColorMenuId = null;
-  colorPhotoModal.hidden = false;
+  colorManageView = "photos";
   renderColorSections();
   renderColorManagementModal();
-  renderColorPhotoModal();
 };
 
 const closeColorPhotoModal = () => {
   photoColorContext = null;
-  if (colorPhotoModal) colorPhotoModal.hidden = true;
+  colorManageView = "list";
+  renderColorManagementModal();
   if (colorPhotoInput) colorPhotoInput.value = "";
 };
 
@@ -592,15 +677,33 @@ colorManageModal?.addEventListener("keydown", (event) => {
 
 colorManageModal?.addEventListener("click", (event) => {
   const addButton = event.target.closest("#modalAddColor");
+  const backButton = event.target.closest("[data-back-color-manage]");
+  const saveEditButton = event.target.closest("[data-save-color-edit]");
   const openMenuButton = event.target.closest("[data-open-color-menu]");
   const editButton = event.target.closest("[data-edit-color]");
   const photoButton = event.target.closest("[data-manage-color-photos]");
   const deleteButton = event.target.closest("[data-delete-color]");
+  const deletePhotoButton = event.target.closest("[data-delete-color-photo]");
   const colorMenu = event.target.closest(".color-menu");
 
   if (addButton) {
     event.preventDefault();
     addCustomColor(managingColorSection);
+    return;
+  }
+
+  if (backButton) {
+    event.preventDefault();
+    editingColorContext = null;
+    photoColorContext = null;
+    colorManageView = "list";
+    renderColorManagementModal();
+    return;
+  }
+
+  if (saveEditButton) {
+    event.preventDefault();
+    saveColorEdit();
     return;
   }
 
@@ -625,6 +728,12 @@ colorManageModal?.addEventListener("click", (event) => {
     return;
   }
 
+  if (deletePhotoButton) {
+    event.preventDefault();
+    deleteColorPhoto(deletePhotoButton.dataset.deleteColorPhoto);
+    return;
+  }
+
   if (colorMenu) {
     event.stopPropagation();
     return;
@@ -639,6 +748,12 @@ colorManageModal?.addEventListener("click", (event) => {
         ? null
         : `${sectionName}:${openMenuButton.dataset.openColorMenu}`;
     renderColorManagementModal();
+  }
+});
+
+colorManageModal?.addEventListener("change", (event) => {
+  if (event.target.closest("#colorInlinePhotoInput")) {
+    addColorPhotos(Array.from(event.target.files || []));
   }
 });
 
