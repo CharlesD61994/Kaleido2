@@ -97,10 +97,15 @@
 }
 
 .option-chip-grid,
-.option-select-grid,
 .preview-options {
   display: flex;
   flex-wrap: wrap;
+  gap: 9px;
+}
+
+.option-select-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
 }
 
@@ -140,6 +145,8 @@
   display: inline-grid;
   grid-template-columns: 10px auto;
   align-items: center;
+  justify-content: start;
+  width: 100%;
   line-height: 1.1;
 }
 
