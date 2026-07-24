@@ -125,11 +125,14 @@
 .option-toggle::before,
 .preview-option::before {
   content: "";
+  display: block;
+  flex: 0 0 auto;
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: var(--option-color);
   box-shadow: 0 0 12px color-mix(in srgb, var(--option-color), transparent 28%);
+  transform: translateY(0);
 }
 
 .option-toggle {

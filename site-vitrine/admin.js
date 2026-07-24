@@ -51,7 +51,6 @@ const productOptions = [
 
 const draftsKey = "kaleido-storefront-product-drafts";
 const form = document.querySelector("#productForm");
-const optionLibrary = document.querySelector("#optionLibrary");
 const optionSelector = document.querySelector("#optionSelector");
 const previewName = document.querySelector("#previewName");
 const previewPrice = document.querySelector("#previewPrice");
@@ -75,18 +74,6 @@ const getSelectedOptions = () =>
   Array.from(optionSelector.querySelectorAll("input:checked")).map((input) => input.value);
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
-
-const renderOptionLibrary = () => {
-  optionLibrary.innerHTML = productOptions
-    .map(
-      (option) => `
-        <span class="option-chip" style="--option-color:${option.color}" title="${option.values.join(", ")}">
-          ${option.label}
-        </span>
-      `,
-    )
-    .join("");
-};
 
 const renderOptionSelector = () => {
   optionSelector.innerHTML = productOptions
@@ -181,7 +168,6 @@ clearDraftsButton?.addEventListener("click", () => {
   renderDrafts();
 });
 
-renderOptionLibrary();
 renderOptionSelector();
 renderPreviewOptions();
 renderDrafts();
