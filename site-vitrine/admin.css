@@ -127,6 +127,87 @@
   border: 1px solid rgba(16, 39, 68, 0.08);
 }
 
+.photo-section {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1px solid rgba(16, 39, 68, 0.08);
+}
+
+.photo-section h3,
+.photo-section p {
+  margin: 0;
+}
+
+.photo-section h3 {
+  color: var(--k-ink);
+  font-family: "Syne", sans-serif;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.photo-section p,
+.photo-drop small {
+  color: var(--k-muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.32;
+}
+
+.photo-drop {
+  min-height: 74px;
+  padding: 14px;
+  border-radius: 18px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px dashed rgba(48, 199, 201, 0.45);
+  box-shadow: 0 0 18px rgba(48, 199, 201, 0.10);
+  cursor: pointer;
+}
+
+.photo-drop input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.photo-drop span {
+  color: var(--k-teal);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.photo-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.photo-list span,
+.photo-list small {
+  display: inline-flex;
+  align-items: center;
+  min-height: 31px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(16, 39, 68, 0.08);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.photo-list i {
+  width: 11px;
+  height: 11px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--swatch), transparent 34%);
+}
+
 .option-chip,
 .option-toggle,
 .preview-option {
@@ -169,11 +250,12 @@
 }
 
 .color-toggle {
+  position: relative;
   display: grid;
   justify-items: center;
   gap: 6px;
-  min-height: 66px;
-  padding: 9px 6px;
+  min-height: 76px;
+  padding: 9px 6px 10px;
   border-radius: 18px;
   color: var(--k-ink);
   background: rgba(255, 255, 255, 0.72);
@@ -186,7 +268,15 @@
   cursor: pointer;
 }
 
-.color-toggle::before {
+.color-check {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.color-check::before {
   content: "";
   width: 28px;
   height: 28px;
@@ -210,6 +300,17 @@
   pointer-events: none;
 }
 
+.color-name-button {
+  max-width: 100%;
+  border: 0;
+  padding: 0 4px;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  line-height: 1.05;
+  cursor: pointer;
+}
+
 .option-toggle:has(input:checked) {
   color: white;
   background: linear-gradient(120deg, var(--option-color), color-mix(in srgb, var(--option-color), #ffffff 18%));
@@ -226,8 +327,48 @@
   border-color: rgba(255, 255, 255, 0.84);
 }
 
-.color-toggle:has(input:checked)::before {
+.color-toggle:has(input:checked) .color-check::before {
   border-color: white;
+}
+
+.color-menu {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% + 7px);
+  left: 50%;
+  width: min(176px, 86vw);
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(16, 39, 68, 0.12);
+  box-shadow:
+    0 18px 34px rgba(16, 39, 68, 0.14),
+    0 0 18px color-mix(in srgb, var(--swatch), transparent 72%);
+  transform: translateX(-50%);
+}
+
+.color-menu button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--k-ink);
+  background: rgba(16, 39, 68, 0.06);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.color-menu button[data-delete-color] {
+  color: var(--k-coral);
+  background: rgba(240, 91, 79, 0.11);
+}
+
+.color-menu small {
+  color: var(--k-muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
 .custom-color-row {

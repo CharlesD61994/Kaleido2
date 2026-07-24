@@ -72,6 +72,16 @@
               ></textarea>
             </label>
 
+            <fieldset class="photo-section">
+              <legend>Photos du produit</legend>
+              <label class="photo-drop">
+                <input type="file" name="productPhotos" accept="image/*" multiple />
+                <span>Ajouter les photos du produit</span>
+                <small>Les photos de la création terminée seront affichées dans la fiche.</small>
+              </label>
+              <div class="photo-list" id="productPhotoList"></div>
+            </fieldset>
+
             <fieldset>
               <legend>Options du produit</legend>
               <div class="option-select-grid" id="optionSelector">
@@ -111,6 +121,14 @@
             </fieldset>
 
             <div class="color-sections" id="colorSections"></div>
+
+            <section class="photo-section color-photo-section" aria-labelledby="color-photo-title">
+              <div>
+                <h3 id="color-photo-title">Photos des couleurs</h3>
+                <p>Les photos associées aux couleurs apparaîtront ici pour séparer les pelotes du produit final.</p>
+              </div>
+              <div class="photo-list" id="colorPhotoList"></div>
+            </section>
 
             <label>
               Lien ou ID Shopify

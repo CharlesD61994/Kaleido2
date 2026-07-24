@@ -1,66 +1,17 @@
 const productOptions = [
-  {
-    id: "mainColor",
-    label: "Couleur principale",
-    color: "#f05b4f",
-    values: ["Corail", "Crème", "Turquoise", "Rose doux", "Miel"],
-  },
-  {
-    id: "accentColor",
-    label: "Couleur secondaire",
-    color: "#30c7c9",
-    values: ["Bordure contrastante", "Rayures", "Détails"],
-  },
-  {
-    id: "recipient",
-    label: "Pour qui ?",
-    color: "#e84b94",
-    values: ["Homme", "Femme", "Enfant"],
-  },
-  {
-    id: "shoeSize",
-    label: "Pointure",
-    color: "#7c3aed",
-    values: ["Bébé", "Enfant", "Adulte", "Sur mesure"],
-  },
-  {
-    id: "keychain",
-    label: "Porte-clé",
-    color: "#f3b51b",
-    values: ["Oui", "Non", "Anneau", "Mousqueton"],
-  },
-  {
-    id: "personalization",
-    label: "Personnalisation",
-    color: "#8bbf3f",
-    values: ["Prénom", "Initiales", "Petit mot"],
-  },
-  {
-    id: "finish",
-    label: "Finition",
-    color: "#f4831f",
-    values: ["Simple", "Pompon", "Bouton", "Bordure"],
-  },
-  {
-    id: "delay",
-    label: "Délai",
-    color: "#188f91",
-    values: ["Standard", "Prioritaire", "Date souhaitée"],
-  },
-];
-
-const defaultColors = [
-  { id: "coral", label: "Corail", value: "#f05b4f" },
-  { id: "teal", label: "Turquoise", value: "#30c7c9" },
-  { id: "creamPink", label: "Crème rosée", value: "#f2d9c9" },
-  { id: "honey", label: "Miel", value: "#f3b51b" },
-  { id: "pink", label: "Rose", value: "#e84b94" },
-  { id: "violet", label: "Violet", value: "#7c3aed" },
+  { id: "mainColor", label: "Couleur principale", color: "#f05b4f" },
+  { id: "accentColor", label: "Couleur secondaire", color: "#30c7c9" },
+  { id: "recipient", label: "Pour qui ?", color: "#e84b94", values: ["Homme", "Femme", "Enfant"] },
+  { id: "shoeSize", label: "Pointure", color: "#7c3aed" },
+  { id: "keychain", label: "Porte-clé", color: "#f3b51b" },
+  { id: "personalization", label: "Personnalisation", color: "#8bbf3f" },
+  { id: "finish", label: "Finition", color: "#f4831f" },
+  { id: "delay", label: "Délai", color: "#188f91" },
 ];
 
 const colorSectionsConfig = [
-  { optionId: "mainColor", name: "mainColors", title: "Couleur principale" },
-  { optionId: "accentColor", name: "accentColors", title: "Couleur secondaire" },
+  { optionId: "mainColor", name: "mainColors", key: "main", title: "Couleur principale" },
+  { optionId: "accentColor", name: "accentColors", key: "accent", title: "Couleur secondaire" },
 ];
 
 const draftsKey = "kaleido-storefront-product-drafts";
@@ -72,8 +23,13 @@ const previewName = document.querySelector("#previewName");
 const previewPrice = document.querySelector("#previewPrice");
 const previewOptions = document.querySelector("#previewOptions");
 const previewSwatches = document.querySelector("#previewSwatches");
+const productPhotoList = document.querySelector("#productPhotoList");
+const colorPhotoList = document.querySelector("#colorPhotoList");
 const draftList = document.querySelector("#draftList");
 const clearDraftsButton = document.querySelector("#clearDrafts");
+
+let activeColorMenuId = null;
+let selectedColorsBySection = { mainColors: [], accentColors: [] };
 
 const readJson = (key, fallback) => {
   try {
@@ -92,23 +48,26 @@ const saveDrafts = (drafts) => writeJson(draftsKey, drafts);
 const readCustomColors = () => readJson(customColorsKey, []);
 const saveCustomColors = (colors) => writeJson(customColorsKey, colors);
 
-const getAvailableColors = () => [...defaultColors, ...readCustomColors()];
-
 const getSelectedOptions = () =>
   Array.from(optionSelector?.querySelectorAll("input:checked") || []).map((input) => input.value);
 
 const getSelectedColors = (name) =>
   Array.from(colorSections?.querySelectorAll(`input[name="${name}"]:checked`) || []).map((input) => input.value);
 
+const syncSelectedColors = () => {
+  selectedColorsBySection = {
+    mainColors: getSelectedColors("mainColors"),
+    accentColors: getSelectedColors("accentColors"),
+  };
+};
+
 const getAllSelectedColors = () =>
-  colorSectionsConfig.flatMap((section) => getSelectedColors(section.name));
+  colorSectionsConfig.flatMap((section) => selectedColorsBySection[section.name] || []);
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
 
 const renderOptionSelector = () => {
-  if (!optionSelector) {
-    return;
-  }
+  if (!optionSelector) return;
 
   optionSelector.innerHTML = productOptions
     .map(
@@ -122,42 +81,63 @@ const renderOptionSelector = () => {
     .join("");
 };
 
+const colorMenuMarkup = (color, sectionName) => `
+  <div class="color-menu" role="menu">
+    <button type="button" data-close-color-menu>Fermer</button>
+    <button type="button" data-edit-color="${color.id}">Modifier</button>
+    <button type="button" data-attach-color-photo="${color.id}">Associer une photo</button>
+    <button type="button" data-delete-color="${color.id}">Supprimer</button>
+    <small>Photo: ${color.photoName || "aucune"}</small>
+    <input hidden type="file" accept="image/*" data-color-photo-input="${color.id}" data-section-name="${sectionName}" />
+  </div>
+`;
+
 const renderColorSections = () => {
   const selectedOptions = getSelectedOptions();
   const visibleSections = colorSectionsConfig.filter((section) => selectedOptions.includes(section.optionId));
 
-  if (!colorSections) {
-    return;
-  }
+  if (!colorSections) return;
 
   if (visibleSections.length === 0) {
     colorSections.innerHTML = "";
+    selectedColorsBySection = { mainColors: [], accentColors: [] };
+    activeColorMenuId = null;
     return;
   }
 
-  const colors = getAvailableColors();
+  const colors = readCustomColors();
+
   colorSections.innerHTML = visibleSections
     .map(
       (section) => `
         <fieldset class="color-section" data-color-section="${section.name}">
           <legend>${section.title}</legend>
-          <div class="color-select-grid">
-            ${colors
-              .map(
-                (color, index) => `
-                  <label class="color-toggle" style="--swatch:${color.value}">
-                    <input
-                      type="checkbox"
-                      name="${section.name}"
-                      value="${color.value}"
-                      ${index < 3 ? "checked" : ""}
-                    />
-                    ${color.label}
-                  </label>
-                `,
-              )
-              .join("")}
-          </div>
+          ${
+            colors.length
+              ? `<div class="color-select-grid">
+                  ${colors
+                    .map(
+                      (color) => `
+                        <div class="color-toggle" style="--swatch:${color.value}">
+                          <label class="color-check" aria-label="${color.label}">
+                            <input
+                              type="checkbox"
+                              name="${section.name}"
+                              value="${color.value}"
+                              ${(selectedColorsBySection[section.name] || []).includes(color.value) ? "checked" : ""}
+                            />
+                          </label>
+                          <button class="color-name-button" type="button" data-open-color-menu="${color.id}">
+                            ${color.label}
+                          </button>
+                          ${activeColorMenuId === `${section.name}:${color.id}` ? colorMenuMarkup(color, section.name) : ""}
+                        </div>
+                      `,
+                    )
+                    .join("")}
+                </div>`
+              : '<p class="empty-colors">Aucune couleur ajoutée pour le moment.</p>'
+          }
           <div class="custom-color-row">
             <label>
               Ajouter une couleur
@@ -177,10 +157,7 @@ const renderColorSections = () => {
 
 const renderPreviewOptions = () => {
   const selectedOptions = getSelectedOptions();
-
-  if (!previewOptions) {
-    return;
-  }
+  if (!previewOptions) return;
 
   if (selectedOptions.length === 0) {
     previewOptions.innerHTML = '<span class="preview-option" style="--option-color:#30c7c9">Aucune option choisie</span>';
@@ -196,12 +173,8 @@ const renderPreviewOptions = () => {
 };
 
 const renderPreviewSwatches = () => {
-  if (!previewSwatches) {
-    return;
-  }
-
-  const selectedColors = [...new Set(getAllSelectedColors())];
-  const colors = selectedColors.length > 0 ? selectedColors : ["#f05b4f", "#30c7c9", "#f2d9c9"];
+  if (!previewSwatches) return;
+  const colors = [...new Set(getAllSelectedColors())];
 
   previewSwatches.innerHTML = [
     ...colors.slice(0, 4).map((color) => `<span style="--swatch:${color}"></span>`),
@@ -209,15 +182,42 @@ const renderPreviewSwatches = () => {
   ].join("");
 };
 
+const renderProductPhotoList = () => {
+  if (!productPhotoList || !form) return;
+  const input = form.elements.productPhotos;
+  const files = Array.from(input?.files || []);
+
+  productPhotoList.innerHTML = files.length
+    ? files.map((file) => `<span>${file.name}</span>`).join("")
+    : '<small>Aucune photo du produit ajoutée.</small>';
+};
+
+const renderColorPhotoList = () => {
+  if (!colorPhotoList) return;
+  const colorsWithPhotos = readCustomColors().filter((color) => color.photoName);
+
+  colorPhotoList.innerHTML = colorsWithPhotos.length
+    ? colorsWithPhotos
+        .map(
+          (color) => `
+            <span style="--swatch:${color.value}">
+              <i></i>
+              ${color.label}: ${color.photoName}
+            </span>
+          `,
+        )
+        .join("")
+    : '<small>Aucune photo de couleur associée.</small>';
+};
+
 const updatePreview = () => {
   const formData = new FormData(form);
-  const name = formData.get("name")?.toString().trim() || "Pantoufles douillettes";
-  const price = formData.get("price")?.toString().trim() || "42,00 $";
-
-  previewName.textContent = name;
-  previewPrice.textContent = price;
+  previewName.textContent = formData.get("name")?.toString().trim() || "Pantoufles douillettes";
+  previewPrice.textContent = formData.get("price")?.toString().trim() || "42,00 $";
   renderPreviewOptions();
   renderPreviewSwatches();
+  renderProductPhotoList();
+  renderColorPhotoList();
 };
 
 const renderDrafts = () => {
@@ -235,12 +235,14 @@ const renderDrafts = () => {
         .filter(Boolean)
         .join(", ");
       const colorCount = [...new Set([...(draft.colors?.main || []), ...(draft.colors?.accent || [])])].length;
+      const photoCount = (draft.productPhotos || []).length + (draft.colorPhotos || []).length;
 
       return `
         <article class="draft-card">
           <strong>${draft.name}</strong>
           <small>${draft.category} · À partir de ${draft.price || "prix à définir"}</small>
           <small>${colorCount ? `${colorCount} couleur(s)` : "Couleurs à définir"}</small>
+          <small>${photoCount ? `${photoCount} photo(s)` : "Photos à définir"}</small>
           <small>${options || "Aucune option"}</small>
         </article>
       `;
@@ -256,33 +258,144 @@ const addCustomColor = (button) => {
   const label = labelInput?.value.trim() || "Nouvelle couleur";
   const value = valueInput?.value || "#f05b4f";
   const customColors = readCustomColors();
+  const existingColor = customColors.find((color) => color.value.toLowerCase() === value.toLowerCase());
 
-  if (!customColors.some((color) => color.value.toLowerCase() === value.toLowerCase())) {
-    saveCustomColors([...customColors, { id: crypto.randomUUID(), label, value }]);
+  if (!existingColor) {
+    saveCustomColors([...customColors, { id: crypto.randomUUID(), label, value, photoName: "" }]);
   }
 
+  const savedColor = existingColor || readCustomColors().at(-1);
+  selectedColorsBySection[sectionName] = [...new Set([...(selectedColorsBySection[sectionName] || []), savedColor.value])];
   renderColorSections();
   updatePreview();
+};
+
+const editCustomColor = (colorId) => {
+  const customColors = readCustomColors();
+  const color = customColors.find((item) => item.id === colorId);
+  if (!color) return;
+
+  const label = window.prompt("Nom de la couleur", color.label);
+  if (label === null) return;
+  const value = window.prompt("Code couleur", color.value);
+  if (value === null) return;
+
+  saveCustomColors(
+    customColors.map((item) =>
+      item.id === colorId ? { ...item, label: label.trim() || item.label, value: value.trim() || item.value } : item,
+    ),
+  );
+  activeColorMenuId = null;
+  renderColorSections();
+  updatePreview();
+};
+
+const deleteCustomColor = (colorId) => {
+  const customColors = readCustomColors();
+  const color = customColors.find((item) => item.id === colorId);
+  if (!color || !window.confirm(`Supprimer la couleur "${color.label}" ?`)) return;
+
+  saveCustomColors(customColors.filter((item) => item.id !== colorId));
+  selectedColorsBySection = {
+    mainColors: selectedColorsBySection.mainColors.filter((value) => value !== color.value),
+    accentColors: selectedColorsBySection.accentColors.filter((value) => value !== color.value),
+  };
+  activeColorMenuId = null;
+  renderColorSections();
+  updatePreview();
+};
+
+const attachColorPhoto = (colorId) => {
+  const input = colorSections?.querySelector(`input[data-color-photo-input="${colorId}"]`);
+  input?.click();
+};
+
+const saveColorPhotoName = (input) => {
+  const file = input.files?.[0];
+  const colorId = input.dataset.colorPhotoInput;
+  if (!file || !colorId) return;
+
+  saveCustomColors(
+    readCustomColors().map((item) => (item.id === colorId ? { ...item, photoName: file.name } : item)),
+  );
+  renderColorSections();
+  renderColorPhotoList();
 };
 
 form?.addEventListener("input", updatePreview);
 
 form?.addEventListener("change", (event) => {
   if (event.target.name === "options") {
+    syncSelectedColors();
     renderColorSections();
   }
+
+  if (event.target.matches("[data-color-photo-input]")) {
+    saveColorPhotoName(event.target);
+  }
+
+  if (event.target.name === "productPhotos") {
+    renderProductPhotoList();
+  }
+
+  syncSelectedColors();
   updatePreview();
 });
 
 form?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-add-color]");
-  if (button) {
-    addCustomColor(button);
+  const addButton = event.target.closest("[data-add-color]");
+  const openMenuButton = event.target.closest("[data-open-color-menu]");
+  const closeMenuButton = event.target.closest("[data-close-color-menu]");
+  const editButton = event.target.closest("[data-edit-color]");
+  const deleteButton = event.target.closest("[data-delete-color]");
+  const photoButton = event.target.closest("[data-attach-color-photo]");
+
+  if (addButton) {
+    event.preventDefault();
+    addCustomColor(addButton);
+    return;
+  }
+
+  if (openMenuButton) {
+    event.preventDefault();
+    const sectionName = openMenuButton.closest(".color-section")?.dataset.colorSection;
+    activeColorMenuId =
+      activeColorMenuId === `${sectionName}:${openMenuButton.dataset.openColorMenu}`
+        ? null
+        : `${sectionName}:${openMenuButton.dataset.openColorMenu}`;
+    syncSelectedColors();
+    renderColorSections();
+    return;
+  }
+
+  if (closeMenuButton) {
+    event.preventDefault();
+    activeColorMenuId = null;
+    renderColorSections();
+    return;
+  }
+
+  if (editButton) {
+    event.preventDefault();
+    editCustomColor(editButton.dataset.editColor);
+    return;
+  }
+
+  if (deleteButton) {
+    event.preventDefault();
+    deleteCustomColor(deleteButton.dataset.deleteColor);
+    return;
+  }
+
+  if (photoButton) {
+    event.preventDefault();
+    attachColorPhoto(photoButton.dataset.attachColorPhoto);
   }
 });
 
 form?.addEventListener("submit", (event) => {
   event.preventDefault();
+  syncSelectedColors();
   const formData = new FormData(form);
   const draft = {
     id: crypto.randomUUID(),
@@ -292,9 +405,13 @@ form?.addEventListener("submit", (event) => {
     description: formData.get("description")?.toString().trim(),
     shopify: formData.get("shopify")?.toString().trim(),
     options: getSelectedOptions(),
+    productPhotos: Array.from(form.elements.productPhotos?.files || []).map((file) => file.name),
+    colorPhotos: readCustomColors()
+      .filter((color) => color.photoName)
+      .map((color) => ({ label: color.label, value: color.value, photoName: color.photoName })),
     colors: {
-      main: getSelectedColors("mainColors"),
-      accent: getSelectedColors("accentColors"),
+      main: selectedColorsBySection.mainColors,
+      accent: selectedColorsBySection.accentColors,
     },
     createdAt: new Date().toISOString(),
   };
@@ -302,7 +419,11 @@ form?.addEventListener("submit", (event) => {
   saveDrafts([draft, ...readDrafts()]);
   renderDrafts();
   form.reset();
+  selectedColorsBySection = { mainColors: [], accentColors: [] };
+  activeColorMenuId = null;
   renderColorSections();
+  renderProductPhotoList();
+  renderColorPhotoList();
   updatePreview();
 });
 
@@ -315,4 +436,6 @@ renderOptionSelector();
 renderColorSections();
 renderPreviewOptions();
 renderPreviewSwatches();
+renderProductPhotoList();
+renderColorPhotoList();
 renderDrafts();
