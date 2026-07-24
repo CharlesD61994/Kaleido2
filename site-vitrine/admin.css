@@ -339,7 +339,8 @@
   transform: translateX(-50%);
 }
 
-.color-menu button {
+.color-menu button,
+.color-file-button {
   min-height: 34px;
   border: 0;
   border-radius: 12px;
@@ -347,6 +348,19 @@
   background: rgba(16, 39, 68, 0.06);
   font-size: 12px;
   font-weight: 900;
+}
+
+.color-file-button {
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.color-file-button input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .color-menu button[data-delete-color] {
@@ -361,12 +375,32 @@
   line-height: 1.2;
 }
 
-.floating-color-picker {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
+.color-edit-form {
+  display: grid;
+  gap: 8px;
+}
+
+.color-edit-form label {
+  display: grid;
+  gap: 5px;
+  color: var(--k-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.color-edit-form input[type="text"] {
+  min-height: 34px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.color-edit-form input[type="color"] {
+  width: 100%;
+  min-height: 42px;
+  padding: 4px;
+  border-radius: 12px;
 }
 
 .custom-color-row {

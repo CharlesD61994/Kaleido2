@@ -1,4 +1,4 @@
-const productOptions = [
+﻿const productOptions = [
   { id: "mainColor", label: "Couleur principale", color: "#f05b4f" },
   { id: "accentColor", label: "Couleur secondaire", color: "#30c7c9" },
   { id: "recipient", label: "Pour qui ?", color: "#e84b94", values: ["Homme", "Femme", "Enfant"] },
@@ -83,26 +83,35 @@ const renderOptionSelector = () => {
     .join("");
 };
 
-const colorMenuMarkup = (color, sectionName) => `
-  <div class="color-menu" role="menu">
-    <button type="button" data-edit-color="${color.id}">Modifier</button>
-    <button type="button" data-attach-color-photo="${color.id}">Associer une photo</button>
-    <button type="button" data-delete-color="${color.id}">Supprimer</button>
-    <small>${getColorPhotoNames(color).length ? `${getColorPhotoNames(color).length} photo(s)` : "Aucune photo associée"}</small>
-    <input hidden type="file" accept="image/*" multiple data-color-photo-input="${color.id}" data-section-name="${sectionName}" />
+const colorEditMarkup = (color) => `
+  <div class="color-edit-form">
+    <label>
+      Nom
+      <input type="text" value="${color.label}" data-edit-color-label="${color.id}" />
+    </label>
+    <label>
+      Couleur
+      <input type="color" value="${color.value}" data-edit-color-value="${color.id}" />
+    </label>
+    <button type="button" data-save-color-edit="${color.id}">Enregistrer</button>
   </div>
 `;
 
-const colorEditMarkup = (color) => `
-  <input
-    class="floating-color-picker"
-    type="color"
-    value="${color.value}"
-    data-editing-color="${color.id}"
-    aria-label="Choisir la couleur"
-  />
+const colorMenuMarkup = (color, sectionName) => `
+  <div class="color-menu" role="menu">
+    ${
+      pendingColorEditId === color.id
+        ? colorEditMarkup(color)
+        : `<button type="button" data-edit-color="${color.id}">Modifier</button>`
+    }
+    <label class="color-file-button">
+      Associer une photo
+      <input type="file" accept="image/*" multiple data-color-photo-input="${color.id}" data-section-name="${sectionName}" />
+    </label>
+    <button type="button" data-delete-color="${color.id}">Supprimer</button>
+    <small>${getColorPhotoNames(color).length ? `${getColorPhotoNames(color).length} photo(s)` : "Aucune photo associée"}</small>
+  </div>
 `;
-
 const renderColorSections = () => {
   const selectedOptions = getSelectedOptions();
   const visibleSections = colorSectionsConfig.filter((section) => selectedOptions.includes(section.optionId));
@@ -284,25 +293,29 @@ const addCustomColor = (button) => {
 };
 
 const editCustomColor = (colorId) => {
-  const customColors = readCustomColors();
-  const color = customColors.find((item) => item.id === colorId);
-  if (!color) return;
-
-  const label = window.prompt("Nom de la couleur", color.label);
-  if (label === null) return;
-
-  saveCustomColors(
-    customColors.map((item) =>
-      item.id === colorId ? { ...item, label: label.trim() || item.label } : item,
-    ),
-  );
   pendingColorEditId = colorId;
   renderColorSections();
-  updatePreview();
+};
 
-  const picker = colorSections?.querySelector(".floating-color-picker");
-  if (!picker) return;
-  picker.click();
+const saveColorEdit = (colorId) => {
+  const menu = colorSections?.querySelector(`.color-menu [data-save-color-edit="${colorId}"]`)?.closest(".color-menu");
+  const labelInput = menu?.querySelector(`[data-edit-color-label="${colorId}"]`);
+  const valueInput = menu?.querySelector(`[data-edit-color-value="${colorId}"]`);
+  if (!labelInput || !valueInput) return;
+
+  saveCustomColors(
+    readCustomColors().map((item) =>
+      item.id === colorId
+        ? { ...item, label: labelInput.value.trim() || item.label, value: valueInput.value || item.value }
+        : item,
+    ),
+  );
+  pendingColorEditId = null;
+  activeColorMenuId = null;
+  syncSelectedColors();
+  renderColorSections();
+  updatePreview();
+  renderColorPhotoList();
 };
 
 const deleteCustomColor = (colorId) => {
@@ -318,11 +331,6 @@ const deleteCustomColor = (colorId) => {
   activeColorMenuId = null;
   renderColorSections();
   updatePreview();
-};
-
-const attachColorPhoto = (colorId) => {
-  const input = colorSections?.querySelector(`input[data-color-photo-input="${colorId}"]`);
-  input?.click();
 };
 
 const saveColorPhotoName = (input) => {
@@ -365,8 +373,9 @@ form?.addEventListener("click", (event) => {
   const addButton = event.target.closest("[data-add-color]");
   const openMenuButton = event.target.closest("[data-open-color-menu]");
   const editButton = event.target.closest("[data-edit-color]");
+  const saveEditButton = event.target.closest("[data-save-color-edit]");
   const deleteButton = event.target.closest("[data-delete-color]");
-  const photoButton = event.target.closest("[data-attach-color-photo]");
+  const colorMenu = event.target.closest(".color-menu");
 
   if (addButton) {
     event.preventDefault();
@@ -381,6 +390,13 @@ form?.addEventListener("click", (event) => {
     return;
   }
 
+  if (saveEditButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    saveColorEdit(saveEditButton.dataset.saveColorEdit);
+    return;
+  }
+
   if (deleteButton) {
     event.preventDefault();
     event.stopPropagation();
@@ -388,10 +404,8 @@ form?.addEventListener("click", (event) => {
     return;
   }
 
-  if (photoButton) {
-    event.preventDefault();
+  if (colorMenu) {
     event.stopPropagation();
-    attachColorPhoto(photoButton.dataset.attachColorPhoto);
     return;
   }
 
@@ -432,28 +446,6 @@ colorSections?.addEventListener("keydown", (event) => {
       : `${sectionName}:${colorCard.dataset.openColorMenu}`;
   pendingColorEditId = null;
   renderColorSections();
-});
-
-colorSections?.addEventListener("input", (event) => {
-  if (!event.target.matches(".floating-color-picker")) return;
-  const colorId = event.target.dataset.editingColor;
-  if (!colorId) return;
-
-  saveCustomColors(
-    readCustomColors().map((item) => (item.id === colorId ? { ...item, value: event.target.value } : item)),
-  );
-  syncSelectedColors();
-  updatePreview();
-  renderColorPhotoList();
-});
-
-colorSections?.addEventListener("change", (event) => {
-  if (!event.target.matches(".floating-color-picker")) return;
-
-  pendingColorEditId = null;
-  activeColorMenuId = null;
-  renderColorSections();
-  updatePreview();
 });
 
 form?.addEventListener("submit", (event) => {
