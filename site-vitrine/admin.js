@@ -30,6 +30,7 @@ const clearDraftsButton = document.querySelector("#clearDrafts");
 
 let activeColorMenuId = null;
 let selectedColorsBySection = { mainColors: [], accentColors: [] };
+let pendingColorEditId = null;
 
 const readJson = (key, fallback) => {
   try {
@@ -51,13 +52,13 @@ const saveCustomColors = (colors) => writeJson(customColorsKey, colors);
 const getSelectedOptions = () =>
   Array.from(optionSelector?.querySelectorAll("input:checked") || []).map((input) => input.value);
 
-const getSelectedColors = (name) =>
-  Array.from(colorSections?.querySelectorAll(`input[name="${name}"]:checked`) || []).map((input) => input.value);
-
 const syncSelectedColors = () => {
+  const selectedOptions = getSelectedOptions();
+  const colors = readCustomColors().map((color) => color.value);
+
   selectedColorsBySection = {
-    mainColors: getSelectedColors("mainColors"),
-    accentColors: getSelectedColors("accentColors"),
+    mainColors: selectedOptions.includes("mainColor") ? colors : [],
+    accentColors: selectedOptions.includes("accentColor") ? colors : [],
   };
 };
 
@@ -65,6 +66,7 @@ const getAllSelectedColors = () =>
   colorSectionsConfig.flatMap((section) => selectedColorsBySection[section.name] || []);
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
+const getColorPhotoNames = (color) => color.photoNames || (color.photoName ? [color.photoName] : []);
 
 const renderOptionSelector = () => {
   if (!optionSelector) return;
@@ -83,13 +85,22 @@ const renderOptionSelector = () => {
 
 const colorMenuMarkup = (color, sectionName) => `
   <div class="color-menu" role="menu">
-    <button type="button" data-close-color-menu>Fermer</button>
     <button type="button" data-edit-color="${color.id}">Modifier</button>
     <button type="button" data-attach-color-photo="${color.id}">Associer une photo</button>
     <button type="button" data-delete-color="${color.id}">Supprimer</button>
-    <small>Photo: ${color.photoName || "aucune"}</small>
-    <input hidden type="file" accept="image/*" data-color-photo-input="${color.id}" data-section-name="${sectionName}" />
+    <small>${getColorPhotoNames(color).length ? `${getColorPhotoNames(color).length} photo(s)` : "Aucune photo associée"}</small>
+    <input hidden type="file" accept="image/*" multiple data-color-photo-input="${color.id}" data-section-name="${sectionName}" />
   </div>
+`;
+
+const colorEditMarkup = (color) => `
+  <input
+    class="floating-color-picker"
+    type="color"
+    value="${color.value}"
+    data-editing-color="${color.id}"
+    aria-label="Choisir la couleur"
+  />
 `;
 
 const renderColorSections = () => {
@@ -118,19 +129,20 @@ const renderColorSections = () => {
                   ${colors
                     .map(
                       (color) => `
-                        <div class="color-toggle" style="--swatch:${color.value}">
-                          <label class="color-check" aria-label="${color.label}">
-                            <input
-                              type="checkbox"
-                              name="${section.name}"
-                              value="${color.value}"
-                              ${(selectedColorsBySection[section.name] || []).includes(color.value) ? "checked" : ""}
-                            />
-                          </label>
-                          <button class="color-name-button" type="button" data-open-color-menu="${color.id}">
+                        <div
+                          class="color-toggle"
+                          style="--swatch:${color.value}"
+                          data-open-color-menu="${color.id}"
+                          role="button"
+                          tabindex="0"
+                          aria-label="Gérer ${color.label}"
+                        >
+                          <span class="color-check" aria-hidden="true"></span>
+                          <span class="color-name-button">
                             ${color.label}
-                          </button>
+                          </span>
                           ${activeColorMenuId === `${section.name}:${color.id}` ? colorMenuMarkup(color, section.name) : ""}
+                          ${pendingColorEditId === color.id ? colorEditMarkup(color) : ""}
                         </div>
                       `,
                     )
@@ -194,17 +206,19 @@ const renderProductPhotoList = () => {
 
 const renderColorPhotoList = () => {
   if (!colorPhotoList) return;
-  const colorsWithPhotos = readCustomColors().filter((color) => color.photoName);
+  const colorsWithPhotos = readCustomColors().filter((color) => getColorPhotoNames(color).length > 0);
 
   colorPhotoList.innerHTML = colorsWithPhotos.length
     ? colorsWithPhotos
-        .map(
-          (color) => `
+        .flatMap((color) =>
+          getColorPhotoNames(color).map(
+            (photoName) => `
             <span style="--swatch:${color.value}">
               <i></i>
-              ${color.label}: ${color.photoName}
+              ${color.label}: ${photoName}
             </span>
           `,
+          ),
         )
         .join("")
     : '<small>Aucune photo de couleur associée.</small>';
@@ -261,11 +275,10 @@ const addCustomColor = (button) => {
   const existingColor = customColors.find((color) => color.value.toLowerCase() === value.toLowerCase());
 
   if (!existingColor) {
-    saveCustomColors([...customColors, { id: crypto.randomUUID(), label, value, photoName: "" }]);
+    saveCustomColors([...customColors, { id: crypto.randomUUID(), label, value, photoNames: [] }]);
   }
 
-  const savedColor = existingColor || readCustomColors().at(-1);
-  selectedColorsBySection[sectionName] = [...new Set([...(selectedColorsBySection[sectionName] || []), savedColor.value])];
+  syncSelectedColors();
   renderColorSections();
   updatePreview();
 };
@@ -277,17 +290,19 @@ const editCustomColor = (colorId) => {
 
   const label = window.prompt("Nom de la couleur", color.label);
   if (label === null) return;
-  const value = window.prompt("Code couleur", color.value);
-  if (value === null) return;
 
   saveCustomColors(
     customColors.map((item) =>
-      item.id === colorId ? { ...item, label: label.trim() || item.label, value: value.trim() || item.value } : item,
+      item.id === colorId ? { ...item, label: label.trim() || item.label } : item,
     ),
   );
-  activeColorMenuId = null;
+  pendingColorEditId = colorId;
   renderColorSections();
   updatePreview();
+
+  const picker = colorSections?.querySelector(".floating-color-picker");
+  if (!picker) return;
+  picker.click();
 };
 
 const deleteCustomColor = (colorId) => {
@@ -311,12 +326,16 @@ const attachColorPhoto = (colorId) => {
 };
 
 const saveColorPhotoName = (input) => {
-  const file = input.files?.[0];
+  const files = Array.from(input.files || []);
   const colorId = input.dataset.colorPhotoInput;
-  if (!file || !colorId) return;
+  if (files.length === 0 || !colorId) return;
 
   saveCustomColors(
-    readCustomColors().map((item) => (item.id === colorId ? { ...item, photoName: file.name } : item)),
+    readCustomColors().map((item) =>
+      item.id === colorId
+        ? { ...item, photoNames: [...new Set([...getColorPhotoNames(item), ...files.map((file) => file.name)])] }
+        : item,
+    ),
   );
   renderColorSections();
   renderColorPhotoList();
@@ -345,7 +364,6 @@ form?.addEventListener("change", (event) => {
 form?.addEventListener("click", (event) => {
   const addButton = event.target.closest("[data-add-color]");
   const openMenuButton = event.target.closest("[data-open-color-menu]");
-  const closeMenuButton = event.target.closest("[data-close-color-menu]");
   const editButton = event.target.closest("[data-edit-color]");
   const deleteButton = event.target.closest("[data-delete-color]");
   const photoButton = event.target.closest("[data-attach-color-photo]");
@@ -356,41 +374,86 @@ form?.addEventListener("click", (event) => {
     return;
   }
 
-  if (openMenuButton) {
-    event.preventDefault();
-    const sectionName = openMenuButton.closest(".color-section")?.dataset.colorSection;
-    activeColorMenuId =
-      activeColorMenuId === `${sectionName}:${openMenuButton.dataset.openColorMenu}`
-        ? null
-        : `${sectionName}:${openMenuButton.dataset.openColorMenu}`;
-    syncSelectedColors();
-    renderColorSections();
-    return;
-  }
-
-  if (closeMenuButton) {
-    event.preventDefault();
-    activeColorMenuId = null;
-    renderColorSections();
-    return;
-  }
-
   if (editButton) {
     event.preventDefault();
+    event.stopPropagation();
     editCustomColor(editButton.dataset.editColor);
     return;
   }
 
   if (deleteButton) {
     event.preventDefault();
+    event.stopPropagation();
     deleteCustomColor(deleteButton.dataset.deleteColor);
     return;
   }
 
   if (photoButton) {
     event.preventDefault();
+    event.stopPropagation();
     attachColorPhoto(photoButton.dataset.attachColorPhoto);
+    return;
   }
+
+  if (openMenuButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    const sectionName = openMenuButton.closest(".color-section")?.dataset.colorSection;
+    activeColorMenuId =
+      activeColorMenuId === `${sectionName}:${openMenuButton.dataset.openColorMenu}`
+        ? null
+        : `${sectionName}:${openMenuButton.dataset.openColorMenu}`;
+    pendingColorEditId = null;
+    syncSelectedColors();
+    renderColorSections();
+    return;
+  }
+});
+
+document.addEventListener("click", (event) => {
+  if (!activeColorMenuId && !pendingColorEditId) return;
+  if (event.target.closest(".color-toggle")) return;
+
+  activeColorMenuId = null;
+  pendingColorEditId = null;
+  renderColorSections();
+});
+
+colorSections?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const colorCard = event.target.closest("[data-open-color-menu]");
+  if (!colorCard) return;
+
+  event.preventDefault();
+  const sectionName = colorCard.closest(".color-section")?.dataset.colorSection;
+  activeColorMenuId =
+    activeColorMenuId === `${sectionName}:${colorCard.dataset.openColorMenu}`
+      ? null
+      : `${sectionName}:${colorCard.dataset.openColorMenu}`;
+  pendingColorEditId = null;
+  renderColorSections();
+});
+
+colorSections?.addEventListener("input", (event) => {
+  if (!event.target.matches(".floating-color-picker")) return;
+  const colorId = event.target.dataset.editingColor;
+  if (!colorId) return;
+
+  saveCustomColors(
+    readCustomColors().map((item) => (item.id === colorId ? { ...item, value: event.target.value } : item)),
+  );
+  syncSelectedColors();
+  updatePreview();
+  renderColorPhotoList();
+});
+
+colorSections?.addEventListener("change", (event) => {
+  if (!event.target.matches(".floating-color-picker")) return;
+
+  pendingColorEditId = null;
+  activeColorMenuId = null;
+  renderColorSections();
+  updatePreview();
 });
 
 form?.addEventListener("submit", (event) => {
@@ -407,8 +470,8 @@ form?.addEventListener("submit", (event) => {
     options: getSelectedOptions(),
     productPhotos: Array.from(form.elements.productPhotos?.files || []).map((file) => file.name),
     colorPhotos: readCustomColors()
-      .filter((color) => color.photoName)
-      .map((color) => ({ label: color.label, value: color.value, photoName: color.photoName })),
+      .filter((color) => getColorPhotoNames(color).length > 0)
+      .map((color) => ({ label: color.label, value: color.value, photoNames: getColorPhotoNames(color) })),
     colors: {
       main: selectedColorsBySection.mainColors,
       accent: selectedColorsBySection.accentColors,

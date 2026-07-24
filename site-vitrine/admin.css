@@ -273,7 +273,7 @@
   place-items: center;
   width: 32px;
   height: 32px;
-  cursor: pointer;
+  pointer-events: none;
 }
 
 .color-check::before {
@@ -321,16 +321,6 @@
   background: white;
 }
 
-.color-toggle:has(input:checked) {
-  color: white;
-  background: linear-gradient(135deg, var(--swatch), color-mix(in srgb, var(--swatch), #ffffff 18%));
-  border-color: rgba(255, 255, 255, 0.84);
-}
-
-.color-toggle:has(input:checked) .color-check::before {
-  border-color: white;
-}
-
 .color-menu {
   position: absolute;
   z-index: 4;
@@ -369,6 +359,14 @@
   font-size: 11px;
   font-weight: 800;
   line-height: 1.2;
+}
+
+.floating-color-picker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .custom-color-row {
