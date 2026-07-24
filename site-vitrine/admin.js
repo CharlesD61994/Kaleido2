@@ -71,11 +71,15 @@ const saveDrafts = (drafts) => {
 };
 
 const getSelectedOptions = () =>
-  Array.from(optionSelector.querySelectorAll("input:checked")).map((input) => input.value);
+  Array.from(optionSelector?.querySelectorAll("input:checked") || []).map((input) => input.value);
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
 
 const renderOptionSelector = () => {
+  if (!optionSelector) {
+    return;
+  }
+
   optionSelector.innerHTML = productOptions
     .map(
       (option) => `

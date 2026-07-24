@@ -137,6 +137,10 @@
 
 .option-toggle {
   cursor: pointer;
+  display: inline-grid;
+  grid-template-columns: 10px auto;
+  align-items: center;
+  line-height: 1.1;
 }
 
 .option-toggle input {
