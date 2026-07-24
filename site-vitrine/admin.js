@@ -15,7 +15,7 @@ const productOptions = [
     id: "recipient",
     label: "Pour qui ?",
     color: "#e84b94",
-    values: ["Femme", "Homme", "Enfant", "Bébé", "Adulte"],
+    values: ["Homme", "Femme", "Enfant"],
   },
   {
     id: "shoeSize",
@@ -52,9 +52,11 @@ const productOptions = [
 const draftsKey = "kaleido-storefront-product-drafts";
 const form = document.querySelector("#productForm");
 const optionSelector = document.querySelector("#optionSelector");
+const colorSelector = document.querySelector("#colorSelector");
 const previewName = document.querySelector("#previewName");
 const previewPrice = document.querySelector("#previewPrice");
 const previewOptions = document.querySelector("#previewOptions");
+const previewSwatches = document.querySelector("#previewSwatches");
 const draftList = document.querySelector("#draftList");
 const clearDraftsButton = document.querySelector("#clearDrafts");
 
@@ -72,6 +74,9 @@ const saveDrafts = (drafts) => {
 
 const getSelectedOptions = () =>
   Array.from(optionSelector?.querySelectorAll("input:checked") || []).map((input) => input.value);
+
+const getSelectedColors = () =>
+  Array.from(colorSelector?.querySelectorAll("input:checked") || []).map((input) => input.value);
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
 
@@ -95,6 +100,10 @@ const renderOptionSelector = () => {
 const renderPreviewOptions = () => {
   const selectedOptions = getSelectedOptions();
 
+  if (!previewOptions) {
+    return;
+  }
+
   if (selectedOptions.length === 0) {
     previewOptions.innerHTML = '<span class="preview-option" style="--option-color:#30c7c9">Aucune option choisie</span>';
     return;
@@ -108,6 +117,20 @@ const renderPreviewOptions = () => {
     .join("");
 };
 
+const renderPreviewSwatches = () => {
+  if (!previewSwatches) {
+    return;
+  }
+
+  const selectedColors = getSelectedColors();
+  const colors = selectedColors.length > 0 ? selectedColors : ["#f05b4f", "#30c7c9", "#f2d9c9"];
+
+  previewSwatches.innerHTML = [
+    ...colors.slice(0, 4).map((color) => `<span style="--swatch:${color}"></span>`),
+    '<button type="button" aria-label="Voir plus de couleurs">+</button>',
+  ].join("");
+};
+
 const updatePreview = () => {
   const formData = new FormData(form);
   const name = formData.get("name")?.toString().trim() || "Pantoufles douillettes";
@@ -116,6 +139,7 @@ const updatePreview = () => {
   previewName.textContent = name;
   previewPrice.textContent = price;
   renderPreviewOptions();
+  renderPreviewSwatches();
 };
 
 const renderDrafts = () => {
@@ -128,7 +152,7 @@ const renderDrafts = () => {
 
   draftList.innerHTML = drafts
     .map((draft) => {
-      const options = draft.options
+      const options = (draft.options || [])
         .map((id) => findOption(id)?.label)
         .filter(Boolean)
         .join(", ");
@@ -137,6 +161,7 @@ const renderDrafts = () => {
         <article class="draft-card">
           <strong>${draft.name}</strong>
           <small>${draft.category} · À partir de ${draft.price || "prix à définir"}</small>
+          <small>${draft.colors?.length ? `${draft.colors.length} couleur(s)` : "Couleurs à définir"}</small>
           <small>${options || "Aucune option"}</small>
         </article>
       `;
@@ -158,6 +183,7 @@ form?.addEventListener("submit", (event) => {
     description: formData.get("description")?.toString().trim(),
     shopify: formData.get("shopify")?.toString().trim(),
     options: getSelectedOptions(),
+    colors: getSelectedColors(),
     createdAt: new Date().toISOString(),
   };
 
@@ -174,4 +200,5 @@ clearDraftsButton?.addEventListener("click", () => {
 
 renderOptionSelector();
 renderPreviewOptions();
+renderPreviewSwatches();
 renderDrafts();

@@ -49,11 +49,11 @@
               <label>
                 Catégorie
                 <select name="category">
+                  <option>Vêtements</option>
+                  <option>Peluches crochetées</option>
                   <option>Pantoufles</option>
-                  <option>Bas</option>
-                  <option>Doudous</option>
-                  <option>Accessoires</option>
-                  <option>Bébé</option>
+                  <option>Porte-clés</option>
+                  <option>Couvertures</option>
                 </select>
               </label>
 
@@ -110,6 +110,36 @@
               </div>
             </fieldset>
 
+            <fieldset>
+              <legend>Couleurs offertes</legend>
+              <div class="color-select-grid" id="colorSelector">
+                <label class="color-toggle" style="--swatch:#f05b4f">
+                  <input type="checkbox" name="colors" value="#f05b4f" checked />
+                  Corail
+                </label>
+                <label class="color-toggle" style="--swatch:#30c7c9">
+                  <input type="checkbox" name="colors" value="#30c7c9" checked />
+                  Turquoise
+                </label>
+                <label class="color-toggle" style="--swatch:#f2d9c9">
+                  <input type="checkbox" name="colors" value="#f2d9c9" checked />
+                  Crème rosée
+                </label>
+                <label class="color-toggle" style="--swatch:#f3b51b">
+                  <input type="checkbox" name="colors" value="#f3b51b" />
+                  Miel
+                </label>
+                <label class="color-toggle" style="--swatch:#e84b94">
+                  <input type="checkbox" name="colors" value="#e84b94" />
+                  Rose
+                </label>
+                <label class="color-toggle" style="--swatch:#7c3aed">
+                  <input type="checkbox" name="colors" value="#7c3aed" />
+                  Violet
+                </label>
+              </div>
+            </fieldset>
+
             <label>
               Lien ou ID Shopify
               <input name="shopify" type="text" placeholder="À ajouter plus tard" />
@@ -136,7 +166,7 @@
             <div class="product-info">
               <h3 id="previewName">Pantoufles douillettes</h3>
               <p>À partir de <strong id="previewPrice">42,00 $</strong></p>
-              <div class="swatches" aria-label="Couleurs disponibles">
+              <div class="swatches" id="previewSwatches" aria-label="Couleurs disponibles">
                 <span style="--swatch:#f05b4f"></span>
                 <span style="--swatch:#30c7c9"></span>
                 <span style="--swatch:#f2d9c9"></span>

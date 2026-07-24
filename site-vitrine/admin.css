@@ -109,6 +109,12 @@
   gap: 9px;
 }
 
+.color-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
 .option-chip,
 .option-toggle,
 .preview-option {
@@ -150,7 +156,43 @@
   line-height: 1.1;
 }
 
+.color-toggle {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-height: 66px;
+  padding: 9px 6px;
+  border-radius: 18px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid color-mix(in srgb, var(--swatch), transparent 45%);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--swatch), transparent 78%);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-align: center;
+  cursor: pointer;
+}
+
+.color-toggle::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 0 0 1px rgba(16, 39, 68, 0.12),
+    0 0 18px color-mix(in srgb, var(--swatch), transparent 42%);
+}
+
 .option-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.color-toggle input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
@@ -164,6 +206,16 @@
 
 .option-toggle:has(input:checked)::before {
   background: white;
+}
+
+.color-toggle:has(input:checked) {
+  color: white;
+  background: linear-gradient(135deg, var(--swatch), color-mix(in srgb, var(--swatch), #ffffff 18%));
+  border-color: rgba(255, 255, 255, 0.84);
+}
+
+.color-toggle:has(input:checked)::before {
+  border-color: white;
 }
 
 .admin-form {
