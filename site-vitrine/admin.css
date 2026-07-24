@@ -115,6 +115,18 @@
   gap: 9px;
 }
 
+.color-sections {
+  display: grid;
+  gap: 14px;
+}
+
+.color-section {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1px solid rgba(16, 39, 68, 0.08);
+}
+
 .option-chip,
 .option-toggle,
 .preview-option {
@@ -216,6 +228,34 @@
 
 .color-toggle:has(input:checked)::before {
   border-color: white;
+}
+
+.custom-color-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.custom-color-row label {
+  min-width: 0;
+}
+
+.custom-color-row input[type="color"] {
+  min-height: 47px;
+  padding: 4px;
+}
+
+.add-color-button {
+  grid-column: 1 / -1;
+  min-height: 42px;
+  border: 0;
+  border-radius: 16px;
+  color: white;
+  background: linear-gradient(120deg, var(--k-cyan), var(--k-teal));
+  box-shadow: 0 0 20px rgba(48, 199, 201, 0.22);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .admin-form {

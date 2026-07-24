@@ -49,10 +49,25 @@ const productOptions = [
   },
 ];
 
+const defaultColors = [
+  { id: "coral", label: "Corail", value: "#f05b4f" },
+  { id: "teal", label: "Turquoise", value: "#30c7c9" },
+  { id: "creamPink", label: "Crème rosée", value: "#f2d9c9" },
+  { id: "honey", label: "Miel", value: "#f3b51b" },
+  { id: "pink", label: "Rose", value: "#e84b94" },
+  { id: "violet", label: "Violet", value: "#7c3aed" },
+];
+
+const colorSectionsConfig = [
+  { optionId: "mainColor", name: "mainColors", title: "Couleur principale" },
+  { optionId: "accentColor", name: "accentColors", title: "Couleur secondaire" },
+];
+
 const draftsKey = "kaleido-storefront-product-drafts";
+const customColorsKey = "kaleido-storefront-custom-colors";
 const form = document.querySelector("#productForm");
 const optionSelector = document.querySelector("#optionSelector");
-const colorSelector = document.querySelector("#colorSelector");
+const colorSections = document.querySelector("#colorSections");
 const previewName = document.querySelector("#previewName");
 const previewPrice = document.querySelector("#previewPrice");
 const previewOptions = document.querySelector("#previewOptions");
@@ -60,23 +75,33 @@ const previewSwatches = document.querySelector("#previewSwatches");
 const draftList = document.querySelector("#draftList");
 const clearDraftsButton = document.querySelector("#clearDrafts");
 
-const readDrafts = () => {
+const readJson = (key, fallback) => {
   try {
-    return JSON.parse(localStorage.getItem(draftsKey) || "[]");
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
   } catch {
-    return [];
+    return fallback;
   }
 };
 
-const saveDrafts = (drafts) => {
-  localStorage.setItem(draftsKey, JSON.stringify(drafts));
+const writeJson = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value));
 };
+
+const readDrafts = () => readJson(draftsKey, []);
+const saveDrafts = (drafts) => writeJson(draftsKey, drafts);
+const readCustomColors = () => readJson(customColorsKey, []);
+const saveCustomColors = (colors) => writeJson(customColorsKey, colors);
+
+const getAvailableColors = () => [...defaultColors, ...readCustomColors()];
 
 const getSelectedOptions = () =>
   Array.from(optionSelector?.querySelectorAll("input:checked") || []).map((input) => input.value);
 
-const getSelectedColors = () =>
-  Array.from(colorSelector?.querySelectorAll("input:checked") || []).map((input) => input.value);
+const getSelectedColors = (name) =>
+  Array.from(colorSections?.querySelectorAll(`input[name="${name}"]:checked`) || []).map((input) => input.value);
+
+const getAllSelectedColors = () =>
+  colorSectionsConfig.flatMap((section) => getSelectedColors(section.name));
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
 
@@ -92,6 +117,59 @@ const renderOptionSelector = () => {
           <input type="checkbox" name="options" value="${option.id}" />
           ${option.label}
         </label>
+      `,
+    )
+    .join("");
+};
+
+const renderColorSections = () => {
+  const selectedOptions = getSelectedOptions();
+  const visibleSections = colorSectionsConfig.filter((section) => selectedOptions.includes(section.optionId));
+
+  if (!colorSections) {
+    return;
+  }
+
+  if (visibleSections.length === 0) {
+    colorSections.innerHTML = "";
+    return;
+  }
+
+  const colors = getAvailableColors();
+  colorSections.innerHTML = visibleSections
+    .map(
+      (section) => `
+        <fieldset class="color-section" data-color-section="${section.name}">
+          <legend>${section.title}</legend>
+          <div class="color-select-grid">
+            ${colors
+              .map(
+                (color, index) => `
+                  <label class="color-toggle" style="--swatch:${color.value}">
+                    <input
+                      type="checkbox"
+                      name="${section.name}"
+                      value="${color.value}"
+                      ${index < 3 ? "checked" : ""}
+                    />
+                    ${color.label}
+                  </label>
+                `,
+              )
+              .join("")}
+          </div>
+          <div class="custom-color-row">
+            <label>
+              Ajouter une couleur
+              <input type="text" name="${section.name}Label" placeholder="Nom" />
+            </label>
+            <label>
+              Code
+              <input type="color" name="${section.name}Value" value="#f05b4f" />
+            </label>
+            <button class="add-color-button" type="button" data-add-color="${section.name}">Ajouter</button>
+          </div>
+        </fieldset>
       `,
     )
     .join("");
@@ -122,7 +200,7 @@ const renderPreviewSwatches = () => {
     return;
   }
 
-  const selectedColors = getSelectedColors();
+  const selectedColors = [...new Set(getAllSelectedColors())];
   const colors = selectedColors.length > 0 ? selectedColors : ["#f05b4f", "#30c7c9", "#f2d9c9"];
 
   previewSwatches.innerHTML = [
@@ -156,12 +234,13 @@ const renderDrafts = () => {
         .map((id) => findOption(id)?.label)
         .filter(Boolean)
         .join(", ");
+      const colorCount = [...new Set([...(draft.colors?.main || []), ...(draft.colors?.accent || [])])].length;
 
       return `
         <article class="draft-card">
           <strong>${draft.name}</strong>
           <small>${draft.category} · À partir de ${draft.price || "prix à définir"}</small>
-          <small>${draft.colors?.length ? `${draft.colors.length} couleur(s)` : "Couleurs à définir"}</small>
+          <small>${colorCount ? `${colorCount} couleur(s)` : "Couleurs à définir"}</small>
           <small>${options || "Aucune option"}</small>
         </article>
       `;
@@ -169,8 +248,38 @@ const renderDrafts = () => {
     .join("");
 };
 
+const addCustomColor = (button) => {
+  const sectionName = button.dataset.addColor;
+  const section = button.closest(".color-section");
+  const labelInput = section?.querySelector(`input[name="${sectionName}Label"]`);
+  const valueInput = section?.querySelector(`input[name="${sectionName}Value"]`);
+  const label = labelInput?.value.trim() || "Nouvelle couleur";
+  const value = valueInput?.value || "#f05b4f";
+  const customColors = readCustomColors();
+
+  if (!customColors.some((color) => color.value.toLowerCase() === value.toLowerCase())) {
+    saveCustomColors([...customColors, { id: crypto.randomUUID(), label, value }]);
+  }
+
+  renderColorSections();
+  updatePreview();
+};
+
 form?.addEventListener("input", updatePreview);
-form?.addEventListener("change", updatePreview);
+
+form?.addEventListener("change", (event) => {
+  if (event.target.name === "options") {
+    renderColorSections();
+  }
+  updatePreview();
+});
+
+form?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-add-color]");
+  if (button) {
+    addCustomColor(button);
+  }
+});
 
 form?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -183,13 +292,17 @@ form?.addEventListener("submit", (event) => {
     description: formData.get("description")?.toString().trim(),
     shopify: formData.get("shopify")?.toString().trim(),
     options: getSelectedOptions(),
-    colors: getSelectedColors(),
+    colors: {
+      main: getSelectedColors("mainColors"),
+      accent: getSelectedColors("accentColors"),
+    },
     createdAt: new Date().toISOString(),
   };
 
   saveDrafts([draft, ...readDrafts()]);
   renderDrafts();
   form.reset();
+  renderColorSections();
   updatePreview();
 });
 
@@ -199,6 +312,7 @@ clearDraftsButton?.addEventListener("click", () => {
 });
 
 renderOptionSelector();
+renderColorSections();
 renderPreviewOptions();
 renderPreviewSwatches();
 renderDrafts();
