@@ -27,10 +27,14 @@ const productPhotoList = document.querySelector("#productPhotoList");
 const colorPhotoList = document.querySelector("#colorPhotoList");
 const draftList = document.querySelector("#draftList");
 const clearDraftsButton = document.querySelector("#clearDrafts");
+const colorEditModal = document.querySelector("#colorEditModal");
+const colorEditName = document.querySelector("#colorEditName");
+const colorEditValue = document.querySelector("#colorEditValue");
+const saveColorEditButton = document.querySelector("#saveColorEdit");
 
 let activeColorMenuId = null;
 let selectedColorsBySection = { mainColors: [], accentColors: [] };
-let pendingColorEditId = null;
+let editingColorId = null;
 
 const readJson = (key, fallback) => {
   try {
@@ -83,27 +87,9 @@ const renderOptionSelector = () => {
     .join("");
 };
 
-const colorEditMarkup = (color) => `
-  <div class="color-edit-form">
-    <label>
-      Nom
-      <input type="text" value="${color.label}" data-edit-color-label="${color.id}" />
-    </label>
-    <label>
-      Couleur
-      <input type="color" value="${color.value}" data-edit-color-value="${color.id}" />
-    </label>
-    <button type="button" data-save-color-edit="${color.id}">Enregistrer</button>
-  </div>
-`;
-
 const colorMenuMarkup = (color, sectionName) => `
   <div class="color-menu" role="menu">
-    ${
-      pendingColorEditId === color.id
-        ? colorEditMarkup(color)
-        : `<button type="button" data-edit-color="${color.id}">Modifier</button>`
-    }
+    <button type="button" data-edit-color="${color.id}">Modifier</button>
     <label class="color-file-button">
       Associer une photo
       <input type="file" accept="image/*" multiple data-color-photo-input="${color.id}" data-section-name="${sectionName}" />
@@ -151,7 +137,6 @@ const renderColorSections = () => {
                             ${color.label}
                           </span>
                           ${activeColorMenuId === `${section.name}:${color.id}` ? colorMenuMarkup(color, section.name) : ""}
-                          ${pendingColorEditId === color.id ? colorEditMarkup(color) : ""}
                         </div>
                       `,
                     )
@@ -293,25 +278,33 @@ const addCustomColor = (button) => {
 };
 
 const editCustomColor = (colorId) => {
-  pendingColorEditId = colorId;
-  renderColorSections();
+  const color = readCustomColors().find((item) => item.id === colorId);
+  if (!color || !colorEditModal || !colorEditName || !colorEditValue) return;
+
+  editingColorId = colorId;
+  activeColorMenuId = null;
+  colorEditName.value = color.label;
+  colorEditValue.value = color.value;
+  colorEditModal.hidden = false;
+  requestAnimationFrame(() => colorEditName.focus());
 };
 
-const saveColorEdit = (colorId) => {
-  const menu = colorSections?.querySelector(`.color-menu [data-save-color-edit="${colorId}"]`)?.closest(".color-menu");
-  const labelInput = menu?.querySelector(`[data-edit-color-label="${colorId}"]`);
-  const valueInput = menu?.querySelector(`[data-edit-color-value="${colorId}"]`);
-  if (!labelInput || !valueInput) return;
+const closeColorEditModal = () => {
+  editingColorId = null;
+  if (colorEditModal) colorEditModal.hidden = true;
+};
+
+const saveColorEdit = () => {
+  if (!editingColorId || !colorEditName || !colorEditValue) return;
 
   saveCustomColors(
     readCustomColors().map((item) =>
-      item.id === colorId
-        ? { ...item, label: labelInput.value.trim() || item.label, value: valueInput.value || item.value }
+      item.id === editingColorId
+        ? { ...item, label: colorEditName.value.trim() || item.label, value: colorEditValue.value || item.value }
         : item,
     ),
   );
-  pendingColorEditId = null;
-  activeColorMenuId = null;
+  closeColorEditModal();
   syncSelectedColors();
   renderColorSections();
   updatePreview();
@@ -373,7 +366,6 @@ form?.addEventListener("click", (event) => {
   const addButton = event.target.closest("[data-add-color]");
   const openMenuButton = event.target.closest("[data-open-color-menu]");
   const editButton = event.target.closest("[data-edit-color]");
-  const saveEditButton = event.target.closest("[data-save-color-edit]");
   const deleteButton = event.target.closest("[data-delete-color]");
   const colorMenu = event.target.closest(".color-menu");
 
@@ -387,13 +379,6 @@ form?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
     editCustomColor(editButton.dataset.editColor);
-    return;
-  }
-
-  if (saveEditButton) {
-    event.preventDefault();
-    event.stopPropagation();
-    saveColorEdit(saveEditButton.dataset.saveColorEdit);
     return;
   }
 
@@ -417,7 +402,6 @@ form?.addEventListener("click", (event) => {
       activeColorMenuId === `${sectionName}:${openMenuButton.dataset.openColorMenu}`
         ? null
         : `${sectionName}:${openMenuButton.dataset.openColorMenu}`;
-    pendingColorEditId = null;
     syncSelectedColors();
     renderColorSections();
     return;
@@ -425,11 +409,10 @@ form?.addEventListener("click", (event) => {
 });
 
 document.addEventListener("click", (event) => {
-  if (!activeColorMenuId && !pendingColorEditId) return;
+  if (!activeColorMenuId) return;
   if (event.target.closest(".color-toggle")) return;
 
   activeColorMenuId = null;
-  pendingColorEditId = null;
   renderColorSections();
 });
 
@@ -444,8 +427,21 @@ colorSections?.addEventListener("keydown", (event) => {
     activeColorMenuId === `${sectionName}:${colorCard.dataset.openColorMenu}`
       ? null
       : `${sectionName}:${colorCard.dataset.openColorMenu}`;
-  pendingColorEditId = null;
   renderColorSections();
+});
+
+saveColorEditButton?.addEventListener("click", saveColorEdit);
+
+colorEditModal?.addEventListener("click", (event) => {
+  if (event.target === colorEditModal || event.target.closest("[data-close-color-edit]")) {
+    closeColorEditModal();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !colorEditModal?.hidden) {
+    closeColorEditModal();
+  }
 });
 
 form?.addEventListener("submit", (event) => {
@@ -476,6 +472,7 @@ form?.addEventListener("submit", (event) => {
   form.reset();
   selectedColorsBySection = { mainColors: [], accentColors: [] };
   activeColorMenuId = null;
+  closeColorEditModal();
   renderColorSections();
   renderProductPhotoList();
   renderColorPhotoList();

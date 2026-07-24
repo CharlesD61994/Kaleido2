@@ -182,6 +182,26 @@
       </section>
     </main>
 
+    <div class="admin-modal-backdrop" id="colorEditModal" hidden>
+      <section class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="colorEditTitle">
+        <button class="admin-modal-close" type="button" data-close-color-edit aria-label="Fermer">×</button>
+        <span class="admin-kicker">Couleur</span>
+        <h2 id="colorEditTitle">Modifier la couleur</h2>
+        <label>
+          Nom
+          <input id="colorEditName" type="text" />
+        </label>
+        <label>
+          Couleur
+          <input id="colorEditValue" type="color" />
+        </label>
+        <div class="admin-modal-actions">
+          <button class="secondary-button" type="button" data-close-color-edit>Annuler</button>
+          <button class="buy-button" type="button" id="saveColorEdit">Enregistrer</button>
+        </div>
+      </section>
+    </div>
+
     <script src="./admin.js"></script>
   </body>
 </html>

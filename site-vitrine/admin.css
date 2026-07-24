@@ -375,34 +375,6 @@
   line-height: 1.2;
 }
 
-.color-edit-form {
-  display: grid;
-  gap: 8px;
-}
-
-.color-edit-form label {
-  display: grid;
-  gap: 5px;
-  color: var(--k-muted);
-  font-size: 11px;
-  font-weight: 900;
-  text-align: left;
-}
-
-.color-edit-form input[type="text"] {
-  min-height: 34px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-.color-edit-form input[type="color"] {
-  width: 100%;
-  min-height: 42px;
-  padding: 4px;
-  border-radius: 12px;
-}
-
 .custom-color-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 64px;
@@ -541,6 +513,93 @@
   font-size: 14px;
   font-weight: 800;
   line-height: 1.35;
+}
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(16, 39, 68, 0.28);
+  backdrop-filter: blur(10px);
+}
+
+.admin-modal-backdrop[hidden] {
+  display: none;
+}
+
+.admin-modal {
+  position: relative;
+  width: min(340px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 253, 250, 0.88)),
+    radial-gradient(circle at 90% 14%, rgba(48, 199, 201, 0.12), transparent 34%);
+  border: 1px solid rgba(16, 39, 68, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.84) inset,
+    0 28px 70px rgba(16, 39, 68, 0.24),
+    0 0 30px rgba(48, 199, 201, 0.18);
+}
+
+.admin-modal h2 {
+  margin: -6px 34px 2px 0;
+  color: var(--k-ink);
+  font-family: "Syne", sans-serif;
+  font-size: 26px;
+  line-height: 0.98;
+}
+
+.admin-modal label {
+  display: grid;
+  gap: 8px;
+  color: var(--k-ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-modal input {
+  width: 100%;
+  border: 1px solid rgba(16, 39, 68, 0.12);
+  border-radius: 16px;
+  padding: 13px 14px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 22px rgba(16, 39, 68, 0.06);
+  font: inherit;
+  font-weight: 800;
+  outline: none;
+}
+
+.admin-modal input[type="color"] {
+  min-height: 54px;
+  padding: 5px;
+}
+
+.admin-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--k-ink);
+  background: rgba(16, 39, 68, 0.08);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.admin-modal-actions {
+  display: grid;
+  grid-template-columns: 0.86fr 1fr;
+  gap: 10px;
 }
 
 @media (max-width: 380px) {
