@@ -30,6 +30,13 @@ const colorEditModal = document.querySelector("#colorEditModal");
 const colorEditName = document.querySelector("#colorEditName");
 const colorEditValue = document.querySelector("#colorEditValue");
 const saveColorEditButton = document.querySelector("#saveColorEdit");
+const colorManageModal = document.querySelector("#colorManageModal");
+const colorManageTitle = document.querySelector("#colorManageTitle");
+const colorManageDescription = document.querySelector("#colorManageDescription");
+const colorManageGrid = document.querySelector("#colorManageGrid");
+const modalColorLabel = document.querySelector("#modalColorLabel");
+const modalColorValue = document.querySelector("#modalColorValue");
+const modalAddColor = document.querySelector("#modalAddColor");
 const colorPhotoModal = document.querySelector("#colorPhotoModal");
 const colorPhotoDescription = document.querySelector("#colorPhotoDescription");
 const colorPhotoInput = document.querySelector("#colorPhotoInput");
@@ -38,6 +45,7 @@ const colorPhotoGrid = document.querySelector("#colorPhotoGrid");
 let activeColorMenuId = null;
 let selectedColorsBySection = { mainColors: [], accentColors: [] };
 let editingColorContext = null;
+let managingColorSection = null;
 let photoColorContext = null;
 
 const readJson = (key, fallback) => {
@@ -136,6 +144,37 @@ const colorMenuMarkup = (color, sectionName) => `
     <small>${getColorPhotos(color).length ? `${getColorPhotos(color).length} photo(s)` : "Aucune photo associée"}</small>
   </div>
 `;
+const colorCardMarkup = (color, sectionName) => `
+  <div
+    class="color-toggle"
+    style="--swatch:${color.value}"
+    data-open-color-menu="${color.id}"
+    role="button"
+    tabindex="0"
+    aria-label="Gérer ${color.label}"
+  >
+    <span class="color-check" aria-hidden="true"></span>
+    <span class="color-name-button">
+      ${color.label}
+    </span>
+    ${activeColorMenuId === `${sectionName}:${color.id}` ? colorMenuMarkup(color, sectionName) : ""}
+  </div>
+`;
+
+const renderColorManagementModal = () => {
+  if (!colorManageGrid || !colorManageTitle || !colorManageDescription) return;
+  const section = colorSectionsConfig.find((item) => item.name === managingColorSection);
+  const colors = section ? readCustomColors(section.name) : [];
+
+  colorManageTitle.textContent = section ? section.title : "Gérer les couleurs";
+  colorManageDescription.textContent = section
+    ? `${colors.length} couleur(s) offerte(s) dans ${section.title.toLowerCase()}.`
+    : "Ajoute les couleurs offertes pour cette option.";
+  colorManageGrid.innerHTML = colors.length
+    ? colors.map((color) => colorCardMarkup(color, section.name)).join("")
+    : '<p class="empty-colors">Aucune couleur ajoutée pour le moment.</p>';
+};
+
 const renderColorSections = () => {
   const selectedOptions = getSelectedOptions();
   const visibleSections = colorSectionsConfig.filter((section) => selectedOptions.includes(section.optionId));
@@ -152,47 +191,24 @@ const renderColorSections = () => {
   colorSections.innerHTML = visibleSections
     .map((section) => {
       const colors = readCustomColors(section.name);
+      const previewColors = colors.slice(0, 5);
 
       return `
         <fieldset class="color-section" data-color-section="${section.name}">
           <legend>${section.title}</legend>
-          ${
-            colors.length
-              ? `<div class="color-select-grid">
-                  ${colors
-                    .map(
-                      (color) => `
-                        <div
-                          class="color-toggle"
-                          style="--swatch:${color.value}"
-                          data-open-color-menu="${color.id}"
-                          role="button"
-                          tabindex="0"
-                          aria-label="Gérer ${color.label}"
-                        >
-                          <span class="color-check" aria-hidden="true"></span>
-                          <span class="color-name-button">
-                            ${color.label}
-                          </span>
-                          ${activeColorMenuId === `${section.name}:${color.id}` ? colorMenuMarkup(color, section.name) : ""}
-                        </div>
-                      `,
-                    )
-                    .join("")}
-                </div>`
-              : '<p class="empty-colors">Aucune couleur ajoutée pour le moment.</p>'
-          }
-          <div class="custom-color-row">
-            <label>
-              Ajouter une couleur
-              <input type="text" name="${section.name}Label" placeholder="Nom" />
-            </label>
-            <label>
-              Code
-              <input type="color" name="${section.name}Value" value="#f05b4f" />
-            </label>
-            <button class="add-color-button" type="button" data-add-color="${section.name}">Ajouter</button>
-          </div>
+          <button class="color-summary-card" type="button" data-manage-color-section="${section.name}">
+            <span>
+              <strong>${colors.length} couleur(s)</strong>
+              <small>${colors.length ? "Cliquer pour gérer les choix" : "Aucune couleur ajoutée"}</small>
+            </span>
+            <span class="summary-swatches" aria-hidden="true">
+              ${
+                previewColors.length
+                  ? previewColors.map((color) => `<i style="--swatch:${color.value}"></i>`).join("")
+                  : "<i></i>"
+              }
+            </span>
+          </button>
         </fieldset>
       `;
     })
@@ -324,13 +340,11 @@ const readFileAsPhoto = (file) =>
     reader.readAsDataURL(file);
   });
 
-const addCustomColor = (button) => {
-  const sectionName = button.dataset.addColor;
-  const section = button.closest(".color-section");
-  const labelInput = section?.querySelector(`input[name="${sectionName}Label"]`);
-  const valueInput = section?.querySelector(`input[name="${sectionName}Value"]`);
-  const label = labelInput?.value.trim() || "Nouvelle couleur";
-  const value = valueInput?.value || "#f05b4f";
+const addCustomColor = (sectionName = managingColorSection) => {
+  if (!sectionName) return;
+
+  const label = modalColorLabel?.value.trim() || "Nouvelle couleur";
+  const value = modalColorValue?.value || "#f05b4f";
   const customColors = readCustomColors(sectionName);
   const existingColor = customColors.find((color) => color.value.toLowerCase() === value.toLowerCase());
 
@@ -340,7 +354,10 @@ const addCustomColor = (button) => {
 
   syncSelectedColors();
   renderColorSections();
+  renderColorManagementModal();
   updatePreview();
+
+  if (modalColorLabel) modalColorLabel.value = "";
 };
 
 const editCustomColor = (colorId, sectionName) => {
@@ -360,6 +377,20 @@ const closeColorEditModal = () => {
   if (colorEditModal) colorEditModal.hidden = true;
 };
 
+const openColorManageModal = (sectionName) => {
+  managingColorSection = sectionName;
+  activeColorMenuId = null;
+  if (colorManageModal) colorManageModal.hidden = false;
+  renderColorManagementModal();
+};
+
+const closeColorManageModal = () => {
+  managingColorSection = null;
+  activeColorMenuId = null;
+  if (colorManageModal) colorManageModal.hidden = true;
+  if (modalColorLabel) modalColorLabel.value = "";
+};
+
 const saveColorEdit = () => {
   if (!editingColorContext || !colorEditName || !colorEditValue) return;
   const { colorId, sectionName } = editingColorContext;
@@ -375,6 +406,7 @@ const saveColorEdit = () => {
   closeColorEditModal();
   syncSelectedColors();
   renderColorSections();
+  renderColorManagementModal();
   updatePreview();
   renderColorPhotoModal();
 };
@@ -394,6 +426,7 @@ const deleteCustomColor = (colorId, sectionName) => {
   };
   activeColorMenuId = null;
   renderColorSections();
+  renderColorManagementModal();
   updatePreview();
 };
 
@@ -405,6 +438,7 @@ const openColorPhotoModal = (colorId, sectionName) => {
   activeColorMenuId = null;
   colorPhotoModal.hidden = false;
   renderColorSections();
+  renderColorManagementModal();
   renderColorPhotoModal();
 };
 
@@ -427,6 +461,7 @@ const addColorPhotos = async (files) => {
   );
   syncSelectedColors();
   renderColorSections();
+  renderColorManagementModal();
   renderColorPhotoModal();
   updatePreview();
 };
@@ -442,6 +477,7 @@ const deleteColorPhoto = (photoId) => {
     ),
   );
   renderColorSections();
+  renderColorManagementModal();
   renderColorPhotoModal();
   updatePreview();
 };
@@ -463,16 +499,16 @@ form?.addEventListener("change", (event) => {
 });
 
 form?.addEventListener("click", (event) => {
-  const addButton = event.target.closest("[data-add-color]");
+  const manageSectionButton = event.target.closest("[data-manage-color-section]");
   const openMenuButton = event.target.closest("[data-open-color-menu]");
   const editButton = event.target.closest("[data-edit-color]");
   const photoButton = event.target.closest("[data-manage-color-photos]");
   const deleteButton = event.target.closest("[data-delete-color]");
   const colorMenu = event.target.closest(".color-menu");
 
-  if (addButton) {
+  if (manageSectionButton) {
     event.preventDefault();
-    addCustomColor(addButton);
+    openColorManageModal(manageSectionButton.dataset.manageColorSection);
     return;
   }
 
@@ -522,6 +558,7 @@ document.addEventListener("click", (event) => {
 
   activeColorMenuId = null;
   renderColorSections();
+  renderColorManagementModal();
 });
 
 colorSections?.addEventListener("keydown", (event) => {
@@ -536,6 +573,79 @@ colorSections?.addEventListener("keydown", (event) => {
       ? null
       : `${sectionName}:${colorCard.dataset.openColorMenu}`;
   renderColorSections();
+  renderColorManagementModal();
+});
+
+colorManageModal?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const colorCard = event.target.closest("[data-open-color-menu]");
+  if (!colorCard) return;
+
+  event.preventDefault();
+  const sectionName = managingColorSection;
+  activeColorMenuId =
+    activeColorMenuId === `${sectionName}:${colorCard.dataset.openColorMenu}`
+      ? null
+      : `${sectionName}:${colorCard.dataset.openColorMenu}`;
+  renderColorManagementModal();
+});
+
+colorManageModal?.addEventListener("click", (event) => {
+  const addButton = event.target.closest("#modalAddColor");
+  const openMenuButton = event.target.closest("[data-open-color-menu]");
+  const editButton = event.target.closest("[data-edit-color]");
+  const photoButton = event.target.closest("[data-manage-color-photos]");
+  const deleteButton = event.target.closest("[data-delete-color]");
+  const colorMenu = event.target.closest(".color-menu");
+
+  if (addButton) {
+    event.preventDefault();
+    addCustomColor(managingColorSection);
+    return;
+  }
+
+  if (editButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    editCustomColor(editButton.dataset.editColor, editButton.dataset.colorSectionName);
+    return;
+  }
+
+  if (photoButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    openColorPhotoModal(photoButton.dataset.manageColorPhotos, photoButton.dataset.colorSectionName);
+    return;
+  }
+
+  if (deleteButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    deleteCustomColor(deleteButton.dataset.deleteColor, deleteButton.dataset.colorSectionName);
+    return;
+  }
+
+  if (colorMenu) {
+    event.stopPropagation();
+    return;
+  }
+
+  if (openMenuButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    const sectionName = managingColorSection;
+    activeColorMenuId =
+      activeColorMenuId === `${sectionName}:${openMenuButton.dataset.openColorMenu}`
+        ? null
+        : `${sectionName}:${openMenuButton.dataset.openColorMenu}`;
+    renderColorManagementModal();
+  }
+});
+
+colorManageModal?.addEventListener("click", (event) => {
+  if (event.target === colorManageModal || event.target.closest("[data-close-color-manage]")) {
+    closeColorManageModal();
+  }
 });
 
 saveColorEditButton?.addEventListener("click", saveColorEdit);
@@ -572,6 +682,10 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !colorPhotoModal?.hidden) {
     closeColorPhotoModal();
   }
+
+  if (event.key === "Escape" && !colorManageModal?.hidden) {
+    closeColorManageModal();
+  }
 });
 
 form?.addEventListener("submit", (event) => {
@@ -603,6 +717,7 @@ form?.addEventListener("submit", (event) => {
   selectedColorsBySection = { mainColors: [], accentColors: [] };
   activeColorMenuId = null;
   closeColorEditModal();
+  closeColorManageModal();
   closeColorPhotoModal();
   renderColorSections();
   renderProductPhotoList();

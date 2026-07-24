@@ -127,6 +127,57 @@
   border: 1px solid rgba(16, 39, 68, 0.08);
 }
 
+.color-summary-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 72px;
+  padding: 13px;
+  border: 1px solid rgba(16, 39, 68, 0.08);
+  border-radius: 18px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.70);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.78) inset,
+    0 14px 26px rgba(16, 39, 68, 0.08);
+  text-align: left;
+}
+
+.color-summary-card span:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.color-summary-card strong {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.color-summary-card small {
+  color: var(--k-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.summary-swatches {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 92px;
+}
+
+.summary-swatches i {
+  width: 24px;
+  height: 24px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: var(--swatch, rgba(16, 39, 68, 0.12));
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--swatch, #30c7c9), transparent 55%);
+}
+
 .photo-section {
   display: grid;
   gap: 10px;
@@ -339,8 +390,7 @@
   transform: translateX(-50%);
 }
 
-.color-menu button,
-.color-file-button {
+.color-menu button {
   min-height: 34px;
   border: 0;
   border-radius: 12px;
@@ -348,19 +398,6 @@
   background: rgba(16, 39, 68, 0.06);
   font-size: 12px;
   font-weight: 900;
-}
-
-.color-file-button {
-  display: grid;
-  place-items: center;
-  padding: 0 10px;
-  cursor: pointer;
-}
-
-.color-file-button input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
 }
 
 .color-menu button[data-delete-color] {
@@ -613,6 +650,20 @@
 .photo-admin-modal {
   max-height: min(720px, calc(100dvh - 44px));
   overflow: auto;
+}
+
+.color-admin-modal {
+  max-height: min(760px, calc(100dvh - 44px));
+  overflow: auto;
+}
+
+.modal-color-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.modal-color-add {
+  margin-top: 0;
+  padding-top: 4px;
 }
 
 .modal-photo-drop {

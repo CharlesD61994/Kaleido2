@@ -194,6 +194,29 @@
       </section>
     </div>
 
+    <div class="admin-modal-backdrop" id="colorManageModal" hidden>
+      <section class="admin-modal color-admin-modal" role="dialog" aria-modal="true" aria-labelledby="colorManageTitle">
+        <button class="admin-modal-close" type="button" data-close-color-manage aria-label="Fermer">×</button>
+        <span class="admin-kicker">Options couleur</span>
+        <h2 id="colorManageTitle">Gérer les couleurs</h2>
+        <p class="admin-modal-copy" id="colorManageDescription">
+          Ajoute les couleurs offertes pour cette option.
+        </p>
+        <div class="color-select-grid modal-color-grid" id="colorManageGrid"></div>
+        <div class="custom-color-row modal-color-add">
+          <label>
+            Ajouter une couleur
+            <input type="text" id="modalColorLabel" placeholder="Nom" />
+          </label>
+          <label>
+            Code
+            <input type="color" id="modalColorValue" value="#f05b4f" />
+          </label>
+          <button class="add-color-button" type="button" id="modalAddColor">Ajouter</button>
+        </div>
+      </section>
+    </div>
+
     <div class="admin-modal-backdrop" id="colorPhotoModal" hidden>
       <section class="admin-modal photo-admin-modal" role="dialog" aria-modal="true" aria-labelledby="colorPhotoTitle">
         <button class="admin-modal-close" type="button" data-close-color-photos aria-label="Fermer">×</button>
