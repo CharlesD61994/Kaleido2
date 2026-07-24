@@ -602,6 +602,79 @@
   gap: 10px;
 }
 
+.admin-modal-copy {
+  margin: -4px 0 0;
+  color: var(--k-muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.36;
+}
+
+.photo-admin-modal {
+  max-height: min(720px, calc(100dvh - 44px));
+  overflow: auto;
+}
+
+.modal-photo-drop {
+  min-height: 68px;
+}
+
+.modal-photo-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.modal-photo-card {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(16, 39, 68, 0.09);
+  box-shadow: 0 12px 24px rgba(16, 39, 68, 0.08);
+}
+
+.modal-photo-card img,
+.modal-photo-placeholder {
+  width: 76px;
+  aspect-ratio: 1;
+  border-radius: 15px;
+  object-fit: cover;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.58), transparent 36%),
+    var(--swatch);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--swatch), transparent 58%);
+}
+
+.modal-photo-card div {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.modal-photo-card strong {
+  overflow: hidden;
+  color: var(--k-ink);
+  font-size: 13px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal-photo-card button {
+  justify-self: start;
+  min-height: 31px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--k-coral);
+  background: rgba(240, 91, 79, 0.11);
+  font-size: 12px;
+  font-weight: 900;
+}
+
 @media (max-width: 380px) {
   .admin-two-columns {
     grid-template-columns: 1fr;

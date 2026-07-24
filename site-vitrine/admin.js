@@ -24,17 +24,21 @@ const previewPrice = document.querySelector("#previewPrice");
 const previewOptions = document.querySelector("#previewOptions");
 const previewSwatches = document.querySelector("#previewSwatches");
 const productPhotoList = document.querySelector("#productPhotoList");
-const colorPhotoList = document.querySelector("#colorPhotoList");
 const draftList = document.querySelector("#draftList");
 const clearDraftsButton = document.querySelector("#clearDrafts");
 const colorEditModal = document.querySelector("#colorEditModal");
 const colorEditName = document.querySelector("#colorEditName");
 const colorEditValue = document.querySelector("#colorEditValue");
 const saveColorEditButton = document.querySelector("#saveColorEdit");
+const colorPhotoModal = document.querySelector("#colorPhotoModal");
+const colorPhotoDescription = document.querySelector("#colorPhotoDescription");
+const colorPhotoInput = document.querySelector("#colorPhotoInput");
+const colorPhotoGrid = document.querySelector("#colorPhotoGrid");
 
 let activeColorMenuId = null;
 let selectedColorsBySection = { mainColors: [], accentColors: [] };
-let editingColorId = null;
+let editingColorContext = null;
+let photoColorContext = null;
 
 const readJson = (key, fallback) => {
   try {
@@ -50,19 +54,56 @@ const writeJson = (key, value) => {
 
 const readDrafts = () => readJson(draftsKey, []);
 const saveDrafts = (drafts) => writeJson(draftsKey, drafts);
-const readCustomColors = () => readJson(customColorsKey, []);
-const saveCustomColors = (colors) => writeJson(customColorsKey, colors);
+const normalizeColorPhoto = (photo) =>
+  typeof photo === "string" ? { id: crypto.randomUUID(), name: photo, url: "" } : photo;
+
+const normalizeColor = (color) => ({
+  ...color,
+  photoNames: undefined,
+  photoName: undefined,
+  photos: [...(color.photos || []), ...(color.photoNames || []), ...(color.photoName ? [color.photoName] : [])].map(
+    normalizeColorPhoto,
+  ),
+});
+
+const emptyColorStore = () => ({ mainColors: [], accentColors: [] });
+
+const readCustomColorStore = () => {
+  const storedColors = readJson(customColorsKey, emptyColorStore());
+
+  if (Array.isArray(storedColors)) {
+    return { mainColors: storedColors.map(normalizeColor), accentColors: [] };
+  }
+
+  return {
+    mainColors: (storedColors.mainColors || []).map(normalizeColor),
+    accentColors: (storedColors.accentColors || []).map(normalizeColor),
+  };
+};
+
+const saveCustomColorStore = (store) => writeJson(customColorsKey, store);
+
+const readCustomColors = (sectionName) => {
+  const store = readCustomColorStore();
+  return sectionName ? store[sectionName] || [] : colorSectionsConfig.flatMap((section) => store[section.name] || []);
+};
+
+const saveCustomColors = (sectionName, colors) => {
+  const store = readCustomColorStore();
+  saveCustomColorStore({ ...store, [sectionName]: colors });
+};
 
 const getSelectedOptions = () =>
   Array.from(optionSelector?.querySelectorAll("input:checked") || []).map((input) => input.value);
 
 const syncSelectedColors = () => {
   const selectedOptions = getSelectedOptions();
-  const colors = readCustomColors().map((color) => color.value);
 
   selectedColorsBySection = {
-    mainColors: selectedOptions.includes("mainColor") ? colors : [],
-    accentColors: selectedOptions.includes("accentColor") ? colors : [],
+    mainColors: selectedOptions.includes("mainColor") ? readCustomColors("mainColors").map((color) => color.value) : [],
+    accentColors: selectedOptions.includes("accentColor")
+      ? readCustomColors("accentColors").map((color) => color.value)
+      : [],
   };
 };
 
@@ -70,7 +111,7 @@ const getAllSelectedColors = () =>
   colorSectionsConfig.flatMap((section) => selectedColorsBySection[section.name] || []);
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
-const getColorPhotoNames = (color) => color.photoNames || (color.photoName ? [color.photoName] : []);
+const getColorPhotos = (color) => (color.photos || []).map(normalizeColorPhoto);
 
 const renderOptionSelector = () => {
   if (!optionSelector) return;
@@ -89,13 +130,10 @@ const renderOptionSelector = () => {
 
 const colorMenuMarkup = (color, sectionName) => `
   <div class="color-menu" role="menu">
-    <button type="button" data-edit-color="${color.id}">Modifier</button>
-    <label class="color-file-button">
-      Associer une photo
-      <input type="file" accept="image/*" multiple data-color-photo-input="${color.id}" data-section-name="${sectionName}" />
-    </label>
-    <button type="button" data-delete-color="${color.id}">Supprimer</button>
-    <small>${getColorPhotoNames(color).length ? `${getColorPhotoNames(color).length} photo(s)` : "Aucune photo associée"}</small>
+    <button type="button" data-edit-color="${color.id}" data-color-section-name="${sectionName}">Modifier</button>
+    <button type="button" data-manage-color-photos="${color.id}" data-color-section-name="${sectionName}">Photos</button>
+    <button type="button" data-delete-color="${color.id}" data-color-section-name="${sectionName}">Supprimer</button>
+    <small>${getColorPhotos(color).length ? `${getColorPhotos(color).length} photo(s)` : "Aucune photo associée"}</small>
   </div>
 `;
 const renderColorSections = () => {
@@ -111,11 +149,11 @@ const renderColorSections = () => {
     return;
   }
 
-  const colors = readCustomColors();
-
   colorSections.innerHTML = visibleSections
-    .map(
-      (section) => `
+    .map((section) => {
+      const colors = readCustomColors(section.name);
+
+      return `
         <fieldset class="color-section" data-color-section="${section.name}">
           <legend>${section.title}</legend>
           ${
@@ -156,8 +194,8 @@ const renderColorSections = () => {
             <button class="add-color-button" type="button" data-add-color="${section.name}">Ajouter</button>
           </div>
         </fieldset>
-      `,
-    )
+      `;
+    })
     .join("");
 };
 
@@ -198,24 +236,42 @@ const renderProductPhotoList = () => {
     : '<small>Aucune photo du produit ajoutée.</small>';
 };
 
-const renderColorPhotoList = () => {
-  if (!colorPhotoList) return;
-  const colorsWithPhotos = readCustomColors().filter((color) => getColorPhotoNames(color).length > 0);
+const getColorFromContext = (context) => {
+  if (!context) return null;
+  return readCustomColors(context.sectionName).find((color) => color.id === context.colorId) || null;
+};
 
-  colorPhotoList.innerHTML = colorsWithPhotos.length
-    ? colorsWithPhotos
-        .flatMap((color) =>
-          getColorPhotoNames(color).map(
-            (photoName) => `
-            <span style="--swatch:${color.value}">
-              <i></i>
-              ${color.label}: ${photoName}
-            </span>
+const renderColorPhotoModal = () => {
+  if (!colorPhotoGrid || !colorPhotoDescription) return;
+  const color = getColorFromContext(photoColorContext);
+
+  if (!color) {
+    colorPhotoGrid.innerHTML = "";
+    colorPhotoDescription.textContent = "Ajoute les photos des pelotes pour aider les clients à visualiser la couleur.";
+    return;
+  }
+
+  const photos = getColorPhotos(color);
+  colorPhotoDescription.textContent = `Photos associées à ${color.label}.`;
+  colorPhotoGrid.innerHTML = photos.length
+    ? photos
+        .map(
+          (photo) => `
+            <article class="modal-photo-card">
+              ${
+                photo.url
+                  ? `<img src="${photo.url}" alt="${photo.name}" />`
+                  : `<div class="modal-photo-placeholder" style="--swatch:${color.value}"></div>`
+              }
+              <div>
+                <strong>${photo.name}</strong>
+                <button type="button" data-delete-color-photo="${photo.id}">Supprimer</button>
+              </div>
+            </article>
           `,
-          ),
         )
         .join("")
-    : '<small>Aucune photo de couleur associée.</small>';
+    : '<p class="empty-drafts">Aucune photo associée pour le moment.</p>';
 };
 
 const updatePreview = () => {
@@ -225,7 +281,7 @@ const updatePreview = () => {
   renderPreviewOptions();
   renderPreviewSwatches();
   renderProductPhotoList();
-  renderColorPhotoList();
+  renderColorPhotoModal();
 };
 
 const renderDrafts = () => {
@@ -258,6 +314,16 @@ const renderDrafts = () => {
     .join("");
 };
 
+const readFileAsPhoto = (file) =>
+  new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () =>
+      resolve({ id: crypto.randomUUID(), name: file.name, url: reader.result?.toString() || "" }),
+    );
+    reader.addEventListener("error", () => resolve({ id: crypto.randomUUID(), name: file.name, url: "" }));
+    reader.readAsDataURL(file);
+  });
+
 const addCustomColor = (button) => {
   const sectionName = button.dataset.addColor;
   const section = button.closest(".color-section");
@@ -265,11 +331,11 @@ const addCustomColor = (button) => {
   const valueInput = section?.querySelector(`input[name="${sectionName}Value"]`);
   const label = labelInput?.value.trim() || "Nouvelle couleur";
   const value = valueInput?.value || "#f05b4f";
-  const customColors = readCustomColors();
+  const customColors = readCustomColors(sectionName);
   const existingColor = customColors.find((color) => color.value.toLowerCase() === value.toLowerCase());
 
   if (!existingColor) {
-    saveCustomColors([...customColors, { id: crypto.randomUUID(), label, value, photoNames: [] }]);
+    saveCustomColors(sectionName, [...customColors, { id: crypto.randomUUID(), label, value, photos: [] }]);
   }
 
   syncSelectedColors();
@@ -277,11 +343,11 @@ const addCustomColor = (button) => {
   updatePreview();
 };
 
-const editCustomColor = (colorId) => {
-  const color = readCustomColors().find((item) => item.id === colorId);
+const editCustomColor = (colorId, sectionName) => {
+  const color = readCustomColors(sectionName).find((item) => item.id === colorId);
   if (!color || !colorEditModal || !colorEditName || !colorEditValue) return;
 
-  editingColorId = colorId;
+  editingColorContext = { colorId, sectionName };
   activeColorMenuId = null;
   colorEditName.value = color.label;
   colorEditValue.value = color.value;
@@ -290,16 +356,18 @@ const editCustomColor = (colorId) => {
 };
 
 const closeColorEditModal = () => {
-  editingColorId = null;
+  editingColorContext = null;
   if (colorEditModal) colorEditModal.hidden = true;
 };
 
 const saveColorEdit = () => {
-  if (!editingColorId || !colorEditName || !colorEditValue) return;
+  if (!editingColorContext || !colorEditName || !colorEditValue) return;
+  const { colorId, sectionName } = editingColorContext;
 
   saveCustomColors(
-    readCustomColors().map((item) =>
-      item.id === editingColorId
+    sectionName,
+    readCustomColors(sectionName).map((item) =>
+      item.id === colorId
         ? { ...item, label: colorEditName.value.trim() || item.label, value: colorEditValue.value || item.value }
         : item,
     ),
@@ -308,15 +376,18 @@ const saveColorEdit = () => {
   syncSelectedColors();
   renderColorSections();
   updatePreview();
-  renderColorPhotoList();
+  renderColorPhotoModal();
 };
 
-const deleteCustomColor = (colorId) => {
-  const customColors = readCustomColors();
+const deleteCustomColor = (colorId, sectionName) => {
+  const customColors = readCustomColors(sectionName);
   const color = customColors.find((item) => item.id === colorId);
   if (!color || !window.confirm(`Supprimer la couleur "${color.label}" ?`)) return;
 
-  saveCustomColors(customColors.filter((item) => item.id !== colorId));
+  saveCustomColors(
+    sectionName,
+    customColors.filter((item) => item.id !== colorId),
+  );
   selectedColorsBySection = {
     mainColors: selectedColorsBySection.mainColors.filter((value) => value !== color.value),
     accentColors: selectedColorsBySection.accentColors.filter((value) => value !== color.value),
@@ -326,20 +397,53 @@ const deleteCustomColor = (colorId) => {
   updatePreview();
 };
 
-const saveColorPhotoName = (input) => {
-  const files = Array.from(input.files || []);
-  const colorId = input.dataset.colorPhotoInput;
-  if (files.length === 0 || !colorId) return;
+const openColorPhotoModal = (colorId, sectionName) => {
+  const color = readCustomColors(sectionName).find((item) => item.id === colorId);
+  if (!color || !colorPhotoModal) return;
+
+  photoColorContext = { colorId, sectionName };
+  activeColorMenuId = null;
+  colorPhotoModal.hidden = false;
+  renderColorSections();
+  renderColorPhotoModal();
+};
+
+const closeColorPhotoModal = () => {
+  photoColorContext = null;
+  if (colorPhotoModal) colorPhotoModal.hidden = true;
+  if (colorPhotoInput) colorPhotoInput.value = "";
+};
+
+const addColorPhotos = async (files) => {
+  if (!photoColorContext || files.length === 0) return;
+  const { colorId, sectionName } = photoColorContext;
+  const newPhotos = await Promise.all(files.map(readFileAsPhoto));
 
   saveCustomColors(
-    readCustomColors().map((item) =>
-      item.id === colorId
-        ? { ...item, photoNames: [...new Set([...getColorPhotoNames(item), ...files.map((file) => file.name)])] }
-        : item,
+    sectionName,
+    readCustomColors(sectionName).map((item) =>
+      item.id === colorId ? { ...item, photos: [...getColorPhotos(item), ...newPhotos] } : item,
+    ),
+  );
+  syncSelectedColors();
+  renderColorSections();
+  renderColorPhotoModal();
+  updatePreview();
+};
+
+const deleteColorPhoto = (photoId) => {
+  if (!photoColorContext) return;
+  const { colorId, sectionName } = photoColorContext;
+
+  saveCustomColors(
+    sectionName,
+    readCustomColors(sectionName).map((item) =>
+      item.id === colorId ? { ...item, photos: getColorPhotos(item).filter((photo) => photo.id !== photoId) } : item,
     ),
   );
   renderColorSections();
-  renderColorPhotoList();
+  renderColorPhotoModal();
+  updatePreview();
 };
 
 form?.addEventListener("input", updatePreview);
@@ -348,10 +452,6 @@ form?.addEventListener("change", (event) => {
   if (event.target.name === "options") {
     syncSelectedColors();
     renderColorSections();
-  }
-
-  if (event.target.matches("[data-color-photo-input]")) {
-    saveColorPhotoName(event.target);
   }
 
   if (event.target.name === "productPhotos") {
@@ -366,6 +466,7 @@ form?.addEventListener("click", (event) => {
   const addButton = event.target.closest("[data-add-color]");
   const openMenuButton = event.target.closest("[data-open-color-menu]");
   const editButton = event.target.closest("[data-edit-color]");
+  const photoButton = event.target.closest("[data-manage-color-photos]");
   const deleteButton = event.target.closest("[data-delete-color]");
   const colorMenu = event.target.closest(".color-menu");
 
@@ -378,14 +479,21 @@ form?.addEventListener("click", (event) => {
   if (editButton) {
     event.preventDefault();
     event.stopPropagation();
-    editCustomColor(editButton.dataset.editColor);
+    editCustomColor(editButton.dataset.editColor, editButton.dataset.colorSectionName);
+    return;
+  }
+
+  if (photoButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    openColorPhotoModal(photoButton.dataset.manageColorPhotos, photoButton.dataset.colorSectionName);
     return;
   }
 
   if (deleteButton) {
     event.preventDefault();
     event.stopPropagation();
-    deleteCustomColor(deleteButton.dataset.deleteColor);
+    deleteCustomColor(deleteButton.dataset.deleteColor, deleteButton.dataset.colorSectionName);
     return;
   }
 
@@ -438,9 +546,31 @@ colorEditModal?.addEventListener("click", (event) => {
   }
 });
 
+colorPhotoModal?.addEventListener("click", (event) => {
+  const deleteButton = event.target.closest("[data-delete-color-photo]");
+
+  if (deleteButton) {
+    event.preventDefault();
+    deleteColorPhoto(deleteButton.dataset.deleteColorPhoto);
+    return;
+  }
+
+  if (event.target === colorPhotoModal || event.target.closest("[data-close-color-photos]")) {
+    closeColorPhotoModal();
+  }
+});
+
+colorPhotoInput?.addEventListener("change", (event) => {
+  addColorPhotos(Array.from(event.target.files || []));
+});
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !colorEditModal?.hidden) {
     closeColorEditModal();
+  }
+
+  if (event.key === "Escape" && !colorPhotoModal?.hidden) {
+    closeColorPhotoModal();
   }
 });
 
@@ -458,8 +588,8 @@ form?.addEventListener("submit", (event) => {
     options: getSelectedOptions(),
     productPhotos: Array.from(form.elements.productPhotos?.files || []).map((file) => file.name),
     colorPhotos: readCustomColors()
-      .filter((color) => getColorPhotoNames(color).length > 0)
-      .map((color) => ({ label: color.label, value: color.value, photoNames: getColorPhotoNames(color) })),
+      .filter((color) => getColorPhotos(color).length > 0)
+      .map((color) => ({ label: color.label, value: color.value, photos: getColorPhotos(color) })),
     colors: {
       main: selectedColorsBySection.mainColors,
       accent: selectedColorsBySection.accentColors,
@@ -473,9 +603,10 @@ form?.addEventListener("submit", (event) => {
   selectedColorsBySection = { mainColors: [], accentColors: [] };
   activeColorMenuId = null;
   closeColorEditModal();
+  closeColorPhotoModal();
   renderColorSections();
   renderProductPhotoList();
-  renderColorPhotoList();
+  renderColorPhotoModal();
   updatePreview();
 });
 
@@ -489,5 +620,5 @@ renderColorSections();
 renderPreviewOptions();
 renderPreviewSwatches();
 renderProductPhotoList();
-renderColorPhotoList();
+renderColorPhotoModal();
 renderDrafts();

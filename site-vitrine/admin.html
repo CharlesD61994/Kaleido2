@@ -122,14 +122,6 @@
 
             <div class="color-sections" id="colorSections"></div>
 
-            <section class="photo-section color-photo-section" aria-labelledby="color-photo-title">
-              <div>
-                <h3 id="color-photo-title">Photos des couleurs</h3>
-                <p>Les photos associées aux couleurs apparaîtront ici pour séparer les pelotes du produit final.</p>
-              </div>
-              <div class="photo-list" id="colorPhotoList"></div>
-            </section>
-
             <label>
               Lien ou ID Shopify
               <input name="shopify" type="text" placeholder="À ajouter plus tard" />
@@ -199,6 +191,23 @@
           <button class="secondary-button" type="button" data-close-color-edit>Annuler</button>
           <button class="buy-button" type="button" id="saveColorEdit">Enregistrer</button>
         </div>
+      </section>
+    </div>
+
+    <div class="admin-modal-backdrop" id="colorPhotoModal" hidden>
+      <section class="admin-modal photo-admin-modal" role="dialog" aria-modal="true" aria-labelledby="colorPhotoTitle">
+        <button class="admin-modal-close" type="button" data-close-color-photos aria-label="Fermer">×</button>
+        <span class="admin-kicker">Photos de couleur</span>
+        <h2 id="colorPhotoTitle">Photos associées</h2>
+        <p class="admin-modal-copy" id="colorPhotoDescription">
+          Ajoute les photos des pelotes pour aider les clients à visualiser la couleur.
+        </p>
+        <label class="photo-drop modal-photo-drop">
+          <input id="colorPhotoInput" type="file" accept="image/*" multiple />
+          <span>Ajouter des photos</span>
+          <small>Tu peux en sélectionner plusieurs à la fois.</small>
+        </label>
+        <div class="modal-photo-grid" id="colorPhotoGrid"></div>
       </section>
     </div>
 
