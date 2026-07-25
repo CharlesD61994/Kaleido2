@@ -161,7 +161,7 @@ const syncSelectedChoices = () => {
     }
 
     if (!Object.prototype.hasOwnProperty.call(selectedChoicesBySection, section.name)) {
-      selectedChoicesBySection[section.name] = [...(section.values || [])];
+      selectedChoicesBySection[section.name] = [];
     }
   });
 };
