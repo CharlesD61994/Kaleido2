@@ -381,7 +381,7 @@ const renderColorSections = () => {
             ${values
               .map(
                 (value) => `
-                  <label class="choice-pill">
+                  <label class="choice-pill ${selectedValues.includes(value) ? "choice-pill-selected" : ""}">
                     <input
                       type="checkbox"
                       data-choice-value="${value}"

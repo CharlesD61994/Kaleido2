@@ -334,13 +334,17 @@
   line-height: 1;
 }
 
-.choice-pill:has(input:checked) {
+.choice-pill-selected {
   color: white;
   background: linear-gradient(120deg, var(--k-pink), var(--k-purple));
   border-color: rgba(255, 255, 255, 0.72);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.60) inset,
     0 0 18px rgba(232, 75, 148, 0.22);
+}
+
+.choice-pill-selected span {
+  color: white;
 }
 
 .choice-add-row {
