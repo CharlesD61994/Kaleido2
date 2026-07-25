@@ -905,12 +905,23 @@
 
 .admin-product-preview-panel .preview-options {
   display: grid;
-  gap: 12px;
+  gap: 0;
 }
 
 .admin-client-option-group {
   display: grid;
   gap: 8px;
+  padding: 0 0 13px;
+  border-bottom: 1px solid rgba(16, 39, 68, 0.10);
+}
+
+.admin-client-option-group + .admin-client-option-group {
+  padding-top: 13px;
+}
+
+.admin-client-option-group:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .admin-client-option-group > strong {
