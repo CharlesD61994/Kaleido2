@@ -85,6 +85,7 @@ let managingColorSection = null;
 let photoColorContext = null;
 let colorManageView = "list";
 let productPhotoPreviews = [];
+let productPreviewSelections = {};
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(
@@ -512,13 +513,29 @@ const renderProductPhotoList = () => {
 const getPreviewData = () => {
   const formData = new FormData(form);
   const selectedOptions = getSelectedOptions();
+  const selectedOptionIds = new Set(selectedOptions);
+  const colorChoiceSections = colorSectionsConfig
+    .filter((section) => selectedOptionIds.has(section.optionId))
+    .map((section) => ({
+      id: section.name,
+      title: section.title,
+      option: findOption(section.optionId),
+      values: readCustomColors(section.name).filter((color) =>
+        (selectedColorsBySection[section.name] || []).includes(color.value),
+      ),
+    }));
   const choiceSections = choiceSectionsConfig
-    .filter((section) => selectedOptions.includes(section.optionId))
+    .filter((section) => selectedOptionIds.has(section.optionId))
     .map((section) => ({
       ...section,
+      option: findOption(section.optionId),
       values: selectedChoicesBySection[section.name] || [],
-    }))
-    .filter((section) => section.values.length > 0);
+    }));
+  const configuredOptionIds = new Set([
+    ...colorSectionsConfig.map((section) => section.optionId),
+    ...choiceSectionsConfig.map((section) => section.optionId),
+  ]);
+  const simpleOptions = selectedOptions.map(findOption).filter((option) => option && !configuredOptionIds.has(option.id));
 
   return {
     name: formData.get("name")?.toString().trim() || "Pantoufles douillettes",
@@ -528,9 +545,102 @@ const getPreviewData = () => {
       "Une création douce, personnalisable et faite à la main avec suivi Kaleido.",
     colors: [...new Set(getAllSelectedColors())],
     options: selectedOptions.map(findOption).filter(Boolean),
+    colorChoiceSections,
     choiceSections,
+    simpleOptions,
     photos: productPhotoPreviews,
   };
+};
+
+const previewOptionButtonMarkup = ({ group, value, label, color, swatch }) => {
+  const isSelected = productPreviewSelections[group] === value;
+
+  return `
+    <button
+      class="admin-client-choice ${isSelected ? "admin-client-choice-selected" : ""}"
+      type="button"
+      data-preview-choice-group="${escapeHtml(group)}"
+      data-preview-choice-value="${escapeHtml(value)}"
+      style="--option-color:${color || swatch || "#30c7c9"};--swatch:${swatch || color || "#30c7c9"}"
+      aria-pressed="${isSelected ? "true" : "false"}"
+    >
+      ${swatch ? '<span class="admin-client-choice-swatch" aria-hidden="true"></span>' : ""}
+      <span>${escapeHtml(label)}</span>
+    </button>
+  `;
+};
+
+const renderClientOptionGroups = (data) => {
+  const colorGroups = data.colorChoiceSections
+    .map((section) => {
+      const choices = section.values.length
+        ? section.values
+            .map((color) =>
+              previewOptionButtonMarkup({
+                group: section.id,
+                value: color.value,
+                label: color.label,
+                color: section.option?.color,
+                swatch: color.value,
+              }),
+            )
+            .join("")
+        : '<small>Aucune couleur ajoutée pour cette option.</small>';
+
+      return `
+        <div class="admin-client-option-group">
+          <strong>${escapeHtml(section.title)}</strong>
+          <div class="admin-client-choice-grid">${choices}</div>
+        </div>
+      `;
+    })
+    .join("");
+
+  const choiceGroups = data.choiceSections
+    .map((section) => {
+      const choices = section.values.length
+        ? section.values
+            .map((value) =>
+              previewOptionButtonMarkup({
+                group: section.name,
+                value,
+                label: value,
+                color: section.option?.color,
+              }),
+            )
+            .join("")
+        : '<small>Aucun choix ajouté pour cette option.</small>';
+
+      return `
+        <div class="admin-client-option-group">
+          <strong>${escapeHtml(section.title)}</strong>
+          <div class="admin-client-choice-grid">${choices}</div>
+        </div>
+      `;
+    })
+    .join("");
+
+  const simpleGroups = data.simpleOptions
+    .map(
+      (option) => `
+        <div class="admin-client-option-group">
+          <strong>${escapeHtml(option.label)}</strong>
+          <div class="admin-client-choice-grid">
+            ${previewOptionButtonMarkup({
+              group: option.id,
+              value: "available",
+              label: "Option disponible",
+              color: option.color,
+            })}
+          </div>
+        </div>
+      `,
+    )
+    .join("");
+
+  const groupsMarkup = `${colorGroups}${choiceGroups}${simpleGroups}`;
+
+  return groupsMarkup || '<small>Aucune option choisie.</small>';
 };
 
 const renderProductPreviewPage = () => {
@@ -558,20 +668,7 @@ const renderProductPreviewPage = () => {
   }
 
   if (previewDetailOptions) {
-    const optionMarkup = data.options
-      .map((option) => `<span class="preview-option" style="--option-color:${option.color}">${option.label}</span>`)
-      .join("");
-    const choiceMarkup = data.choiceSections
-      .map(
-        (section) => `
-          <span class="preview-option" style="--option-color:${findOption(section.optionId)?.color || "#30c7c9"}">
-            ${escapeHtml(section.title)} · ${section.values.map(escapeHtml).join(", ")}
-          </span>
-        `,
-      )
-      .join("");
-
-    previewDetailOptions.innerHTML = optionMarkup || choiceMarkup ? `${optionMarkup}${choiceMarkup}` : "Aucune option.";
+    previewDetailOptions.innerHTML = renderClientOptionGroups(data);
   }
 
   if (previewDetailGallery) {
@@ -1189,6 +1286,20 @@ previewPhotoStrip?.addEventListener("click", (event) => {
 });
 
 productPreviewPage?.addEventListener("click", (event) => {
+  const choiceButton = event.target.closest("[data-preview-choice-group]");
+
+  if (choiceButton) {
+    const group = choiceButton.dataset.previewChoiceGroup;
+    const value = choiceButton.dataset.previewChoiceValue;
+
+    if (group && value) {
+      productPreviewSelections[group] = productPreviewSelections[group] === value ? "" : value;
+      renderProductPreviewPage();
+    }
+
+    return;
+  }
+
   if (event.target.closest("[data-close-product-preview]")) {
     closeProductPreviewPage();
   }
@@ -1262,6 +1373,7 @@ form?.addEventListener("submit", (event) => {
   closeColorManageModal();
   closeColorPhotoModal();
   clearProductPhotoPreviews();
+  productPreviewSelections = {};
   renderColorSections();
   renderPreviewProductImage();
   renderPreviewPhotoStrip();
@@ -1273,6 +1385,7 @@ form?.addEventListener("submit", (event) => {
 form?.addEventListener("reset", () => {
   requestAnimationFrame(() => {
     clearProductPhotoPreviews();
+    productPreviewSelections = {};
     selectedColorsBySection = { mainColors: [], accentColors: [] };
     selectedChoicesBySection = {};
     renderColorSections();

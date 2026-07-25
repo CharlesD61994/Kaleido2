@@ -903,6 +903,69 @@
   font-weight: 800;
 }
 
+.admin-product-preview-panel .preview-options {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-client-option-group {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-client-option-group > strong {
+  color: var(--k-ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-client-choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-client-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 999px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid color-mix(in srgb, var(--option-color), transparent 55%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.78) inset,
+    0 0 16px color-mix(in srgb, var(--option-color), transparent 82%);
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-client-choice-selected {
+  color: white;
+  background: linear-gradient(120deg, var(--option-color), color-mix(in srgb, var(--option-color), white 18%));
+  border-color: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.62) inset,
+    0 0 22px color-mix(in srgb, var(--option-color), transparent 58%);
+}
+
+.admin-client-choice-swatch {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(16, 39, 68, 0.10),
+    0 0 12px color-mix(in srgb, var(--swatch), transparent 44%);
+}
+
 .admin-product-preview-gallery {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
