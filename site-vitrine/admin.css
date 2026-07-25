@@ -285,6 +285,86 @@
   border: 1px solid rgba(16, 39, 68, 0.08);
 }
 
+.choice-section {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.44);
+  border: 1px solid rgba(16, 39, 68, 0.08);
+}
+
+.choice-pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 35px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(16, 39, 68, 0.10);
+  box-shadow: 0 0 14px rgba(232, 75, 148, 0.08);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.choice-pill input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice-pill:has(input:checked) {
+  color: white;
+  background: linear-gradient(120deg, var(--k-pink), var(--k-purple));
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.60) inset,
+    0 0 18px rgba(232, 75, 148, 0.22);
+}
+
+.choice-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.choice-add-row input {
+  min-width: 0;
+  border: 1px solid rgba(16, 39, 68, 0.12);
+  border-radius: 15px;
+  padding: 11px 12px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.74);
+  font: inherit;
+  font-weight: 800;
+}
+
+.choice-add-row button {
+  min-height: 39px;
+  border: 0;
+  border-radius: 15px;
+  padding: 0 12px;
+  color: white;
+  background: linear-gradient(120deg, var(--k-cyan), var(--k-teal));
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.choice-section small {
+  color: var(--k-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .color-summary-card {
   width: 100%;
   display: grid;

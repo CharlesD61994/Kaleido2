@@ -14,6 +14,25 @@ const colorSectionsConfig = [
   { optionId: "accentColor", name: "accentColors", key: "accent", title: "Couleur secondaire" },
 ];
 
+const choiceSectionsConfig = [
+  {
+    optionId: "recipient",
+    name: "recipient",
+    title: "Pour qui ?",
+    emptyText: "Aucun public choisi",
+    addLabel: "Ajouter un public",
+    values: ["Femme", "Homme", "Enfant"],
+  },
+  {
+    optionId: "shoeSize",
+    name: "shoeSize",
+    title: "Pointure",
+    emptyText: "Aucune pointure choisie",
+    addLabel: "Ajouter une pointure",
+    values: ["Bébé", "Enfant", "Femme", "Homme", "Sur mesure"],
+  },
+];
+
 const draftsKey = "kaleido-storefront-product-drafts";
 const customColorsKey = "kaleido-storefront-custom-colors";
 const form = document.querySelector("#productForm");
@@ -49,6 +68,7 @@ const colorPageContent = document.querySelector("#colorPageContent");
 
 let activeColorMenuId = null;
 let selectedColorsBySection = { mainColors: [], accentColors: [] };
+let selectedChoicesBySection = {};
 let editingColorContext = null;
 let managingColorSection = null;
 let photoColorContext = null;
@@ -126,6 +146,25 @@ const getAllSelectedColors = () =>
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
 const getColorPhotos = (color) => (color.photos || []).map(normalizeColorPhoto);
+
+const getChoiceSectionValues = (section) => [
+  ...new Set([...(section.values || []), ...(selectedChoicesBySection[section.name] || [])]),
+];
+
+const syncSelectedChoices = () => {
+  const selectedOptions = getSelectedOptions();
+
+  choiceSectionsConfig.forEach((section) => {
+    if (!selectedOptions.includes(section.optionId)) {
+      delete selectedChoicesBySection[section.name];
+      return;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(selectedChoicesBySection, section.name)) {
+      selectedChoicesBySection[section.name] = [...(section.values || [])];
+    }
+  });
+};
 
 const renderOptionSelector = () => {
   if (!optionSelector) return;
@@ -292,17 +331,19 @@ const renderColorManagementModal = () => {
 const renderColorSections = () => {
   const selectedOptions = getSelectedOptions();
   const visibleSections = colorSectionsConfig.filter((section) => selectedOptions.includes(section.optionId));
+  const visibleChoiceSections = choiceSectionsConfig.filter((section) => selectedOptions.includes(section.optionId));
 
   if (!colorSections) return;
 
-  if (visibleSections.length === 0) {
+  if (visibleSections.length === 0 && visibleChoiceSections.length === 0) {
     colorSections.innerHTML = "";
     selectedColorsBySection = { mainColors: [], accentColors: [] };
+    selectedChoicesBySection = {};
     activeColorMenuId = null;
     return;
   }
 
-  colorSections.innerHTML = visibleSections
+  const colorMarkup = visibleSections
     .map((section) => {
       const colors = readCustomColors(section.name);
       const previewColors = colors.slice(0, 5);
@@ -327,6 +368,42 @@ const renderColorSections = () => {
       `;
     })
     .join("");
+
+  const choiceMarkup = visibleChoiceSections
+    .map((section) => {
+      const values = getChoiceSectionValues(section);
+      const selectedValues = selectedChoicesBySection[section.name] || [];
+
+      return `
+        <fieldset class="choice-section" data-choice-section="${section.name}">
+          <legend>${section.title}</legend>
+          <div class="choice-pill-grid">
+            ${values
+              .map(
+                (value) => `
+                  <label class="choice-pill">
+                    <input
+                      type="checkbox"
+                      data-choice-value="${value}"
+                      ${selectedValues.includes(value) ? "checked" : ""}
+                    />
+                    ${value}
+                  </label>
+                `,
+              )
+              .join("")}
+          </div>
+          <div class="choice-add-row">
+            <input type="text" placeholder="${section.addLabel}" data-choice-input="${section.name}" />
+            <button type="button" data-add-choice="${section.name}">Ajouter</button>
+          </div>
+          <small>${selectedValues.length ? `${selectedValues.length} choix proposé(s)` : section.emptyText}</small>
+        </fieldset>
+      `;
+    })
+    .join("");
+
+  colorSections.innerHTML = `${colorMarkup}${choiceMarkup}`;
 };
 
 const renderPreviewOptions = () => {
@@ -429,6 +506,7 @@ const renderDrafts = () => {
         .filter(Boolean)
         .join(", ");
       const colorCount = [...new Set([...(draft.colors?.main || []), ...(draft.colors?.accent || [])])].length;
+      const choiceCount = Object.values(draft.optionChoices || {}).flat().length;
       const photoCount = (draft.productPhotos || []).length + (draft.colorPhotos || []).length;
 
       return `
@@ -436,6 +514,7 @@ const renderDrafts = () => {
           <strong>${draft.name}</strong>
           <small>${draft.category} · À partir de ${draft.price || "prix à définir"}</small>
           <small>${colorCount ? `${colorCount} couleur(s)` : "Couleurs à définir"}</small>
+          <small>${choiceCount ? `${choiceCount} choix d’option` : "Choix à définir"}</small>
           <small>${photoCount ? `${photoCount} photo(s)` : "Photos à définir"}</small>
           <small>${options || "Aucune option"}</small>
         </article>
@@ -613,7 +692,21 @@ form?.addEventListener("input", updatePreview);
 
 form?.addEventListener("change", (event) => {
   if (event.target.name === "options") {
+    syncSelectedChoices();
     syncSelectedColors();
+    renderColorSections();
+  }
+
+  const choiceSectionElement = event.target.closest("[data-choice-section]");
+  if (choiceSectionElement && event.target.matches("[data-choice-value]")) {
+    const sectionName = choiceSectionElement.dataset.choiceSection;
+    const value = event.target.dataset.choiceValue;
+    const currentValues = selectedChoicesBySection[sectionName] || [];
+
+    selectedChoicesBySection[sectionName] = event.target.checked
+      ? [...new Set([...currentValues, value])]
+      : currentValues.filter((item) => item !== value);
+
     renderColorSections();
   }
 
@@ -621,6 +714,7 @@ form?.addEventListener("change", (event) => {
     renderProductPhotoList();
   }
 
+  syncSelectedChoices();
   syncSelectedColors();
   updatePreview();
 });
@@ -632,6 +726,23 @@ form?.addEventListener("click", (event) => {
   const photoButton = event.target.closest("[data-manage-color-photos]");
   const deleteButton = event.target.closest("[data-delete-color]");
   const colorMenu = event.target.closest(".color-menu");
+  const addChoiceButton = event.target.closest("[data-add-choice]");
+
+  if (addChoiceButton) {
+    event.preventDefault();
+    const sectionName = addChoiceButton.dataset.addChoice;
+    const input = form.querySelector(`[data-choice-input="${sectionName}"]`);
+    const value = input?.value.trim();
+
+    if (value) {
+      selectedChoicesBySection[sectionName] = [...new Set([...(selectedChoicesBySection[sectionName] || []), value])];
+      input.value = "";
+      renderColorSections();
+      updatePreview();
+    }
+
+    return;
+  }
 
   if (manageSectionButton) {
     event.preventDefault();
@@ -940,6 +1051,9 @@ form?.addEventListener("submit", (event) => {
     description: formData.get("description")?.toString().trim(),
     shopify: formData.get("shopify")?.toString().trim(),
     options: getSelectedOptions(),
+    optionChoices: Object.fromEntries(
+      choiceSectionsConfig.map((section) => [section.name, selectedChoicesBySection[section.name] || []]),
+    ),
     productPhotos: Array.from(form.elements.productPhotos?.files || []).map((file) => file.name),
     colorPhotos: readCustomColors()
       .filter((color) => getColorPhotos(color).length > 0)
@@ -955,6 +1069,7 @@ form?.addEventListener("submit", (event) => {
   renderDrafts();
   form.reset();
   selectedColorsBySection = { mainColors: [], accentColors: [] };
+  selectedChoicesBySection = {};
   activeColorMenuId = null;
   closeColorEditModal();
   closeColorManageModal();
