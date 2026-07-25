@@ -302,8 +302,10 @@
 
 .choice-pill {
   position: relative;
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
+  justify-content: center;
+  gap: 0 !important;
   min-height: 35px;
   padding: 0 12px;
   border-radius: 999px;
@@ -313,6 +315,8 @@
   box-shadow: 0 0 14px rgba(232, 75, 148, 0.08);
   font-size: 12px;
   font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -320,6 +324,14 @@
   position: absolute;
   opacity: 0;
   pointer-events: none;
+}
+
+.choice-pill span {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  color: inherit;
+  line-height: 1;
 }
 
 .choice-pill:has(input:checked) {

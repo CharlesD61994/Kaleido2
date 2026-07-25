@@ -387,7 +387,7 @@ const renderColorSections = () => {
                       data-choice-value="${value}"
                       ${selectedValues.includes(value) ? "checked" : ""}
                     />
-                    ${value}
+                    <span>${value}</span>
                   </label>
                 `,
               )
