@@ -42,6 +42,17 @@ const previewName = document.querySelector("#previewName");
 const previewPrice = document.querySelector("#previewPrice");
 const previewOptions = document.querySelector("#previewOptions");
 const previewSwatches = document.querySelector("#previewSwatches");
+const previewCard = document.querySelector("#previewCard");
+const previewImage = document.querySelector("#previewImage");
+const previewPhotoStrip = document.querySelector("#previewPhotoStrip");
+const productPreviewPage = document.querySelector("#productPreviewPage");
+const previewDetailHero = document.querySelector("#previewDetailHero");
+const previewDetailName = document.querySelector("#previewDetailName");
+const previewDetailPrice = document.querySelector("#previewDetailPrice");
+const previewDetailCopy = document.querySelector("#previewDetailCopy");
+const previewDetailSwatches = document.querySelector("#previewDetailSwatches");
+const previewDetailOptions = document.querySelector("#previewDetailOptions");
+const previewDetailGallery = document.querySelector("#previewDetailGallery");
 const productPhotoList = document.querySelector("#productPhotoList");
 const draftList = document.querySelector("#draftList");
 const clearDraftsButton = document.querySelector("#clearDrafts");
@@ -73,6 +84,20 @@ let editingColorContext = null;
 let managingColorSection = null;
 let photoColorContext = null;
 let colorManageView = "list";
+let productPhotoPreviews = [];
+
+const escapeHtml = (value) =>
+  String(value ?? "").replace(
+    /[&<>"']/g,
+    (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      })[character],
+  );
 
 const readJson = (key, fallback) => {
   try {
@@ -433,14 +458,129 @@ const renderPreviewSwatches = () => {
   ].join("");
 };
 
+const clearProductPhotoPreviews = () => {
+  productPhotoPreviews.forEach((photo) => URL.revokeObjectURL(photo.url));
+  productPhotoPreviews = [];
+};
+
+const syncProductPhotoPreviews = () => {
+  if (!form) return;
+  clearProductPhotoPreviews();
+  productPhotoPreviews = Array.from(form.elements.productPhotos?.files || []).map((file) => ({
+    id: crypto.randomUUID(),
+    name: file.name,
+    url: URL.createObjectURL(file),
+  }));
+};
+
+const renderPreviewProductImage = () => {
+  if (!previewImage) return;
+  const firstPhoto = productPhotoPreviews[0];
+
+  previewImage.classList.toggle("has-preview-photo", Boolean(firstPhoto));
+  previewImage.innerHTML = firstPhoto
+    ? `<img src="${firstPhoto.url}" alt="${escapeHtml(firstPhoto.name)}" />`
+    : "";
+};
+
+const renderPreviewPhotoStrip = () => {
+  if (!previewPhotoStrip) return;
+
+  previewPhotoStrip.innerHTML = productPhotoPreviews.length
+    ? productPhotoPreviews
+        .map(
+          (photo) => `
+            <button type="button" data-open-product-preview>
+              <img src="${photo.url}" alt="${escapeHtml(photo.name)}" />
+            </button>
+          `,
+        )
+        .join("")
+    : '<small>Ajoute des photos pour voir la fiche client.</small>';
+};
+
 const renderProductPhotoList = () => {
   if (!productPhotoList || !form) return;
   const input = form.elements.productPhotos;
   const files = Array.from(input?.files || []);
 
   productPhotoList.innerHTML = files.length
-    ? files.map((file) => `<span>${file.name}</span>`).join("")
+    ? files.map((file) => `<span>${escapeHtml(file.name)}</span>`).join("")
     : '<small>Aucune photo du produit ajoutée.</small>';
+};
+
+const getPreviewData = () => {
+  const formData = new FormData(form);
+  const selectedOptions = getSelectedOptions();
+  const choiceSections = choiceSectionsConfig
+    .filter((section) => selectedOptions.includes(section.optionId))
+    .map((section) => ({
+      ...section,
+      values: selectedChoicesBySection[section.name] || [],
+    }))
+    .filter((section) => section.values.length > 0);
+
+  return {
+    name: formData.get("name")?.toString().trim() || "Pantoufles douillettes",
+    price: formData.get("price")?.toString().trim() || "42,00 $",
+    description:
+      formData.get("description")?.toString().trim() ||
+      "Une création douce, personnalisable et faite à la main avec suivi Kaleido.",
+    colors: [...new Set(getAllSelectedColors())],
+    options: selectedOptions.map(findOption).filter(Boolean),
+    choiceSections,
+    photos: productPhotoPreviews,
+  };
+};
+
+const renderProductPreviewPage = () => {
+  const data = getPreviewData();
+  const heroPhoto = data.photos[0];
+
+  if (previewDetailHero) {
+    previewDetailHero.classList.toggle("has-preview-photo", Boolean(heroPhoto));
+    previewDetailHero.innerHTML = heroPhoto
+      ? `<img src="${heroPhoto.url}" alt="${escapeHtml(heroPhoto.name)}" />`
+      : '<div class="admin-product-preview-placeholder">Photo du produit</div>';
+  }
+
+  if (previewDetailName) previewDetailName.textContent = data.name;
+  if (previewDetailPrice) previewDetailPrice.textContent = data.price;
+  if (previewDetailCopy) previewDetailCopy.textContent = data.description;
+
+  if (previewDetailSwatches) {
+    previewDetailSwatches.innerHTML = data.colors.length
+      ? [
+          ...data.colors.slice(0, 6).map((color) => `<span style="--swatch:${color}"></span>`),
+          data.colors.length > 6 ? '<button type="button" aria-label="Voir plus de couleurs">+</button>' : "",
+        ].join("")
+      : '<small>Aucune couleur sélectionnée.</small>';
+  }
+
+  if (previewDetailOptions) {
+    const optionMarkup = data.options
+      .map((option) => `<span class="preview-option" style="--option-color:${option.color}">${option.label}</span>`)
+      .join("");
+    const choiceMarkup = data.choiceSections
+      .map(
+        (section) => `
+          <span class="preview-option" style="--option-color:${findOption(section.optionId)?.color || "#30c7c9"}">
+            ${escapeHtml(section.title)} · ${section.values.map(escapeHtml).join(", ")}
+          </span>
+        `,
+      )
+      .join("");
+
+    previewDetailOptions.innerHTML = optionMarkup || choiceMarkup ? `${optionMarkup}${choiceMarkup}` : "Aucune option.";
+  }
+
+  if (previewDetailGallery) {
+    previewDetailGallery.innerHTML = data.photos.length
+      ? data.photos
+          .map((photo) => `<img src="${photo.url}" alt="${escapeHtml(photo.name)}" />`)
+          .join("")
+      : '<small>Aucune photo du produit ajoutée.</small>';
+  }
 };
 
 const getColorFromContext = (context) => {
@@ -482,13 +622,25 @@ const renderColorPhotoModal = () => {
 };
 
 const updatePreview = () => {
-  const formData = new FormData(form);
-  previewName.textContent = formData.get("name")?.toString().trim() || "Pantoufles douillettes";
-  previewPrice.textContent = formData.get("price")?.toString().trim() || "42,00 $";
+  const previewData = getPreviewData();
+  previewName.textContent = previewData.name;
+  previewPrice.textContent = previewData.price;
   renderPreviewOptions();
   renderPreviewSwatches();
+  renderPreviewProductImage();
+  renderPreviewPhotoStrip();
   renderProductPhotoList();
   renderColorPhotoModal();
+  renderProductPreviewPage();
+};
+
+const openProductPreviewPage = () => {
+  renderProductPreviewPage();
+  if (productPreviewPage) productPreviewPage.hidden = false;
+};
+
+const closeProductPreviewPage = () => {
+  if (productPreviewPage) productPreviewPage.hidden = true;
 };
 
 const renderDrafts = () => {
@@ -698,6 +850,7 @@ form?.addEventListener("change", (event) => {
   }
 
   if (event.target.name === "productPhotos") {
+    syncProductPhotoPreviews();
     renderProductPhotoList();
   }
 
@@ -1019,7 +1172,34 @@ colorPhotoInput?.addEventListener("change", (event) => {
   addColorPhotos(Array.from(event.target.files || []));
 });
 
+previewCard?.addEventListener("click", (event) => {
+  if (event.target.closest(".heart-button")) return;
+  openProductPreviewPage();
+});
+
+previewCard?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  openProductPreviewPage();
+});
+
+previewPhotoStrip?.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-open-product-preview]")) return;
+  openProductPreviewPage();
+});
+
+productPreviewPage?.addEventListener("click", (event) => {
+  if (event.target.closest("[data-close-product-preview]")) {
+    closeProductPreviewPage();
+  }
+});
+
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !productPreviewPage?.hidden) {
+    closeProductPreviewPage();
+    return;
+  }
+
   if (event.key === "Escape" && !colorManagePage?.hidden) {
     if (colorManageView === "edit") {
       editingColorContext = null;
@@ -1081,10 +1261,23 @@ form?.addEventListener("submit", (event) => {
   closeColorEditModal();
   closeColorManageModal();
   closeColorPhotoModal();
+  clearProductPhotoPreviews();
   renderColorSections();
+  renderPreviewProductImage();
+  renderPreviewPhotoStrip();
   renderProductPhotoList();
   renderColorPhotoModal();
   updatePreview();
+});
+
+form?.addEventListener("reset", () => {
+  requestAnimationFrame(() => {
+    clearProductPhotoPreviews();
+    selectedColorsBySection = { mainColors: [], accentColors: [] };
+    selectedChoicesBySection = {};
+    renderColorSections();
+    updatePreview();
+  });
 });
 
 clearDraftsButton?.addEventListener("click", () => {
@@ -1096,6 +1289,8 @@ renderOptionSelector();
 renderColorSections();
 renderPreviewOptions();
 renderPreviewSwatches();
+renderPreviewProductImage();
+renderPreviewPhotoStrip();
 renderProductPhotoList();
 renderColorPhotoModal();
 renderDrafts();

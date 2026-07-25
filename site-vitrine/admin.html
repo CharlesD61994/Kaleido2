@@ -142,9 +142,15 @@
             </div>
           </div>
 
-          <article class="product-card glow-coral admin-preview-card">
+          <article
+            class="product-card glow-coral admin-preview-card"
+            id="previewCard"
+            role="button"
+            tabindex="0"
+            aria-label="Ouvrir l'aperçu de la fiche produit"
+          >
             <button class="heart-button" type="button" aria-label="Ajouter aux favoris"></button>
-            <div class="product-image product-slippers"></div>
+            <div class="product-image product-slippers" id="previewImage"></div>
             <div class="product-info">
               <h3 id="previewName">Pantoufles douillettes</h3>
               <p>À partir de <strong id="previewPrice">42,00 $</strong></p>
@@ -157,6 +163,7 @@
             </div>
           </article>
 
+          <div class="admin-preview-photo-strip" id="previewPhotoStrip"></div>
           <div class="preview-options" id="previewOptions"></div>
         </section>
 
@@ -171,6 +178,43 @@
 
           <div class="draft-list" id="draftList"></div>
         </section>
+      </section>
+
+      <section class="admin-detail-page product-preview-page" id="productPreviewPage" hidden>
+        <header class="admin-detail-header">
+          <button class="admin-back-button" type="button" data-close-product-preview aria-label="Retour">←</button>
+          <div>
+            <span class="admin-kicker">Aperçu client</span>
+            <h2>Fiche produit</h2>
+          </div>
+        </header>
+
+        <article class="admin-product-preview-detail">
+          <div class="admin-product-preview-hero" id="previewDetailHero"></div>
+          <div class="admin-product-preview-content">
+            <span class="admin-kicker">Avec suivi Kaleido</span>
+            <h2 id="previewDetailName">Pantoufles douillettes</h2>
+            <p class="admin-product-preview-price">À partir de <strong id="previewDetailPrice">42,00 $</strong></p>
+            <p id="previewDetailCopy">
+              Une création douce, personnalisable et faite à la main avec suivi Kaleido.
+            </p>
+
+            <div class="admin-product-preview-panel">
+              <strong>Couleurs proposées</strong>
+              <div class="swatches" id="previewDetailSwatches"></div>
+            </div>
+
+            <div class="admin-product-preview-panel">
+              <strong>Options proposées</strong>
+              <div class="preview-options" id="previewDetailOptions"></div>
+            </div>
+
+            <div class="admin-product-preview-panel">
+              <strong>Photos du produit</strong>
+              <div class="admin-product-preview-gallery" id="previewDetailGallery"></div>
+            </div>
+          </div>
+        </article>
       </section>
 
       <section class="admin-detail-page" id="colorManagePage" hidden>
