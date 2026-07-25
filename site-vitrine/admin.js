@@ -41,6 +41,11 @@ const colorPhotoModal = document.querySelector("#colorPhotoModal");
 const colorPhotoDescription = document.querySelector("#colorPhotoDescription");
 const colorPhotoInput = document.querySelector("#colorPhotoInput");
 const colorPhotoGrid = document.querySelector("#colorPhotoGrid");
+const colorManagePage = document.querySelector("#colorManagePage");
+const colorPageKicker = document.querySelector("#colorPageKicker");
+const colorPageTitle = document.querySelector("#colorPageTitle");
+const colorPageDescription = document.querySelector("#colorPageDescription");
+const colorPageContent = document.querySelector("#colorPageContent");
 
 let activeColorMenuId = null;
 let selectedColorsBySection = { mainColors: [], accentColors: [] };
@@ -163,23 +168,21 @@ const colorCardMarkup = (color, sectionName) => `
 `;
 
 const renderColorManagementModal = () => {
-  if (!colorManageGrid || !colorManageTitle || !colorManageDescription) return;
+  if (!colorPageContent || !colorPageTitle || !colorPageDescription || !colorPageKicker) return;
   const section = colorSectionsConfig.find((item) => item.name === managingColorSection);
   const colors = section ? readCustomColors(section.name) : [];
-  const modalAddRow = colorManageModal?.querySelector(".modal-color-add");
-
-  if (modalAddRow) modalAddRow.hidden = colorManageView !== "list";
 
   if (colorManageView === "edit") {
     const color = getColorFromContext(editingColorContext);
-    colorManageTitle.textContent = "Modifier la couleur";
-    colorManageDescription.textContent = color
-      ? `Ajuste le nom et la teinte de ${color.label}.`
-      : "Ajuste le nom et la teinte de cette couleur.";
-    colorManageGrid.innerHTML = color
+    const photos = color ? getColorPhotos(color) : [];
+    colorPageKicker.textContent = section?.title || "Couleur";
+    colorPageTitle.textContent = color ? color.label : "Couleur";
+    colorPageDescription.textContent = color
+      ? "Modifie la couleur et ajoute les photos de pelotes associées."
+      : "Cette couleur n’est plus disponible.";
+    colorPageContent.innerHTML = color
       ? `
-          <div class="color-subview">
-            <button class="secondary-button color-subview-back" type="button" data-back-color-manage>Retour aux couleurs</button>
+          <div class="admin-detail-card color-detail-editor" style="--swatch:${color.value}">
             <label>
               Nom
               <input id="colorInlineEditName" type="text" value="${color.label}" />
@@ -189,8 +192,52 @@ const renderColorManagementModal = () => {
               <input id="colorInlineEditValue" type="color" value="${color.value}" />
             </label>
             <div class="admin-modal-actions">
-              <button class="secondary-button" type="button" data-back-color-manage>Annuler</button>
+              <button class="secondary-button" type="button" data-back-color-manage>Retour</button>
               <button class="buy-button" type="button" data-save-color-edit>Enregistrer</button>
+            </div>
+            <button
+              class="secondary-button color-delete-page-button"
+              type="button"
+              data-delete-color="${color.id}"
+              data-color-section-name="${editingColorContext.sectionName}"
+            >
+              Supprimer cette couleur
+            </button>
+          </div>
+          <div class="admin-detail-card color-detail-photos" style="--swatch:${color.value}">
+            <div class="admin-section-heading">
+              <div>
+                <span class="admin-kicker">Photos</span>
+                <h2>Pelotes associées</h2>
+              </div>
+            </div>
+            <label class="photo-drop modal-photo-drop">
+              <input id="colorInlinePhotoInput" type="file" accept="image/*" multiple />
+              <span>Ajouter des photos</span>
+              <small>Tu peux en sélectionner plusieurs à la fois.</small>
+            </label>
+            <div class="modal-photo-grid">
+              ${
+                photos.length
+                  ? photos
+                      .map(
+                        (photo) => `
+                          <article class="modal-photo-card">
+                            ${
+                              photo.url
+                                ? `<img src="${photo.url}" alt="${photo.name}" />`
+                                : `<div class="modal-photo-placeholder" style="--swatch:${color.value}"></div>`
+                            }
+                            <div>
+                              <strong>${photo.name}</strong>
+                              <button type="button" data-delete-color-photo="${photo.id}">Supprimer</button>
+                            </div>
+                          </article>
+                        `,
+                      )
+                      .join("")
+                  : '<p class="empty-drafts">Aucune photo associée pour le moment.</p>'
+              }
             </div>
           </div>
         `
@@ -199,56 +246,47 @@ const renderColorManagementModal = () => {
     return;
   }
 
-  if (colorManageView === "photos") {
-    const color = getColorFromContext(photoColorContext);
-    const photos = color ? getColorPhotos(color) : [];
-    colorManageTitle.textContent = "Photos associées";
-    colorManageDescription.textContent = color
-      ? `Photos associées à ${color.label}.`
-      : "Ajoute les photos des pelotes pour aider les clients à visualiser la couleur.";
-    colorManageGrid.innerHTML = `
-      <div class="color-subview">
-        <button class="secondary-button color-subview-back" type="button" data-back-color-manage>Retour aux couleurs</button>
-        <label class="photo-drop modal-photo-drop">
-          <input id="colorInlinePhotoInput" type="file" accept="image/*" multiple />
-          <span>Ajouter des photos</span>
-          <small>Tu peux en sélectionner plusieurs à la fois.</small>
-        </label>
-        <div class="modal-photo-grid">
-          ${
-            photos.length
-              ? photos
-                  .map(
-                    (photo) => `
-                      <article class="modal-photo-card">
-                        ${
-                          photo.url
-                            ? `<img src="${photo.url}" alt="${photo.name}" />`
-                            : `<div class="modal-photo-placeholder" style="--swatch:${color.value}"></div>`
-                        }
-                        <div>
-                          <strong>${photo.name}</strong>
-                          <button type="button" data-delete-color-photo="${photo.id}">Supprimer</button>
-                        </div>
-                      </article>
-                    `,
-                  )
-                  .join("")
-              : '<p class="empty-drafts">Aucune photo associée pour le moment.</p>'
-          }
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  colorManageTitle.textContent = section ? section.title : "Gérer les couleurs";
-  colorManageDescription.textContent = section
+  colorPageKicker.textContent = "Options couleur";
+  colorPageTitle.textContent = section ? section.title : "Gérer les couleurs";
+  colorPageDescription.textContent = section
     ? `${colors.length} couleur(s) offerte(s) dans ${section.title.toLowerCase()}.`
     : "Ajoute les couleurs offertes pour cette option.";
-  colorManageGrid.innerHTML = colors.length
-    ? colors.map((color) => colorCardMarkup(color, section.name)).join("")
-    : '<p class="empty-colors">Aucune couleur ajoutée pour le moment.</p>';
+  colorPageContent.innerHTML = `
+    <div class="admin-detail-card custom-color-row page-color-add">
+      <label>
+        Ajouter une couleur
+        <input type="text" id="colorPageLabel" placeholder="Nom" />
+      </label>
+      <label>
+        Code
+        <input type="color" id="colorPageValue" value="#f05b4f" />
+      </label>
+      <button class="add-color-button" type="button" data-add-page-color>Ajouter</button>
+    </div>
+    <div class="color-select-grid page-color-grid">
+      ${
+        colors.length
+          ? colors
+              .map(
+                (color) => `
+                  <button
+                    class="color-toggle"
+                    style="--swatch:${color.value}"
+                    data-open-color-detail="${color.id}"
+                    data-color-section-name="${section.name}"
+                    type="button"
+                    aria-label="Ouvrir ${color.label}"
+                  >
+                    <span class="color-check" aria-hidden="true"></span>
+                    <span class="color-name-button">${color.label}</span>
+                  </button>
+                `,
+              )
+              .join("")
+          : '<p class="empty-colors">Aucune couleur ajoutée pour le moment.</p>'
+      }
+    </div>
+  `;
 };
 
 const renderColorSections = () => {
@@ -419,8 +457,10 @@ const readFileAsPhoto = (file) =>
 const addCustomColor = (sectionName = managingColorSection) => {
   if (!sectionName) return;
 
-  const label = modalColorLabel?.value.trim() || "Nouvelle couleur";
-  const value = modalColorValue?.value || "#f05b4f";
+  const pageLabel = document.querySelector("#colorPageLabel");
+  const pageValue = document.querySelector("#colorPageValue");
+  const label = pageLabel?.value.trim() || modalColorLabel?.value.trim() || "Nouvelle couleur";
+  const value = pageValue?.value || modalColorValue?.value || "#f05b4f";
   const customColors = readCustomColors(sectionName);
   const existingColor = customColors.find((color) => color.value.toLowerCase() === value.toLowerCase());
 
@@ -434,6 +474,7 @@ const addCustomColor = (sectionName = managingColorSection) => {
   updatePreview();
 
   if (modalColorLabel) modalColorLabel.value = "";
+  if (pageLabel) pageLabel.value = "";
 };
 
 const editCustomColor = (colorId, sectionName) => {
@@ -458,7 +499,7 @@ const openColorManageModal = (sectionName) => {
   editingColorContext = null;
   photoColorContext = null;
   colorManageView = "list";
-  if (colorManageModal) colorManageModal.hidden = false;
+  if (colorManagePage) colorManagePage.hidden = false;
   renderColorManagementModal();
 };
 
@@ -468,6 +509,7 @@ const closeColorManageModal = () => {
   editingColorContext = null;
   photoColorContext = null;
   colorManageView = "list";
+  if (colorManagePage) colorManagePage.hidden = true;
   if (colorManageModal) colorManageModal.hidden = true;
   if (modalColorLabel) modalColorLabel.value = "";
 };
@@ -757,6 +799,76 @@ colorManageModal?.addEventListener("change", (event) => {
   }
 });
 
+colorManagePage?.addEventListener("click", (event) => {
+  const closeButton = event.target.closest("[data-close-color-page]");
+  const addButton = event.target.closest("[data-add-page-color]");
+  const detailButton = event.target.closest("[data-open-color-detail]");
+  const backButton = event.target.closest("[data-back-color-manage]");
+  const saveEditButton = event.target.closest("[data-save-color-edit]");
+  const deleteColorButton = event.target.closest("[data-delete-color]");
+  const deletePhotoButton = event.target.closest("[data-delete-color-photo]");
+
+  if (closeButton || backButton) {
+    event.preventDefault();
+    if (colorManageView === "edit") {
+      editingColorContext = null;
+      photoColorContext = null;
+      colorManageView = "list";
+      renderColorManagementModal();
+      return;
+    }
+
+    closeColorManageModal();
+    return;
+  }
+
+  if (addButton) {
+    event.preventDefault();
+    addCustomColor(managingColorSection);
+    return;
+  }
+
+  if (detailButton) {
+    event.preventDefault();
+    editingColorContext = {
+      colorId: detailButton.dataset.openColorDetail,
+      sectionName: detailButton.dataset.colorSectionName,
+    };
+    photoColorContext = { ...editingColorContext };
+    activeColorMenuId = null;
+    colorManageView = "edit";
+    renderColorManagementModal();
+    return;
+  }
+
+  if (saveEditButton) {
+    event.preventDefault();
+    saveColorEdit();
+    return;
+  }
+
+  if (deleteColorButton) {
+    event.preventDefault();
+    deleteCustomColor(deleteColorButton.dataset.deleteColor, deleteColorButton.dataset.colorSectionName);
+    editingColorContext = null;
+    photoColorContext = null;
+    colorManageView = "list";
+    renderColorManagementModal();
+    return;
+  }
+
+  if (deletePhotoButton) {
+    event.preventDefault();
+    deleteColorPhoto(deletePhotoButton.dataset.deleteColorPhoto);
+  }
+});
+
+colorManagePage?.addEventListener("change", (event) => {
+  if (event.target.closest("#colorInlinePhotoInput")) {
+    addColorPhotos(Array.from(event.target.files || []));
+  }
+});
+
 colorManageModal?.addEventListener("click", (event) => {
   if (event.target === colorManageModal || event.target.closest("[data-close-color-manage]")) {
     closeColorManageModal();
@@ -790,6 +902,19 @@ colorPhotoInput?.addEventListener("change", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !colorManagePage?.hidden) {
+    if (colorManageView === "edit") {
+      editingColorContext = null;
+      photoColorContext = null;
+      colorManageView = "list";
+      renderColorManagementModal();
+      return;
+    }
+
+    closeColorManageModal();
+    return;
+  }
+
   if (event.key === "Escape" && !colorEditModal?.hidden) {
     closeColorEditModal();
   }
