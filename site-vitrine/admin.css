@@ -302,10 +302,9 @@
 
 .choice-pill {
   position: relative;
-  display: inline-flex !important;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0 !important;
   min-height: 35px;
   padding: 0 12px;
   border-radius: 999px;
@@ -313,25 +312,12 @@
   background: rgba(255, 255, 255, 0.70);
   border: 1px solid rgba(16, 39, 68, 0.10);
   box-shadow: 0 0 14px rgba(232, 75, 148, 0.08);
+  font-family: "DM Sans", system-ui, sans-serif;
   font-size: 12px;
   font-weight: 900;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-}
-
-.choice-pill input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.choice-pill span {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  color: inherit;
-  line-height: 1;
 }
 
 .choice-pill-selected {
@@ -341,10 +327,6 @@
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.60) inset,
     0 0 18px rgba(232, 75, 148, 0.22);
-}
-
-.choice-pill-selected span {
-  color: white;
 }
 
 .choice-add-row {

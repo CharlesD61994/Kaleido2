@@ -381,14 +381,14 @@ const renderColorSections = () => {
             ${values
               .map(
                 (value) => `
-                  <label class="choice-pill ${selectedValues.includes(value) ? "choice-pill-selected" : ""}">
-                    <input
-                      type="checkbox"
-                      data-choice-value="${value}"
-                      ${selectedValues.includes(value) ? "checked" : ""}
-                    />
-                    <span>${value}</span>
-                  </label>
+                  <button
+                    class="choice-pill ${selectedValues.includes(value) ? "choice-pill-selected" : ""}"
+                    type="button"
+                    data-choice-toggle="${value}"
+                    aria-pressed="${selectedValues.includes(value) ? "true" : "false"}"
+                  >
+                    ${value}
+                  </button>
                 `,
               )
               .join("")}
@@ -697,19 +697,6 @@ form?.addEventListener("change", (event) => {
     renderColorSections();
   }
 
-  const choiceSectionElement = event.target.closest("[data-choice-section]");
-  if (choiceSectionElement && event.target.matches("[data-choice-value]")) {
-    const sectionName = choiceSectionElement.dataset.choiceSection;
-    const value = event.target.dataset.choiceValue;
-    const currentValues = selectedChoicesBySection[sectionName] || [];
-
-    selectedChoicesBySection[sectionName] = event.target.checked
-      ? [...new Set([...currentValues, value])]
-      : currentValues.filter((item) => item !== value);
-
-    renderColorSections();
-  }
-
   if (event.target.name === "productPhotos") {
     renderProductPhotoList();
   }
@@ -727,6 +714,26 @@ form?.addEventListener("click", (event) => {
   const deleteButton = event.target.closest("[data-delete-color]");
   const colorMenu = event.target.closest(".color-menu");
   const addChoiceButton = event.target.closest("[data-add-choice]");
+  const choiceToggleButton = event.target.closest("[data-choice-toggle]");
+
+  if (choiceToggleButton) {
+    event.preventDefault();
+    const choiceSectionElement = choiceToggleButton.closest("[data-choice-section]");
+    const sectionName = choiceSectionElement?.dataset.choiceSection;
+    const value = choiceToggleButton.dataset.choiceToggle;
+    const currentValues = selectedChoicesBySection[sectionName] || [];
+
+    if (sectionName && value) {
+      selectedChoicesBySection[sectionName] = currentValues.includes(value)
+        ? currentValues.filter((item) => item !== value)
+        : [...new Set([...currentValues, value])];
+
+      renderColorSections();
+      updatePreview();
+    }
+
+    return;
+  }
 
   if (addChoiceButton) {
     event.preventDefault();
