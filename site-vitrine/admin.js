@@ -52,6 +52,7 @@ const previewDetailPrice = document.querySelector("#previewDetailPrice");
 const previewDetailCopy = document.querySelector("#previewDetailCopy");
 const previewDetailSwatches = document.querySelector("#previewDetailSwatches");
 const previewDetailOptions = document.querySelector("#previewDetailOptions");
+const previewDetailColorGallery = document.querySelector("#previewDetailColorGallery");
 const previewDetailGallery = document.querySelector("#previewDetailGallery");
 const productPhotoList = document.querySelector("#productPhotoList");
 const draftList = document.querySelector("#draftList");
@@ -546,6 +547,19 @@ const getPreviewData = () => {
     colors: [...new Set(getAllSelectedColors())],
     options: selectedOptions.map(findOption).filter(Boolean),
     colorChoiceSections,
+    colorPhotos: colorChoiceSections.flatMap((section) =>
+      section.values.flatMap((color) =>
+        getColorPhotos(color).map((photo) => ({
+          ...photo,
+          colorId: color.id,
+          colorLabel: color.label,
+          colorValue: color.value,
+          sectionId: section.id,
+          sectionTitle: section.title,
+          optionColor: section.option?.color,
+        })),
+      ),
+    ),
     choiceSections,
     simpleOptions,
     photos: productPhotoPreviews,
@@ -669,6 +683,37 @@ const renderProductPreviewPage = () => {
 
   if (previewDetailOptions) {
     previewDetailOptions.innerHTML = renderClientOptionGroups(data);
+  }
+
+  if (previewDetailColorGallery) {
+    previewDetailColorGallery.innerHTML = data.colorPhotos.length
+      ? data.colorPhotos
+          .map((photo) => {
+            const isSelected = productPreviewSelections[photo.sectionId] === photo.colorValue;
+
+            return `
+              <button
+                class="admin-color-preview-card ${isSelected ? "admin-color-preview-card-selected" : ""}"
+                type="button"
+                data-preview-choice-group="${escapeHtml(photo.sectionId)}"
+                data-preview-choice-value="${escapeHtml(photo.colorValue)}"
+                style="--swatch:${photo.colorValue};--option-color:${photo.optionColor || photo.colorValue}"
+                aria-pressed="${isSelected ? "true" : "false"}"
+              >
+                ${
+                  photo.url
+                    ? `<img src="${photo.url}" alt="${escapeHtml(photo.name)}" />`
+                    : '<div class="admin-color-preview-placeholder"></div>'
+                }
+                <span>
+                  <strong>${escapeHtml(photo.colorLabel)}</strong>
+                  <small>${escapeHtml(photo.sectionTitle)}</small>
+                </span>
+              </button>
+            `;
+          })
+          .join("")
+      : '<small>Ajoute des photos aux couleurs pour aider le client à visualiser la laine.</small>';
   }
 
   if (previewDetailGallery) {
