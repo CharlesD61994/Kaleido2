@@ -50,9 +50,7 @@ const previewDetailHero = document.querySelector("#previewDetailHero");
 const previewDetailName = document.querySelector("#previewDetailName");
 const previewDetailPrice = document.querySelector("#previewDetailPrice");
 const previewDetailCopy = document.querySelector("#previewDetailCopy");
-const previewDetailSwatches = document.querySelector("#previewDetailSwatches");
 const previewDetailOptions = document.querySelector("#previewDetailOptions");
-const previewDetailColorGallery = document.querySelector("#previewDetailColorGallery");
 const previewDetailGallery = document.querySelector("#previewDetailGallery");
 const productPhotoList = document.querySelector("#productPhotoList");
 const draftList = document.querySelector("#draftList");
@@ -547,19 +545,6 @@ const getPreviewData = () => {
     colors: [...new Set(getAllSelectedColors())],
     options: selectedOptions.map(findOption).filter(Boolean),
     colorChoiceSections,
-    colorPhotos: colorChoiceSections.flatMap((section) =>
-      section.values.flatMap((color) =>
-        getColorPhotos(color).map((photo) => ({
-          ...photo,
-          colorId: color.id,
-          colorLabel: color.label,
-          colorValue: color.value,
-          sectionId: section.id,
-          sectionTitle: section.title,
-          optionColor: section.option?.color,
-        })),
-      ),
-    ),
     choiceSections,
     simpleOptions,
     photos: productPhotoPreviews,
@@ -589,22 +574,39 @@ const renderClientOptionGroups = (data) => {
     .map((section) => {
       const choices = section.values.length
         ? section.values
-            .map((color) =>
-              previewOptionButtonMarkup({
-                group: section.id,
-                value: color.value,
-                label: color.label,
-                color: section.option?.color,
-                swatch: color.value,
-              }),
-            )
+            .map((color) => {
+              const photos = getColorPhotos(color);
+              const photo = photos[0];
+              const isSelected = productPreviewSelections[section.id] === color.value;
+
+              return `
+                <button
+                  class="admin-color-preview-card ${isSelected ? "admin-color-preview-card-selected" : ""}"
+                  type="button"
+                  data-preview-choice-group="${escapeHtml(section.id)}"
+                  data-preview-choice-value="${escapeHtml(color.value)}"
+                  style="--swatch:${color.value};--option-color:${section.option?.color || color.value}"
+                  aria-pressed="${isSelected ? "true" : "false"}"
+                >
+                  ${
+                    photo?.url
+                      ? `<img src="${photo.url}" alt="${escapeHtml(photo.name)}" />`
+                      : '<div class="admin-color-preview-placeholder"></div>'
+                  }
+                  <span>
+                    <strong>${escapeHtml(color.label)}</strong>
+                    <small>${photos.length ? `${photos.length} photo(s)` : "Aucune photo"}</small>
+                  </span>
+                </button>
+              `;
+            })
             .join("")
         : '<small>Aucune couleur ajoutée pour cette option.</small>';
 
       return `
         <div class="admin-client-option-group">
           <strong>${escapeHtml(section.title)}</strong>
-          <div class="admin-client-choice-grid">${choices}</div>
+          <div class="admin-color-preview-gallery">${choices}</div>
         </div>
       `;
     })
@@ -672,48 +674,8 @@ const renderProductPreviewPage = () => {
   if (previewDetailPrice) previewDetailPrice.textContent = data.price;
   if (previewDetailCopy) previewDetailCopy.textContent = data.description;
 
-  if (previewDetailSwatches) {
-    previewDetailSwatches.innerHTML = data.colors.length
-      ? [
-          ...data.colors.slice(0, 6).map((color) => `<span style="--swatch:${color}"></span>`),
-          data.colors.length > 6 ? '<button type="button" aria-label="Voir plus de couleurs">+</button>' : "",
-        ].join("")
-      : '<small>Aucune couleur sélectionnée.</small>';
-  }
-
   if (previewDetailOptions) {
     previewDetailOptions.innerHTML = renderClientOptionGroups(data);
-  }
-
-  if (previewDetailColorGallery) {
-    previewDetailColorGallery.innerHTML = data.colorPhotos.length
-      ? data.colorPhotos
-          .map((photo) => {
-            const isSelected = productPreviewSelections[photo.sectionId] === photo.colorValue;
-
-            return `
-              <button
-                class="admin-color-preview-card ${isSelected ? "admin-color-preview-card-selected" : ""}"
-                type="button"
-                data-preview-choice-group="${escapeHtml(photo.sectionId)}"
-                data-preview-choice-value="${escapeHtml(photo.colorValue)}"
-                style="--swatch:${photo.colorValue};--option-color:${photo.optionColor || photo.colorValue}"
-                aria-pressed="${isSelected ? "true" : "false"}"
-              >
-                ${
-                  photo.url
-                    ? `<img src="${photo.url}" alt="${escapeHtml(photo.name)}" />`
-                    : '<div class="admin-color-preview-placeholder"></div>'
-                }
-                <span>
-                  <strong>${escapeHtml(photo.colorLabel)}</strong>
-                  <small>${escapeHtml(photo.sectionTitle)}</small>
-                </span>
-              </button>
-            `;
-          })
-          .join("")
-      : '<small>Ajoute des photos aux couleurs pour aider le client à visualiser la laine.</small>';
   }
 
   if (previewDetailGallery) {
