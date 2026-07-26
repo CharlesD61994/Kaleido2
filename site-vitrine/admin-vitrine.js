@@ -7,10 +7,8 @@ const homeCatalogCount = document.querySelector("#homeCatalogCount");
 const homeCategories = document.querySelector("#homeCategories");
 const featuredProducts = document.querySelector("#featuredProducts");
 const homePreview = document.querySelector("#homePreview");
-const addCategoryForm = document.querySelector("#addCategoryForm");
-const newCategoryName = document.querySelector("#newCategoryName");
-const newCategoryColor = document.querySelector("#newCategoryColor");
 const productPickerModal = document.querySelector("#productPickerModal");
+const categoryModal = document.querySelector("#categoryModal");
 
 const defaultCategories = [
   { id: "vetements", label: "Vêtements", color: "#7c3aed", icon: "♢" },
@@ -96,6 +94,7 @@ const cleanHomeConfig = (rawConfig) => {
 
 let homeConfig = cleanHomeConfig(readJson(homeConfigKey, null));
 let isProductPickerOpen = false;
+let isCategoryModalOpen = false;
 
 const readProducts = () => readJson(productsKey, []);
 
@@ -184,9 +183,45 @@ const renderCategories = () => {
     .map((id) => allCategories.find((category) => category.id === id))
     .filter(Boolean);
 
-  homeCategories.innerHTML = categories
-    .map((category, index) => renderCategoryCard(category, homeConfig.categories, index))
-    .join("");
+  homeCategories.innerHTML = `
+    <button type="button" class="admin-vitrine-category-card admin-vitrine-add-category-card" data-open-category-modal>
+      <span class="admin-vitrine-category-icon" aria-hidden="true">+</span>
+      <span>
+        <strong>Ajouter une catégorie</strong>
+        <small>Créer une nouvelle entrée</small>
+      </span>
+    </button>
+    ${categories.map((category, index) => renderCategoryCard(category, homeConfig.categories, index)).join("")}
+  `;
+};
+
+const renderCategoryModal = () => {
+  if (!categoryModal) return;
+  if (!isCategoryModalOpen) {
+    categoryModal.innerHTML = "";
+    return;
+  }
+
+  categoryModal.innerHTML = `
+    <div class="admin-product-modal-backdrop admin-vitrine-category-backdrop" role="presentation">
+      <section class="admin-product-modal admin-vitrine-category-modal" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
+        <button class="admin-product-modal-close" type="button" data-close-category-modal aria-label="Fermer">×</button>
+        <span>Catégorie</span>
+        <h2 id="category-modal-title">Ajouter une catégorie</h2>
+        <form class="admin-vitrine-add-category" id="addCategoryForm">
+          <label>
+            <span>Nouvelle catégorie</span>
+            <input id="newCategoryName" type="text" placeholder="Ex: Bonnets" autocomplete="off" />
+          </label>
+          <label>
+            <span>Couleur</span>
+            <input id="newCategoryColor" type="color" value="#30c7c9" />
+          </label>
+          <button type="submit">Ajouter</button>
+        </form>
+      </section>
+    </div>
+  `;
 };
 
 const renderProductCard = (product, options = {}) => {
@@ -362,6 +397,7 @@ function render() {
   renderCategories();
   renderFeaturedProducts(products, selected);
   renderProductPicker(products);
+  renderCategoryModal();
   renderPreview(selected);
 }
 
@@ -369,6 +405,8 @@ document.addEventListener("click", (event) => {
   const categoryToggle = event.target.closest("[data-category-toggle]");
   const categoryMove = event.target.closest("[data-category-move]");
   const categoryRemove = event.target.closest("[data-category-remove]");
+  const openCategoryModal = event.target.closest("[data-open-category-modal]");
+  const closeCategoryModal = event.target.closest("[data-close-category-modal]");
   const openProductPicker = event.target.closest("[data-open-product-picker]");
   const closeProductPicker = event.target.closest("[data-close-product-picker]");
   const featureAdd = event.target.closest("[data-feature-add]");
@@ -416,6 +454,22 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (openCategoryModal) {
+    isCategoryModalOpen = true;
+    render();
+    window.requestAnimationFrame(() => document.querySelector("#newCategoryName")?.focus());
+    return;
+  }
+
+  if (
+    closeCategoryModal ||
+    (event.target.closest(".admin-vitrine-category-backdrop") && !event.target.closest(".admin-vitrine-category-modal"))
+  ) {
+    isCategoryModalOpen = false;
+    render();
+    return;
+  }
+
   if (openProductPicker) {
     isProductPickerOpen = true;
     render();
@@ -454,8 +508,13 @@ document.addEventListener("click", (event) => {
   }
 });
 
-addCategoryForm?.addEventListener("submit", (event) => {
+document.addEventListener("submit", (event) => {
+  const addCategoryForm = event.target.closest("#addCategoryForm");
+  if (!addCategoryForm) return;
+
   event.preventDefault();
+  const newCategoryName = addCategoryForm.querySelector("#newCategoryName");
+  const newCategoryColor = addCategoryForm.querySelector("#newCategoryColor");
   const label = newCategoryName?.value.trim();
   if (!label) {
     newCategoryName?.focus();
@@ -480,18 +539,20 @@ addCategoryForm?.addEventListener("submit", (event) => {
     custom: true,
   };
 
-  saveHomeConfig({
+  homeConfig = cleanHomeConfig({
     ...homeConfig,
     categories: [...homeConfig.categories, id],
     customCategories: [...(homeConfig.customCategories || []), customCategory],
   });
-
-  if (newCategoryName) newCategoryName.value = "";
+  writeJson(homeConfigKey, homeConfig);
+  isCategoryModalOpen = false;
+  render();
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || !isProductPickerOpen) return;
+  if (event.key !== "Escape" || (!isProductPickerOpen && !isCategoryModalOpen)) return;
   isProductPickerOpen = false;
+  isCategoryModalOpen = false;
   render();
 });
 

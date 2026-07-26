@@ -1103,6 +1103,14 @@
     0 0 18px rgba(48, 199, 201, 0.10);
 }
 
+.admin-vitrine-category-modal .admin-vitrine-add-category {
+  margin-top: 2px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
 .admin-vitrine-add-category label {
   display: grid;
   gap: 6px;
@@ -1150,9 +1158,12 @@
   cursor: pointer;
 }
 
-.admin-vitrine-add-category button[type="submit"] {
+.admin-vitrine-add-category button[type="submit"],
+.admin-vitrine-category-modal .admin-vitrine-add-category button[type="submit"] {
   color: #fff !important;
+  background: linear-gradient(135deg, var(--k-cyan), var(--k-purple)) !important;
   font-size: 13px;
+  font-weight: 900;
   text-align: center;
 }
 
@@ -1172,6 +1183,48 @@
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.82) inset,
     0 12px 24px rgba(16, 39, 68, 0.08);
+}
+
+.admin-vitrine-add-category-card {
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  border-color: rgba(48, 199, 201, 0.28);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 253, 250, 0.62)),
+    radial-gradient(circle at 88% 12%, rgba(48, 199, 201, 0.14), transparent 38%);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-vitrine-add-category-card .admin-vitrine-category-icon {
+  background: linear-gradient(135deg, var(--k-cyan), var(--k-purple));
+  box-shadow: 0 0 18px rgba(48, 199, 201, 0.20);
+}
+
+.admin-vitrine-add-category-card strong,
+.admin-vitrine-add-category-card small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-vitrine-add-category-card strong {
+  color: var(--k-ink);
+  font-family: "Syne", sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.admin-vitrine-add-category-card small {
+  margin-top: 5px;
+  color: var(--k-teal);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .admin-vitrine-category-card.is-selected {
@@ -1428,8 +1481,32 @@
 .admin-vitrine-empty-button {
   width: 100%;
   border-style: solid;
+  border-color: rgba(232, 75, 148, 0.32);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 253, 250, 0.62)),
+    radial-gradient(circle at 88% 8%, rgba(232, 75, 148, 0.14), transparent 40%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.82) inset,
+    0 14px 28px rgba(16, 39, 68, 0.09),
+    0 0 20px rgba(232, 75, 148, 0.14);
   text-align: left;
   cursor: pointer;
+}
+
+.admin-vitrine-empty-button::after {
+  content: "Ajouter des produits";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-height: 36px;
+  margin-top: 7px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--k-pink), var(--k-purple));
+  box-shadow: 0 0 16px rgba(232, 75, 148, 0.18);
+  font: 900 12px "DM Sans", system-ui, sans-serif;
 }
 
 .admin-vitrine-empty-button:active {
