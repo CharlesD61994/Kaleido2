@@ -7,10 +7,10 @@ const optionLabels = {
   accentColor: "Couleur secondaire",
   recipient: "Pour qui ?",
   shoeSize: "Pointure",
-  keychain: "Porte-cle",
+  keychain: "Porte-clé",
   personalization: "Personnalisation",
   finish: "Finition",
-  delay: "Delai",
+  delay: "Délai",
 };
 
 const escapeHtml = (value) =>
@@ -38,6 +38,16 @@ const saveProducts = (products) => {
   localStorage.setItem(draftsKey, JSON.stringify(products));
 };
 
+const categoryIcon = (category) => {
+  const normalized = String(category || "").toLowerCase();
+  if (normalized.includes("pantoufle")) return "◒";
+  if (normalized.includes("porte")) return "◇";
+  if (normalized.includes("couverture")) return "▧";
+  if (normalized.includes("vêtement") || normalized.includes("vetement")) return "♢";
+  if (normalized.includes("ami")) return "●";
+  return "✦";
+};
+
 const renderProducts = () => {
   const products = readProducts();
 
@@ -55,27 +65,39 @@ const renderProducts = () => {
             0,
           );
           const primaryColor = colors[0] || "#30c7c9";
-          const productInitial = (product.name || "?").trim().charAt(0).toUpperCase() || "?";
+          const accentColor = colors[1] || "#e84b94";
+          const visibleColors = colors.slice(0, 4);
+          const remainingColors = Math.max(0, colors.length - visibleColors.length);
 
           return `
             <a
               class="admin-product-library-card"
               href="./admin-produit.html?id=${encodeURIComponent(product.id)}"
-              style="--product-color:${primaryColor}"
+              style="--product-color:${primaryColor}; --product-accent:${accentColor}"
               aria-label="Modifier ${escapeHtml(product.name || "Produit sans nom")}"
             >
-              <div class="admin-product-card-bubble">
-                <span>${escapeHtml(productInitial)}</span>
-                <small>${productPhotoCount || "0"}</small>
+              <div class="admin-product-card-image">
+                <span class="admin-product-card-favorite" aria-hidden="true">♡</span>
+                <span class="admin-product-card-icon" aria-hidden="true">${categoryIcon(product.category)}</span>
+                <small>${productPhotoCount ? `${productPhotoCount} photo` : "photo"}</small>
               </div>
               <div class="admin-product-card-body">
                 <h3>${escapeHtml(product.name || "Produit sans nom")}</h3>
-                <p>${escapeHtml(product.category || "Catalogue")}</p>
-                <div class="admin-product-card-meta">
-                  <span>${escapeHtml(product.price || "Prix a definir")}</span>
-                  <span>${options.length} opt.</span>
+                <p>À partir de <strong>${escapeHtml(product.price || "prix à définir")}</strong></p>
+                <div class="admin-product-card-swatches" aria-label="Couleurs">
+                  ${
+                    visibleColors.length
+                      ? visibleColors.map((color) => `<span style="--swatch:${color}"></span>`).join("")
+                      : '<span style="--swatch:#f05b4f"></span><span style="--swatch:#30c7c9"></span>'
+                  }
+                  ${remainingColors ? `<em>+${remainingColors}</em>` : ""}
                 </div>
-                <small>${colors.length} couleur(s) · ${choiceCount} choix · ${colorPhotoCount} laine</small>
+                <div class="admin-product-card-meta">
+                  <span>${escapeHtml(product.category || "Catalogue")}</span>
+                  <span>${options.length} option(s)</span>
+                  <span>${choiceCount} choix</span>
+                  <span>${colorPhotoCount} laine</span>
+                </div>
               </div>
             </a>
           `;
@@ -83,9 +105,9 @@ const renderProducts = () => {
         .join("")
     : `
         <div class="admin-products-empty">
-          <strong>Aucun produit cree</strong>
-          <p>Cree un premier produit pour le voir apparaitre ici.</p>
-          <a class="buy-button" href="./admin-produit.html">Creer un produit</a>
+          <strong>Aucun produit créé</strong>
+          <p>Crée un premier produit pour le voir apparaître ici.</p>
+          <a class="buy-button" href="./admin-produit.html">Créer un produit</a>
         </div>
       `;
 };
