@@ -1158,10 +1158,14 @@
   cursor: pointer;
 }
 
-.admin-vitrine-add-category button[type="submit"],
-.admin-vitrine-category-modal .admin-vitrine-add-category button[type="submit"] {
+.admin-vitrine-category-modal .admin-vitrine-add-category .admin-vitrine-submit-category {
+  min-height: 42px !important;
+  border: 0 !important;
+  border-radius: 15px !important;
   color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
   background: linear-gradient(135deg, var(--k-cyan), var(--k-purple)) !important;
+  box-shadow: 0 0 18px rgba(48, 199, 201, 0.22) !important;
   font-size: 13px;
   font-weight: 900;
   text-align: center;
@@ -1189,7 +1193,7 @@
   grid-template-columns: 48px minmax(0, 1fr);
   align-items: center;
   width: 100%;
-  border-color: rgba(48, 199, 201, 0.28);
+  border: 1.5px dashed rgba(48, 199, 201, 0.48);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 253, 250, 0.62)),
     radial-gradient(circle at 88% 12%, rgba(48, 199, 201, 0.14), transparent 38%);
@@ -1510,6 +1514,28 @@
 }
 
 .admin-vitrine-empty-button:active {
+  transform: scale(0.985);
+}
+
+.admin-vitrine-add-product-empty-button {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 74px;
+  border: 1.5px dashed rgba(232, 75, 148, 0.48);
+  border-radius: 22px;
+  color: var(--k-pink);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(255, 253, 250, 0.58)),
+    radial-gradient(circle at 88% 12%, rgba(232, 75, 148, 0.12), transparent 40%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.74) inset,
+    0 0 18px rgba(232, 75, 148, 0.10);
+  font: 900 14px "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.admin-vitrine-add-product-empty-button:active {
   transform: scale(0.985);
 }
 

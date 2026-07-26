@@ -184,6 +184,7 @@ const renderCategories = () => {
     .filter(Boolean);
 
   homeCategories.innerHTML = `
+    ${categories.map((category, index) => renderCategoryCard(category, homeConfig.categories, index)).join("")}
     <button type="button" class="admin-vitrine-category-card admin-vitrine-add-category-card" data-open-category-modal>
       <span class="admin-vitrine-category-icon" aria-hidden="true">+</span>
       <span>
@@ -191,7 +192,6 @@ const renderCategories = () => {
         <small>Créer une nouvelle entrée</small>
       </span>
     </button>
-    ${categories.map((category, index) => renderCategoryCard(category, homeConfig.categories, index)).join("")}
   `;
 };
 
@@ -217,7 +217,7 @@ const renderCategoryModal = () => {
             <span>Couleur</span>
             <input id="newCategoryColor" type="color" value="#30c7c9" />
           </label>
-          <button type="submit">Ajouter</button>
+          <button class="admin-vitrine-submit-category" type="submit">Ajouter</button>
         </form>
       </section>
     </div>
@@ -293,9 +293,8 @@ const renderFeaturedProducts = (products, selected) => {
         .join("")}
       `
     : `
-      <button type="button" class="admin-vitrine-empty admin-vitrine-empty-button" data-open-product-picker>
-        <strong>Aucun produit choisi</strong>
-        <p>Ajoute des produits du catalogue pour composer la section d'accueil.</p>
+      <button type="button" class="admin-vitrine-add-product-empty-button" data-open-product-picker>
+        Ajouter un produit
       </button>
     `;
 };
