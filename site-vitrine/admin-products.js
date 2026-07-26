@@ -144,7 +144,7 @@ const renderProducts = () => {
 
           return `
             <a
-              class="admin-product-library-card"
+              class="admin-product-library-card ${activeMenuId === String(product.id) ? "is-menu-open" : ""}"
               href="./admin-produit.html?id=${encodeURIComponent(product.id)}"
               style="--product-color:${primaryColor}; --product-accent:${accentColor}"
               aria-label="Modifier ${escapeHtml(product.name || "Produit sans nom")}"
