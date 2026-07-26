@@ -1458,6 +1458,8 @@ form?.addEventListener("submit", async (event) => {
       main: selectedColorsBySection.mainColors,
       accent: selectedColorsBySection.accentColors,
     },
+    status: previousDraft?.status || "draft",
+    inCatalog: previousDraft?.inCatalog ?? false,
     createdAt: previousDraft?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

@@ -20,6 +20,7 @@ const optionLabels = {
 const cardColors = ["#f05b4f", "#30c7c9", "#e84b94", "#7c3aed", "#f3b51b", "#8bbf3f", "#f4831f"];
 let activeFilter = "Tous";
 let activeMenuId = null;
+let pendingProductAction = null;
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(
@@ -69,8 +70,15 @@ const productColors = (product) => [...new Set([...(product.colors?.main || []),
 
 const productOptions = (product) => (product.options || []).map((id) => optionLabels[id]).filter(Boolean);
 
+const isProductReady = (product) => product.status === "ready";
+
+const isProductInCatalog = (product) => isProductReady(product) && product.inCatalog !== false;
+
 const productMatchesFilter = (product) => {
   if (activeFilter === "Tous") return true;
+  if (activeFilter === "Brouillons") return !isProductReady(product);
+  if (activeFilter === "Catalogue") return isProductInCatalog(product);
+  if (activeFilter === "Hors catalogue") return isProductReady(product) && !isProductInCatalog(product);
   const haystack = normalizeText(`${product.category || ""} ${product.name || ""} ${productOptions(product).join(" ")}`);
   return haystack.includes(normalizeText(activeFilter));
 };
@@ -79,8 +87,11 @@ const productMatchesSearch = (product) => {
   const search = normalizeText(productSearchInput?.value || "");
   if (!search) return true;
   const choices = Object.values(product.optionChoices || {}).flat().join(" ");
+  const status = isProductReady(product) ? (isProductInCatalog(product) ? "catalogue" : "hors catalogue") : "brouillon";
   const haystack = normalizeText(
-    `${product.name || ""} ${product.category || ""} ${product.price || ""} ${productOptions(product).join(" ")} ${choices}`,
+    `${product.name || ""} ${product.category || ""} ${product.price || ""} ${status} ${productOptions(product).join(
+      " ",
+    )} ${choices}`,
   );
   return haystack.includes(search);
 };
@@ -94,7 +105,7 @@ const renderStats = (products) => {
   if (colorCount) colorCount.textContent = colorsTotal.toString();
 };
 
-const productMenuMarkup = (productId) => `
+const productMenuMarkup = (product) => `
   <div class="admin-product-card-menu" role="menu">
     <span>Couleur de carte</span>
     <div class="admin-card-color-row">
@@ -104,7 +115,7 @@ const productMenuMarkup = (productId) => `
             <button
               type="button"
               data-card-color="${color}"
-              data-product-id="${productId}"
+              data-product-id="${product.id}"
               style="--swatch:${color}"
               aria-label="Changer la carte à ${color}"
             ></button>
@@ -112,80 +123,132 @@ const productMenuMarkup = (productId) => `
         )
         .join("")}
     </div>
-    <button type="button" data-duplicate-product="${productId}">Dupliquer</button>
-    <button class="danger" type="button" data-delete-product="${productId}">Supprimer</button>
+    ${
+      isProductReady(product)
+        ? `<button type="button" data-catalog-product="${product.id}">Catalogue</button>`
+        : `<button type="button" data-finalize-product="${product.id}">Finaliser</button>`
+    }
+    <button type="button" data-duplicate-product="${product.id}">Dupliquer</button>
+    <button class="danger" type="button" data-delete-product="${product.id}">Supprimer</button>
   </div>
 `;
+
+const productActionModalMarkup = () => {
+  if (!pendingProductAction) return "";
+  const product = readProducts().find((item) => String(item.id) === String(pendingProductAction.productId));
+  if (!product) return "";
+  const isFinalize = pendingProductAction.type === "finalize";
+  const isCatalog = isProductInCatalog(product);
+  const title = isFinalize ? "Finaliser la fiche ?" : "Catalogue";
+  const message = isFinalize
+    ? "Cette fiche passera dans les produits terminés et sera ajoutée automatiquement au catalogue."
+    : isCatalog
+      ? "Ce produit est dans le catalogue. Voulez-vous l'en retirer ?"
+      : "Ce produit n'est pas dans le catalogue. Voulez-vous l'ajouter ?";
+  const confirmLabel = isFinalize ? "Finaliser" : isCatalog ? "Retirer" : "Ajouter";
+
+  return `
+    <div class="admin-product-modal-backdrop" role="presentation">
+      <section class="admin-product-modal" role="dialog" aria-modal="true" aria-labelledby="product-action-title">
+        <button class="admin-product-modal-close" type="button" data-close-product-action aria-label="Fermer">×</button>
+        <span>${escapeHtml(product.name || "Produit sans nom")}</span>
+        <h2 id="product-action-title">${title}</h2>
+        <p>${message}</p>
+        <div>
+          <button type="button" data-confirm-product-action>${confirmLabel}</button>
+          <button type="button" data-close-product-action>Annuler</button>
+        </div>
+      </section>
+    </div>
+  `;
+};
+
+const renderProductCard = (product) => {
+  const colors = productColors(product);
+  const options = productOptions(product);
+  const choiceCount = Object.values(product.optionChoices || {}).flat().length;
+  const productPhotos = (product.productPhotos || []).map(normalizeProductPhoto);
+  const coverPhoto = productPhotos.find((photo) => photo.url);
+  const colorPhotoCount = (product.colorPhotos || []).reduce((total, color) => total + (color.photos || []).length, 0);
+  const primaryColor = product.cardColor || colors[0] || "#30c7c9";
+  const accentColor = colors[1] || "#e84b94";
+  const visibleColors = colors.slice(0, 4);
+  const remainingColors = Math.max(0, colors.length - visibleColors.length);
+
+  return `
+    <a
+      class="admin-product-library-card ${activeMenuId === String(product.id) ? "is-menu-open" : ""} ${
+        isProductReady(product) ? "is-ready" : "is-draft"
+      }"
+      href="./admin-produit.html?id=${encodeURIComponent(product.id)}"
+      style="--product-color:${primaryColor}; --product-accent:${accentColor}"
+      aria-label="Modifier ${escapeHtml(product.name || "Produit sans nom")}"
+    >
+      <div class="admin-product-card-image ${coverPhoto ? "has-product-photo" : ""}">
+        <button
+          class="admin-product-card-menu-button"
+          type="button"
+          data-product-menu="${product.id}"
+          aria-label="Options du produit"
+        >•••</button>
+        ${
+          coverPhoto
+            ? `<img src="${coverPhoto.url}" alt="${escapeHtml(coverPhoto.name || product.name || "Produit")}" />`
+            : `<span class="admin-product-card-icon" aria-hidden="true">${categoryIcon(product.category)}</span>`
+        }
+        <small>${isProductReady(product) ? (isProductInCatalog(product) ? "catalogue" : "hors catalogue") : "brouillon"}</small>
+        ${activeMenuId === String(product.id) ? productMenuMarkup(product) : ""}
+      </div>
+      <div class="admin-product-card-body">
+        <h3>${escapeHtml(product.name || "Produit sans nom")}</h3>
+        <p>À partir de <strong>${escapeHtml(product.price || "prix à définir")}</strong></p>
+        <div class="admin-product-card-swatches" aria-label="Couleurs">
+          ${
+            visibleColors.length
+              ? visibleColors.map((color) => `<span style="--swatch:${color}"></span>`).join("")
+              : '<span style="--swatch:#f05b4f"></span><span style="--swatch:#30c7c9"></span>'
+          }
+          ${remainingColors ? `<em>+${remainingColors}</em>` : ""}
+        </div>
+        <div class="admin-product-card-meta">
+          <span>${escapeHtml(product.category || "Catalogue")}</span>
+          <span>${options.length} option(s)</span>
+          <span>${choiceCount} choix</span>
+          <span>${colorPhotoCount} laine</span>
+        </div>
+      </div>
+    </a>
+  `;
+};
+
+const renderSection = (title, subtitle, products) =>
+  products.length
+    ? `
+        <div class="admin-products-section-title">
+          <div>
+            <strong>${title}</strong>
+            <small>${subtitle}</small>
+          </div>
+        </div>
+        ${products.map(renderProductCard).join("")}
+      `
+    : "";
 
 const renderProducts = () => {
   const products = readProducts();
   const filteredProducts = products.filter((product) => productMatchesFilter(product) && productMatchesSearch(product));
+  const draftProducts = filteredProducts.filter((product) => !isProductReady(product));
+  const readyProducts = filteredProducts.filter(isProductReady);
 
   renderStats(products);
   if (!productsGrid) return;
 
   productsGrid.innerHTML = filteredProducts.length
-    ? filteredProducts
-        .map((product) => {
-          const colors = productColors(product);
-          const options = productOptions(product);
-          const choiceCount = Object.values(product.optionChoices || {}).flat().length;
-          const productPhotos = (product.productPhotos || []).map(normalizeProductPhoto);
-          const productPhotoCount = productPhotos.length;
-          const coverPhoto = productPhotos.find((photo) => photo.url);
-          const colorPhotoCount = (product.colorPhotos || []).reduce(
-            (total, color) => total + (color.photos || []).length,
-            0,
-          );
-          const primaryColor = product.cardColor || colors[0] || "#30c7c9";
-          const accentColor = colors[1] || "#e84b94";
-          const visibleColors = colors.slice(0, 4);
-          const remainingColors = Math.max(0, colors.length - visibleColors.length);
-
-          return `
-            <a
-              class="admin-product-library-card ${activeMenuId === String(product.id) ? "is-menu-open" : ""}"
-              href="./admin-produit.html?id=${encodeURIComponent(product.id)}"
-              style="--product-color:${primaryColor}; --product-accent:${accentColor}"
-              aria-label="Modifier ${escapeHtml(product.name || "Produit sans nom")}"
-            >
-              <div class="admin-product-card-image ${coverPhoto ? "has-product-photo" : ""}">
-                <button
-                  class="admin-product-card-menu-button"
-                  type="button"
-                  data-product-menu="${product.id}"
-                  aria-label="Options du produit"
-                >•••</button>
-                ${
-                  coverPhoto
-                    ? `<img src="${coverPhoto.url}" alt="${escapeHtml(coverPhoto.name || product.name || "Produit")}" />`
-                    : `<span class="admin-product-card-icon" aria-hidden="true">${categoryIcon(product.category)}</span>`
-                }
-                <small>${productPhotoCount ? `${productPhotoCount} photo` : "photo"}</small>
-                ${activeMenuId === String(product.id) ? productMenuMarkup(product.id) : ""}
-              </div>
-              <div class="admin-product-card-body">
-                <h3>${escapeHtml(product.name || "Produit sans nom")}</h3>
-                <p>À partir de <strong>${escapeHtml(product.price || "prix à définir")}</strong></p>
-                <div class="admin-product-card-swatches" aria-label="Couleurs">
-                  ${
-                    visibleColors.length
-                      ? visibleColors.map((color) => `<span style="--swatch:${color}"></span>`).join("")
-                      : '<span style="--swatch:#f05b4f"></span><span style="--swatch:#30c7c9"></span>'
-                  }
-                  ${remainingColors ? `<em>+${remainingColors}</em>` : ""}
-                </div>
-                <div class="admin-product-card-meta">
-                  <span>${escapeHtml(product.category || "Catalogue")}</span>
-                  <span>${options.length} option(s)</span>
-                  <span>${choiceCount} choix</span>
-                  <span>${colorPhotoCount} laine</span>
-                </div>
-              </div>
-            </a>
-          `;
-        })
-        .join("")
+    ? `
+        ${renderSection("Fiches en préparation", "À finaliser avant publication", draftProducts)}
+        ${renderSection("Produits terminés", "Prêts pour la vitrine et le catalogue", readyProducts)}
+        ${productActionModalMarkup()}
+      `
     : `
         <div class="admin-products-empty">
           <strong>${products.length ? "Aucun produit trouvé" : "Aucun produit créé"}</strong>
@@ -204,6 +267,28 @@ const updateProduct = (productId, updater) => {
   renderProducts();
 };
 
+const openProductAction = (type, productId) => {
+  pendingProductAction = { type, productId: String(productId) };
+  activeMenuId = null;
+  renderProducts();
+};
+
+const closeProductAction = () => {
+  pendingProductAction = null;
+  renderProducts();
+};
+
+const confirmProductAction = () => {
+  if (!pendingProductAction) return;
+  const { type, productId } = pendingProductAction;
+  pendingProductAction = null;
+  updateProduct(productId, (product) =>
+    type === "finalize"
+      ? { ...product, status: "ready", inCatalog: true, updatedAt: new Date().toISOString() }
+      : { ...product, inCatalog: !isProductInCatalog(product), updatedAt: new Date().toISOString() },
+  );
+};
+
 productSearchInput?.addEventListener("input", renderProducts);
 
 productFilters?.addEventListener("click", (event) => {
@@ -220,12 +305,35 @@ productFilters?.addEventListener("click", (event) => {
 productsGrid?.addEventListener("click", (event) => {
   const menuButton = event.target.closest("[data-product-menu]");
   const colorButton = event.target.closest("[data-card-color]");
+  const catalogButton = event.target.closest("[data-catalog-product]");
+  const finalizeButton = event.target.closest("[data-finalize-product]");
   const duplicateButton = event.target.closest("[data-duplicate-product]");
   const deleteButton = event.target.closest("[data-delete-product]");
+  const closeActionButton = event.target.closest("[data-close-product-action]");
+  const confirmActionButton = event.target.closest("[data-confirm-product-action]");
 
-  if (menuButton || colorButton || duplicateButton || deleteButton) {
+  if (
+    menuButton ||
+    colorButton ||
+    catalogButton ||
+    finalizeButton ||
+    duplicateButton ||
+    deleteButton ||
+    closeActionButton ||
+    confirmActionButton
+  ) {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  if (closeActionButton) {
+    closeProductAction();
+    return;
+  }
+
+  if (confirmActionButton) {
+    confirmProductAction();
+    return;
   }
 
   if (menuButton) {
@@ -241,6 +349,16 @@ productsGrid?.addEventListener("click", (event) => {
     return;
   }
 
+  if (catalogButton) {
+    openProductAction("catalog", catalogButton.dataset.catalogProduct);
+    return;
+  }
+
+  if (finalizeButton) {
+    openProductAction("finalize", finalizeButton.dataset.finalizeProduct);
+    return;
+  }
+
   if (duplicateButton) {
     const product = readProducts().find((item) => String(item.id) === String(duplicateButton.dataset.duplicateProduct));
     if (!product) return;
@@ -248,6 +366,8 @@ productsGrid?.addEventListener("click", (event) => {
       ...product,
       id: crypto.randomUUID(),
       name: `${product.name || "Produit sans nom"} copie`,
+      status: "draft",
+      inCatalog: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -267,9 +387,18 @@ productsGrid?.addEventListener("click", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  if (event.target.closest(".admin-product-modal-backdrop") && !event.target.closest(".admin-product-modal")) {
+    closeProductAction();
+    return;
+  }
   if (!activeMenuId || event.target.closest(".admin-product-library-card")) return;
   activeMenuId = null;
   renderProducts();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !pendingProductAction) return;
+  closeProductAction();
 });
 
 renderProducts();
