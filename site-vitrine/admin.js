@@ -1408,36 +1408,15 @@ form?.addEventListener("submit", (event) => {
 
   saveDrafts([draft, ...currentDrafts.filter((item) => item.id !== draft.id)]);
   renderDrafts();
+
   if (saveProductButton) {
     saveProductButton.textContent = "Produit enregistré";
-    window.setTimeout(() => {
-      saveProductButton.textContent = "Enregistrer le produit";
-    }, 1800);
+    saveProductButton.disabled = true;
   }
 
-  if (editingProductId) {
-    savedProductPhotoNames = draft.productPhotos || [];
-    renderProductPhotoList();
-    updatePreview();
-    return;
-  }
-
-  form.reset();
-  selectedColorsBySection = { mainColors: [], accentColors: [] };
-  selectedChoicesBySection = {};
-  savedProductPhotoNames = [];
-  activeColorMenuId = null;
-  closeColorEditModal();
-  closeColorManageModal();
-  closeColorPhotoModal();
-  clearProductPhotoPreviews();
-  productPreviewSelections = {};
-  renderColorSections();
-  renderPreviewProductImage();
-  renderPreviewPhotoStrip();
-  renderProductPhotoList();
-  renderColorPhotoModal();
-  updatePreview();
+  window.setTimeout(() => {
+    window.location.href = "./admin.html";
+  }, 450);
 });
 
 form?.addEventListener("reset", () => {
