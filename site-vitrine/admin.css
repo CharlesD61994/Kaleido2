@@ -1283,7 +1283,6 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  object-fit: cover;
   transform-origin: center;
   user-select: none;
   pointer-events: none;
@@ -1696,7 +1695,6 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  object-fit: cover;
   transform-origin: center;
   user-select: none;
   pointer-events: none;
@@ -3012,6 +3010,20 @@
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.74) inset,
     0 0 18px rgba(232, 75, 148, 0.10) !important;
+  opacity: 1 !important;
+}
+
+.admin-storefront button.admin-vitrine-confirm-action,
+.admin-storefront .admin-product-modal button.admin-vitrine-confirm-action,
+.admin-storefront .admin-vitrine-photo-actions button.admin-vitrine-confirm-action {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  background-color: #16a34a !important;
+  background-image: linear-gradient(135deg, #16a34a, #34d399) !important;
+  border: 0 !important;
+  box-shadow: 0 0 18px rgba(22, 163, 74, 0.24) !important;
   opacity: 1 !important;
 }
 
