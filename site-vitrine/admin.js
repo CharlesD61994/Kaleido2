@@ -111,7 +111,13 @@ const readJson = (key, fallback) => {
 };
 
 const writeJson = (key, value) => {
-  localStorage.setItem(key, JSON.stringify(value));
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.error("[Kaleido admin] impossible d'enregistrer", error);
+    return false;
+  }
 };
 
 const readDrafts = () => readJson(draftsKey, []);
@@ -174,6 +180,11 @@ const getAllSelectedColors = () =>
 
 const findOption = (id) => productOptions.find((option) => option.id === id);
 const getColorPhotos = (color) => (color.photos || []).map(normalizeColorPhoto);
+const getStoredColorPhotos = (color) =>
+  getColorPhotos(color).map((photo) => ({
+    id: photo.id,
+    name: photo.name,
+  }));
 
 const getChoiceSectionValues = (section) => [
   ...new Set([...(section.values || []), ...(selectedChoicesBySection[section.name] || [])]),
@@ -1397,7 +1408,7 @@ form?.addEventListener("submit", (event) => {
     productPhotos: selectedProductPhotos.length ? selectedProductPhotos : previousDraft?.productPhotos || [],
     colorPhotos: readCustomColors()
       .filter((color) => getColorPhotos(color).length > 0)
-      .map((color) => ({ label: color.label, value: color.value, photos: getColorPhotos(color) })),
+      .map((color) => ({ label: color.label, value: color.value, photos: getStoredColorPhotos(color) })),
     colors: {
       main: selectedColorsBySection.mainColors,
       accent: selectedColorsBySection.accentColors,
@@ -1406,7 +1417,19 @@ form?.addEventListener("submit", (event) => {
     updatedAt: new Date().toISOString(),
   };
 
-  saveDrafts([draft, ...currentDrafts.filter((item) => item.id !== draft.id)]);
+  const saved = saveDrafts([draft, ...currentDrafts.filter((item) => item.id !== draft.id)]);
+
+  if (!saved) {
+    if (saveProductButton) {
+      saveProductButton.textContent = "Enregistrement impossible";
+      saveProductButton.disabled = false;
+    }
+    alert(
+      "Le navigateur refuse d'enregistrer ce produit. Essaie de retirer des photos trop lourdes ou de vider les anciens tests.",
+    );
+    return;
+  }
+
   renderDrafts();
 
   if (saveProductButton) {
@@ -1415,7 +1438,7 @@ form?.addEventListener("submit", (event) => {
   }
 
   window.setTimeout(() => {
-    window.location.href = "./admin.html";
+    window.location.href = "./admin-produits.html";
   }, 450);
 });
 
