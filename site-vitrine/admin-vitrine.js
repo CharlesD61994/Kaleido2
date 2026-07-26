@@ -6,9 +6,9 @@ const homeFeaturedCount = document.querySelector("#homeFeaturedCount");
 const homeCatalogCount = document.querySelector("#homeCatalogCount");
 const homeCategories = document.querySelector("#homeCategories");
 const featuredProducts = document.querySelector("#featuredProducts");
-const homePreview = document.querySelector("#homePreview");
 const productPickerModal = document.querySelector("#productPickerModal");
 const categoryModal = document.querySelector("#categoryModal");
+const categoryPhotoModal = document.querySelector("#categoryPhotoModal");
 
 const defaultCategories = [
   { id: "vetements", label: "Vêtements", color: "#7c3aed", icon: "♢" },
@@ -74,7 +74,11 @@ const allCategoriesFrom = (rawConfig) => {
     usedIds.add(category.id);
     return true;
   });
-  return [...defaultCategories, ...customCategories];
+  const categoryPhotos = rawConfig?.categoryPhotos || {};
+  return [...defaultCategories, ...customCategories].map((category) => ({
+    ...category,
+    photo: categoryPhotos[category.id] || null,
+  }));
 };
 
 const cleanHomeConfig = (rawConfig) => {
@@ -86,6 +90,7 @@ const cleanHomeConfig = (rawConfig) => {
   return {
     categories: selectedCategories.length ? selectedCategories : allCategories.map((category) => category.id),
     customCategories: customCategoriesFrom(rawConfig),
+    categoryPhotos: rawConfig?.categoryPhotos || {},
     featuredProductIds: Array.isArray(rawConfig?.featuredProductIds)
       ? rawConfig.featuredProductIds.map(String)
       : [],
@@ -95,6 +100,7 @@ const cleanHomeConfig = (rawConfig) => {
 let homeConfig = cleanHomeConfig(readJson(homeConfigKey, null));
 let isProductPickerOpen = false;
 let isCategoryModalOpen = false;
+let activeCategoryPhotoId = null;
 
 const readProducts = () => readJson(productsKey, []);
 
@@ -154,13 +160,19 @@ const renderCategoryCard = (category, orderedCategories, index) => {
 
   return `
     <article class="admin-vitrine-category-card ${isSelected ? "is-selected" : ""}" style="--category-color:${category.color}">
-      <button type="button" class="admin-vitrine-category-main" data-category-toggle="${category.id}">
-        <span class="admin-vitrine-category-icon" aria-hidden="true">${category.icon}</span>
-        <span>
+      <div class="admin-vitrine-category-main">
+        <button type="button" class="admin-vitrine-category-photo-button" data-category-photo="${category.id}" aria-label="Modifier la photo de ${escapeHtml(category.label)}">
+          ${
+            category.photo?.url
+              ? `<img src="${category.photo.url}" alt="${escapeHtml(category.photo.name || category.label)}" />`
+              : `<span class="admin-vitrine-category-icon" aria-hidden="true">${category.icon}</span>`
+          }
+        </button>
+        <button type="button" class="admin-vitrine-category-text" data-category-toggle="${category.id}">
           <strong>${escapeHtml(category.label)}</strong>
           <small>${isSelected ? `Position ${selectedIndex + 1}` : "Masquée"}</small>
-        </span>
-      </button>
+        </button>
+      </div>
       <div class="admin-vitrine-order-actions" aria-label="Ordre de ${escapeHtml(category.label)}">
         <button type="button" data-category-move="${category.id}" data-direction="-1" ${!isSelected || selectedIndex <= 0 ? "disabled" : ""}>↑</button>
         <button type="button" data-category-move="${category.id}" data-direction="1" ${
@@ -169,6 +181,43 @@ const renderCategoryCard = (category, orderedCategories, index) => {
         <button type="button" data-category-remove="${category.id}" ${!canRemove ? "disabled" : ""}>Retirer</button>
       </div>
     </article>
+  `;
+};
+
+const renderCategoryPhotoModal = () => {
+  if (!categoryPhotoModal) return;
+  if (!activeCategoryPhotoId) {
+    categoryPhotoModal.innerHTML = "";
+    return;
+  }
+
+  const category = allCategoriesFrom(homeConfig).find((item) => item.id === activeCategoryPhotoId);
+  if (!category) {
+    activeCategoryPhotoId = null;
+    categoryPhotoModal.innerHTML = "";
+    return;
+  }
+
+  categoryPhotoModal.innerHTML = `
+    <div class="admin-product-modal-backdrop admin-vitrine-photo-backdrop" role="presentation">
+      <section class="admin-product-modal admin-vitrine-photo-modal" role="dialog" aria-modal="true" aria-labelledby="category-photo-title">
+        <button class="admin-product-modal-close" type="button" data-close-category-photo aria-label="Fermer">×</button>
+        <span>${escapeHtml(category.label)}</span>
+        <h2 id="category-photo-title">Photo de catégorie</h2>
+        <div class="admin-vitrine-photo-preview" style="--category-color:${category.color}">
+          ${
+            category.photo?.url
+              ? `<img src="${category.photo.url}" alt="${escapeHtml(category.photo.name || category.label)}" />`
+              : `<span aria-hidden="true">${category.icon}</span>`
+          }
+        </div>
+        <input id="categoryPhotoInput" type="file" accept="image/*" hidden />
+        <div class="admin-vitrine-photo-actions">
+          <button type="button" data-pick-category-photo>${category.photo?.url ? "Remplacer" : "Importer"}</button>
+          <button type="button" data-remove-category-photo ${category.photo?.url ? "" : "disabled"}>Supprimer</button>
+        </div>
+      </section>
+    </div>
   `;
 };
 
@@ -337,51 +386,6 @@ const renderProductPicker = (products) => {
   `;
 };
 
-const renderPreview = (selected) => {
-  if (!homePreview) return;
-  const selectedCategories = homeConfig.categories
-    .map((id) => allCategoriesFrom(homeConfig).find((category) => category.id === id))
-    .filter(Boolean);
-
-  homePreview.innerHTML = `
-    <div class="admin-vitrine-preview-categories">
-      ${selectedCategories
-        .map(
-          (category) => `
-            <span style="--category-color:${category.color}">
-              <i aria-hidden="true">${category.icon}</i>
-              ${escapeHtml(category.label)}
-            </span>
-          `,
-        )
-        .join("")}
-    </div>
-    <div class="admin-vitrine-preview-products">
-      ${
-        selected.length
-          ? selected
-              .slice(0, 4)
-              .map((product) => {
-                const cover = productCover(product);
-                const primaryColor = product.cardColor || productColors(product)[0] || "#30c7c9";
-                return `
-                  <article style="--product-color:${primaryColor}">
-                    ${
-                      cover
-                        ? `<img src="${cover.url}" alt="${escapeHtml(cover.name || product.name || "Produit")}" />`
-                        : `<span aria-hidden="true">${categoryIcon(product.category)}</span>`
-                    }
-                    <strong>${escapeHtml(product.name || "Produit sans nom")}</strong>
-                  </article>
-                `;
-              })
-              .join("")
-          : '<p>Choisis des produits pour voir le futur accueil prendre forme.</p>'
-      }
-    </div>
-  `;
-};
-
 function render() {
   const products = catalogProducts();
   const selected = selectedProducts(products);
@@ -397,15 +401,19 @@ function render() {
   renderFeaturedProducts(products, selected);
   renderProductPicker(products);
   renderCategoryModal();
-  renderPreview(selected);
+  renderCategoryPhotoModal();
 }
 
 document.addEventListener("click", (event) => {
   const categoryToggle = event.target.closest("[data-category-toggle]");
   const categoryMove = event.target.closest("[data-category-move]");
   const categoryRemove = event.target.closest("[data-category-remove]");
+  const categoryPhoto = event.target.closest("[data-category-photo]");
   const openCategoryModal = event.target.closest("[data-open-category-modal]");
   const closeCategoryModal = event.target.closest("[data-close-category-modal]");
+  const closeCategoryPhoto = event.target.closest("[data-close-category-photo]");
+  const pickCategoryPhoto = event.target.closest("[data-pick-category-photo]");
+  const removeCategoryPhoto = event.target.closest("[data-remove-category-photo]");
   const openProductPicker = event.target.closest("[data-open-product-picker]");
   const closeProductPicker = event.target.closest("[data-close-product-picker]");
   const featureAdd = event.target.closest("[data-feature-add]");
@@ -441,9 +449,12 @@ document.addEventListener("click", (event) => {
 
     if (category?.custom) {
       if (!window.confirm(`Retirer la catégorie "${category.label}" ?`)) return;
+      const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
+      delete nextPhotos[categoryId];
       saveHomeConfig({
         ...homeConfig,
         categories: nextCategories,
+        categoryPhotos: nextPhotos,
         customCategories: homeConfig.customCategories.filter((item) => item.id !== categoryId),
       });
       return;
@@ -453,10 +464,39 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (categoryPhoto) {
+    activeCategoryPhotoId = categoryPhoto.dataset.categoryPhoto;
+    render();
+    return;
+  }
+
   if (openCategoryModal) {
     isCategoryModalOpen = true;
     render();
     window.requestAnimationFrame(() => document.querySelector("#newCategoryName")?.focus());
+    return;
+  }
+
+  if (
+    closeCategoryPhoto ||
+    (event.target.closest(".admin-vitrine-photo-backdrop") && !event.target.closest(".admin-vitrine-photo-modal"))
+  ) {
+    activeCategoryPhotoId = null;
+    render();
+    return;
+  }
+
+  if (pickCategoryPhoto) {
+    document.querySelector("#categoryPhotoInput")?.click();
+    return;
+  }
+
+  if (removeCategoryPhoto && activeCategoryPhotoId) {
+    const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
+    delete nextPhotos[activeCategoryPhotoId];
+    saveHomeConfig({ ...homeConfig, categoryPhotos: nextPhotos });
+    activeCategoryPhotoId = null;
+    render();
     return;
   }
 
@@ -507,6 +547,29 @@ document.addEventListener("click", (event) => {
   }
 });
 
+document.addEventListener("change", (event) => {
+  const input = event.target.closest("#categoryPhotoInput");
+  const file = input?.files?.[0];
+  if (!input || !file || !activeCategoryPhotoId) return;
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    saveHomeConfig({
+      ...homeConfig,
+      categoryPhotos: {
+        ...(homeConfig.categoryPhotos || {}),
+        [activeCategoryPhotoId]: {
+          name: file.name,
+          url: String(reader.result || ""),
+        },
+      },
+    });
+    activeCategoryPhotoId = null;
+    render();
+  });
+  reader.readAsDataURL(file);
+});
+
 document.addEventListener("submit", (event) => {
   const addCategoryForm = event.target.closest("#addCategoryForm");
   if (!addCategoryForm) return;
@@ -549,9 +612,10 @@ document.addEventListener("submit", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || (!isProductPickerOpen && !isCategoryModalOpen)) return;
+  if (event.key !== "Escape" || (!isProductPickerOpen && !isCategoryModalOpen && !activeCategoryPhotoId)) return;
   isProductPickerOpen = false;
   isCategoryModalOpen = false;
+  activeCategoryPhotoId = null;
   render();
 });
 
