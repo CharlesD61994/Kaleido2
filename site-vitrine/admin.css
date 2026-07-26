@@ -402,28 +402,28 @@
 }
 
 .admin-module-icon-create::before {
-  width: 25px;
-  height: 25px;
+  width: 23px;
+  height: 23px;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)) 50% 50% / 25px 5px no-repeat,
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)) 50% 50% / 5px 25px no-repeat;
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)) 50% 50% / 23px 5px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)) 50% 50% / 5px 23px no-repeat;
 }
 
 .admin-module-icon-home::before {
-  width: 25px;
-  height: 22px;
-  bottom: 12px;
-  left: 14px;
+  width: 22px;
+  height: 19px;
+  bottom: 13px;
+  left: 16px;
   border: 3px solid rgba(255, 255, 255, 0.96);
   border-top: 0;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 7px 7px;
 }
 
 .admin-module-icon-home::after {
-  top: 13px;
-  left: 15px;
-  width: 23px;
-  height: 23px;
+  top: 14px;
+  left: 17px;
+  width: 20px;
+  height: 20px;
   border-top: 3px solid rgba(255, 255, 255, 0.96);
   border-left: 3px solid rgba(255, 255, 255, 0.96);
   transform: rotate(45deg);
