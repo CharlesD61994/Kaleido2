@@ -1700,6 +1700,20 @@
   margin-top: 18px;
 }
 
+.product-builder {
+  margin: 18px var(--products-edge) 18px;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.product-builder > .admin-section-heading {
+  margin-bottom: 14px;
+}
+
 .admin-product-preview-content h2 {
   margin: 0;
   color: var(--k-ink);
