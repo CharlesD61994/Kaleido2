@@ -6,7 +6,7 @@
     <title>Atelier Kaleido - Admin boutique</title>
     <meta
       name="description"
-      content="Espace admin Atelier Kaleido pour préparer les fiches produits de la boutique."
+      content="Tableau de bord admin Atelier Kaleido pour gérer la boutique, les produits et la vitrine."
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./admin.css" />
@@ -23,270 +23,95 @@
           <a class="admin-public-link" href="./index.html">Vitrine</a>
         </header>
 
-        <section class="admin-hero" aria-labelledby="admin-title">
-          <p class="eyebrow">Espace privé</p>
-          <h1 id="admin-title">Créer les fiches produits</h1>
+        <section class="admin-hero admin-dashboard-hero" aria-labelledby="admin-title">
+          <p class="eyebrow">Boutique atelier</p>
+          <h1 id="admin-title">Admin Kaleido</h1>
           <p>
-            Préparez les produits, choisissez leurs options, puis branchez Shopify quand les fiches sont prêtes.
+            Prépare les produits, organise la vitrine et garde les futurs modules de vente au même endroit.
           </p>
         </section>
 
-        <section class="admin-panel product-builder" aria-labelledby="builder-title">
-          <div class="admin-section-heading">
-            <div>
-              <span class="admin-kicker">Nouvelle fiche</span>
-              <h2 id="builder-title">Produit boutique</h2>
-            </div>
-          </div>
-
-          <form class="admin-form" id="productForm">
-            <label>
-              Nom du produit
-              <input name="name" type="text" placeholder="Pantoufles douillettes" required />
-            </label>
-
-            <div class="admin-two-columns">
-              <label>
-                Catégorie
-                <select name="category">
-                  <option>Vêtements</option>
-                  <option>Peluches crochetées</option>
-                  <option>Pantoufles</option>
-                  <option>Porte-clés</option>
-                  <option>Couvertures</option>
-                </select>
-              </label>
-
-              <label>
-                Prix à partir de
-                <input name="price" type="text" inputmode="decimal" placeholder="42,00 $" />
-              </label>
-            </div>
-
-            <label>
-              Description courte
-              <textarea
-                name="description"
-                rows="4"
-                placeholder="Une création douce, personnalisable et faite à la main avec suivi Kaleido."
-              ></textarea>
-            </label>
-
-            <fieldset class="photo-section">
-              <legend>Photos du produit</legend>
-              <label class="photo-drop">
-                <input type="file" name="productPhotos" accept="image/*" multiple />
-                <span>Ajouter les photos du produit</span>
-                <small>Les photos de la création terminée seront affichées dans la fiche.</small>
-              </label>
-              <div class="photo-list" id="productPhotoList"></div>
-            </fieldset>
-
-            <fieldset>
-              <legend>Options du produit</legend>
-              <div class="option-select-grid" id="optionSelector">
-                <label class="option-toggle" style="--option-color:#f05b4f">
-                  <input type="checkbox" name="options" value="mainColor" />
-                  Couleur principale
-                </label>
-                <label class="option-toggle" style="--option-color:#30c7c9">
-                  <input type="checkbox" name="options" value="accentColor" />
-                  Couleur secondaire
-                </label>
-                <label class="option-toggle" style="--option-color:#e84b94">
-                  <input type="checkbox" name="options" value="recipient" />
-                  Pour qui ?
-                </label>
-                <label class="option-toggle" style="--option-color:#7c3aed">
-                  <input type="checkbox" name="options" value="shoeSize" />
-                  Pointure
-                </label>
-                <label class="option-toggle" style="--option-color:#f3b51b">
-                  <input type="checkbox" name="options" value="keychain" />
-                  Porte-clé
-                </label>
-                <label class="option-toggle" style="--option-color:#8bbf3f">
-                  <input type="checkbox" name="options" value="personalization" />
-                  Personnalisation
-                </label>
-                <label class="option-toggle" style="--option-color:#f4831f">
-                  <input type="checkbox" name="options" value="finish" />
-                  Finition
-                </label>
-                <label class="option-toggle" style="--option-color:#188f91">
-                  <input type="checkbox" name="options" value="delay" />
-                  Délai
-                </label>
-              </div>
-            </fieldset>
-
-            <div class="color-sections" id="colorSections"></div>
-
-            <label>
-              Lien ou ID Shopify
-              <input name="shopify" type="text" placeholder="À ajouter plus tard" />
-            </label>
-
-            <div class="admin-actions">
-              <button class="buy-button" type="submit">Enregistrer le brouillon</button>
-              <button class="secondary-button" type="reset">Réinitialiser</button>
-            </div>
-          </form>
-        </section>
-
-        <section class="admin-panel live-preview" aria-labelledby="preview-title">
-          <div class="admin-section-heading">
-            <div>
-              <span class="admin-kicker">Aperçu client</span>
-              <h2 id="preview-title">Carte générée</h2>
-            </div>
-          </div>
-
-          <article
-            class="product-card glow-coral admin-preview-card"
-            id="previewCard"
-            role="button"
-            tabindex="0"
-            aria-label="Ouvrir l'aperçu de la fiche produit"
-          >
-            <button class="heart-button" type="button" aria-label="Ajouter aux favoris"></button>
-            <div class="product-image product-slippers" id="previewImage"></div>
-            <div class="product-info">
-              <h3 id="previewName">Pantoufles douillettes</h3>
-              <p>À partir de <strong id="previewPrice">42,00 $</strong></p>
-              <div class="swatches" id="previewSwatches" aria-label="Couleurs disponibles">
-                <span style="--swatch:#f05b4f"></span>
-                <span style="--swatch:#30c7c9"></span>
-                <span style="--swatch:#f2d9c9"></span>
-                <button type="button" aria-label="Voir plus de couleurs">+</button>
-              </div>
-            </div>
+        <section class="admin-dashboard-stats" aria-label="Résumé boutique">
+          <article>
+            <span id="draftCount">0</span>
+            <small>brouillon(s)</small>
           </article>
-
-          <div class="admin-preview-photo-strip" id="previewPhotoStrip"></div>
-          <div class="preview-options" id="previewOptions"></div>
+          <article>
+            <span>0</span>
+            <small>prêt(s)</small>
+          </article>
+          <article>
+            <span>0</span>
+            <small>publié(s)</small>
+          </article>
         </section>
 
-        <section class="admin-panel draft-products" aria-labelledby="drafts-title">
+        <section class="admin-panel admin-dashboard-panel" aria-labelledby="modules-title">
           <div class="admin-section-heading">
             <div>
-              <span class="admin-kicker">Brouillons locaux</span>
-              <h2 id="drafts-title">Produits préparés</h2>
+              <span class="admin-kicker">Modules</span>
+              <h2 id="modules-title">Gestion boutique</h2>
             </div>
-            <button class="clear-drafts" id="clearDrafts" type="button">Vider</button>
           </div>
 
-          <div class="draft-list" id="draftList"></div>
+          <div class="admin-module-grid">
+            <a class="admin-module-tile admin-module-primary" href="./admin-produit.html" style="--module-color:#f05b4f">
+              <span class="admin-module-icon" aria-hidden="true">+</span>
+              <strong>Créer un produit</strong>
+              <small>Préparer une fiche avec photos, options, couleurs et aperçu client.</small>
+            </a>
+
+            <a class="admin-module-tile" href="./admin-produit.html#drafts-title" style="--module-color:#30c7c9">
+              <span class="admin-module-icon" aria-hidden="true">▦</span>
+              <strong>Produits</strong>
+              <small>Revoir les brouillons locaux et les fiches préparées.</small>
+            </a>
+
+            <a class="admin-module-tile" href="./index.html" style="--module-color:#7c3aed">
+              <span class="admin-module-icon" aria-hidden="true">⌂</span>
+              <strong>Vitrine</strong>
+              <small>Voir l’expérience publique que les clients vont consulter.</small>
+            </a>
+
+            <button class="admin-module-tile" type="button" style="--module-color:#e84b94" disabled>
+              <span class="admin-module-icon" aria-hidden="true">◌</span>
+              <strong>Options boutique</strong>
+              <small>Couleurs, pointures, publics et choix réutilisables.</small>
+              <em>Bientôt</em>
+            </button>
+
+            <button class="admin-module-tile" type="button" style="--module-color:#f3b51b" disabled>
+              <span class="admin-module-icon" aria-hidden="true">≡</span>
+              <strong>Commandes</strong>
+              <small>Suivre les commandes captées depuis la boutique.</small>
+              <em>Bientôt</em>
+            </button>
+
+            <button class="admin-module-tile" type="button" style="--module-color:#8bbf3f" disabled>
+              <span class="admin-module-icon" aria-hidden="true">↕</span>
+              <strong>File d’attente</strong>
+              <small>Organiser les projets clients et leurs priorités.</small>
+              <em>Bientôt</em>
+            </button>
+          </div>
         </section>
-      </section>
 
-      <section class="admin-detail-page product-preview-page" id="productPreviewPage" hidden>
-        <header class="admin-detail-header">
-          <button class="admin-back-button" type="button" data-close-product-preview aria-label="Retour">←</button>
-          <div>
-            <span class="admin-kicker">Aperçu client</span>
-            <h2>Fiche produit</h2>
-          </div>
-        </header>
-
-        <article class="admin-product-preview-detail">
-          <div class="admin-product-preview-hero" id="previewDetailHero"></div>
-          <div class="admin-product-preview-content">
-            <span class="admin-kicker">Avec suivi Kaleido</span>
-            <h2 id="previewDetailName">Pantoufles douillettes</h2>
-            <p class="admin-product-preview-price">À partir de <strong id="previewDetailPrice">42,00 $</strong></p>
-            <p id="previewDetailCopy">
-              Une création douce, personnalisable et faite à la main avec suivi Kaleido.
-            </p>
-
-            <div class="admin-product-preview-panel">
-              <strong>Options proposées</strong>
-              <div class="preview-options" id="previewDetailOptions"></div>
+        <section class="admin-panel admin-dashboard-panel" aria-labelledby="recent-title">
+          <div class="admin-section-heading">
+            <div>
+              <span class="admin-kicker">Récents</span>
+              <h2 id="recent-title">Produits préparés</h2>
             </div>
-
-            <div class="admin-product-preview-panel">
-              <strong>Photos du produit</strong>
-              <div class="admin-product-preview-gallery" id="previewDetailGallery"></div>
-            </div>
+            <a class="clear-drafts admin-dashboard-link" href="./admin-produit.html#drafts-title">Voir</a>
           </div>
-        </article>
-      </section>
 
-      <section class="admin-detail-page" id="colorManagePage" hidden>
-        <header class="admin-detail-header">
-          <button class="admin-back-button" type="button" data-close-color-page aria-label="Retour">←</button>
-          <div>
-            <span class="admin-kicker" id="colorPageKicker">Options couleur</span>
-            <h2 id="colorPageTitle">Gérer les couleurs</h2>
+          <div class="draft-list" id="dashboardDraftList">
+            <p class="empty-drafts">Aucun produit préparé pour le moment.</p>
           </div>
-        </header>
-        <p class="admin-detail-copy" id="colorPageDescription">
-          Ajoute les couleurs offertes pour cette option.
-        </p>
-        <div class="admin-detail-content" id="colorPageContent"></div>
+        </section>
       </section>
     </main>
 
-    <div class="admin-modal-backdrop" id="colorEditModal" hidden>
-      <section class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="colorEditTitle">
-        <button class="admin-modal-close" type="button" data-close-color-edit aria-label="Fermer">×</button>
-        <span class="admin-kicker">Couleur</span>
-        <h2 id="colorEditTitle">Modifier la couleur</h2>
-        <label>
-          Nom
-          <input id="colorEditName" type="text" />
-        </label>
-        <label>
-          Couleur
-          <input id="colorEditValue" type="color" />
-        </label>
-        <div class="admin-modal-actions">
-          <button class="secondary-button" type="button" data-close-color-edit>Annuler</button>
-          <button class="buy-button" type="button" id="saveColorEdit">Enregistrer</button>
-        </div>
-      </section>
-    </div>
-
-    <div class="admin-modal-backdrop" id="colorManageModal" hidden>
-      <section class="admin-modal color-admin-modal" role="dialog" aria-modal="true" aria-labelledby="colorManageTitle">
-        <button class="admin-modal-close" type="button" data-close-color-manage aria-label="Fermer">×</button>
-        <span class="admin-kicker">Options couleur</span>
-        <h2 id="colorManageTitle">Gérer les couleurs</h2>
-        <p class="admin-modal-copy" id="colorManageDescription">
-          Ajoute les couleurs offertes pour cette option.
-        </p>
-        <div class="color-select-grid modal-color-grid" id="colorManageGrid"></div>
-        <div class="custom-color-row modal-color-add">
-          <label>
-            Ajouter une couleur
-            <input type="text" id="modalColorLabel" placeholder="Nom" />
-          </label>
-          <label>
-            Code
-            <input type="color" id="modalColorValue" value="#f05b4f" />
-          </label>
-          <button class="add-color-button" type="button" id="modalAddColor">Ajouter</button>
-        </div>
-      </section>
-    </div>
-
-    <div class="admin-modal-backdrop" id="colorPhotoModal" hidden>
-      <section class="admin-modal photo-admin-modal" role="dialog" aria-modal="true" aria-labelledby="colorPhotoTitle">
-        <button class="admin-modal-close" type="button" data-close-color-photos aria-label="Fermer">×</button>
-        <span class="admin-kicker">Photos de couleur</span>
-        <h2 id="colorPhotoTitle">Photos associées</h2>
-        <p class="admin-modal-copy" id="colorPhotoDescription">
-          Ajoute les photos des pelotes pour aider les clients à visualiser la couleur.
-        </p>
-        <label class="photo-drop modal-photo-drop">
-          <input id="colorPhotoInput" type="file" accept="image/*" multiple />
-          <span>Ajouter des photos</span>
-          <small>Tu peux en sélectionner plusieurs à la fois.</small>
-        </label>
-        <div class="modal-photo-grid" id="colorPhotoGrid"></div>
-      </section>
-    </div>
-
-    <script src="./admin.js"></script>
+    <script src="./admin-home.js"></script>
   </body>
 </html>
