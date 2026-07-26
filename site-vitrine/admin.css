@@ -410,20 +410,20 @@
 }
 
 .admin-module-icon-home::before {
-  width: 22px;
-  height: 19px;
-  bottom: 13px;
-  left: 16px;
+  width: 25px;
+  height: 22px;
+  bottom: 12px;
+  left: 14px;
   border: 3px solid rgba(255, 255, 255, 0.96);
   border-top: 0;
-  border-radius: 0 0 7px 7px;
+  border-radius: 0 0 8px 8px;
 }
 
 .admin-module-icon-home::after {
-  top: 14px;
-  left: 17px;
-  width: 20px;
-  height: 20px;
+  top: 13px;
+  left: 15px;
+  width: 23px;
+  height: 23px;
   border-top: 3px solid rgba(255, 255, 255, 0.96);
   border-left: 3px solid rgba(255, 255, 255, 0.96);
   transform: rotate(45deg);
