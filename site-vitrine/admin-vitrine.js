@@ -213,8 +213,8 @@ const renderCategoryPhotoModal = () => {
         </div>
         <input id="categoryPhotoInput" type="file" accept="image/*" hidden />
         <div class="admin-vitrine-photo-actions">
-          <button type="button" data-pick-category-photo>${category.photo?.url ? "Remplacer" : "Importer"}</button>
-          <button type="button" data-remove-category-photo ${category.photo?.url ? "" : "disabled"}>Supprimer</button>
+          <button class="admin-vitrine-primary-action" type="button" data-pick-category-photo>${category.photo?.url ? "Remplacer" : "Importer"}</button>
+          <button class="admin-vitrine-danger-action" type="button" data-remove-category-photo ${category.photo?.url ? "" : "disabled"}>Supprimer</button>
         </div>
       </section>
     </div>
@@ -266,7 +266,7 @@ const renderCategoryModal = () => {
             <span>Couleur</span>
             <input id="newCategoryColor" type="color" value="#30c7c9" />
           </label>
-          <button class="admin-vitrine-submit-category" type="submit">Ajouter</button>
+          <button class="admin-vitrine-submit-category admin-vitrine-primary-action" type="submit">Ajouter</button>
         </form>
       </section>
     </div>
@@ -316,7 +316,7 @@ const renderProductCard = (product, options = {}) => {
               } aria-label="Descendre">↓</button>
               <button type="button" data-feature-remove="${product.id}">Retirer</button>
             `
-            : `<button type="button" data-feature-add="${product.id}">Ajouter</button>`
+            : `<button class="admin-vitrine-primary-action" type="button" data-feature-add="${product.id}">Ajouter</button>`
         }
       </div>
     </article>
@@ -342,7 +342,7 @@ const renderFeaturedProducts = (products, selected) => {
         .join("")}
       `
     : `
-      <button type="button" class="admin-vitrine-add-product-empty-button" data-open-product-picker>
+      <button type="button" class="admin-vitrine-add-product-empty-button admin-vitrine-dashed-action" data-open-product-picker>
         Ajouter un produit
       </button>
     `;
