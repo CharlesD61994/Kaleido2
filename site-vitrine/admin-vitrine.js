@@ -204,7 +204,11 @@ const clampPhotoDraft = (photo) => {
 const setCategorySwipeOffset = (categoryId, offset) => {
   const shell = document.querySelector(`.admin-vitrine-category-shell[data-category-shell="${CSS.escape(categoryId)}"]`);
   if (!shell) return;
-  shell.style.setProperty("--category-swipe-offset", `${Math.max(0, Math.min(categoryActionsOffset, offset))}px`);
+  const nextOffset = Math.max(0, Math.min(categoryActionsOffset, offset));
+  const ratio = nextOffset / categoryActionsOffset;
+  shell.style.setProperty("--category-swipe-offset", `${nextOffset}px`);
+  shell.style.setProperty("--category-actions-opacity", ratio.toFixed(2));
+  shell.style.setProperty("--category-actions-shift", `${Math.round(12 * (1 - ratio))}px`);
   shell.classList.add("is-swiping");
 };
 
@@ -212,7 +216,11 @@ const clearCategorySwipeOffset = (categoryId) => {
   const shell = document.querySelector(`.admin-vitrine-category-shell[data-category-shell="${CSS.escape(categoryId)}"]`);
   if (!shell) return;
   shell.classList.remove("is-swiping");
-  shell.style.removeProperty("--category-swipe-offset");
+  requestAnimationFrame(() => {
+    shell.style.removeProperty("--category-swipe-offset");
+    shell.style.removeProperty("--category-actions-opacity");
+    shell.style.removeProperty("--category-actions-shift");
+  });
 };
 
 const drawCategoryPhotoPreview = (image, photo, outputSize = 164) => {
