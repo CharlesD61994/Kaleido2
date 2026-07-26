@@ -226,7 +226,7 @@ const confirmCategoryPhotoSelection = async () => {
 
   const categoryId = activeCategoryPhotoId;
   const draft = normalizeCategoryPhoto(categoryPhotoDraft);
-  const immediatePhoto = draft?.src ? { ...draft, preview: draft.preview || draft.src } : null;
+  const immediatePhoto = draft?.src ? { ...draft, preview: draft.src } : null;
 
   const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
   if (immediatePhoto) nextPhotos[categoryId] = immediatePhoto;
@@ -251,6 +251,19 @@ const confirmCategoryPhotoSelection = async () => {
   writeJson(homeConfigKey, homeConfig);
   render();
 };
+
+categoryPhotoModal?.addEventListener(
+  "click",
+  async (event) => {
+    const confirmCategoryPhoto = event.target.closest("[data-confirm-category-photo]");
+    if (!confirmCategoryPhoto || !activeCategoryPhotoId) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    await confirmCategoryPhotoSelection();
+  },
+  true,
+);
 
 const categoryIcon = (category) => {
   const normalized = String(category || "").toLowerCase();
