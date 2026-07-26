@@ -1084,6 +1084,17 @@
   margin-top: 8px;
 }
 
+.admin-vitrine-section .admin-products-section-title strong {
+  font-size: 22px;
+  line-height: 1.04;
+}
+
+.admin-vitrine-section .admin-products-section-title small {
+  color: var(--k-text);
+  font-size: 12px;
+  line-height: 1.18;
+}
+
 .admin-vitrine-category-list,
 .admin-vitrine-product-list {
   display: grid;
@@ -1706,7 +1717,7 @@
   display: grid;
   place-items: center;
   width: 100%;
-  min-height: 74px;
+  min-height: 82px;
   border: 1.5px dashed rgba(232, 75, 148, 0.48);
   border-radius: 22px;
   color: var(--k-pink);
@@ -1716,7 +1727,7 @@
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.74) inset,
     0 0 18px rgba(232, 75, 148, 0.10);
-  font: 900 14px "DM Sans", system-ui, sans-serif;
+  font: 900 17px "DM Sans", system-ui, sans-serif;
   cursor: pointer;
 }
 
@@ -1738,13 +1749,13 @@
 }
 
 .admin-vitrine-add-products-button {
-  min-height: 44px;
+  min-height: 48px;
   border: 0;
   border-radius: 16px;
   color: white;
   background: linear-gradient(135deg, var(--k-pink), var(--k-purple));
   box-shadow: 0 0 18px rgba(232, 75, 148, 0.18);
-  font: 900 13px "DM Sans", system-ui, sans-serif;
+  font: 900 15px "DM Sans", system-ui, sans-serif;
   cursor: pointer;
 }
 
