@@ -103,6 +103,7 @@ let isCategoryModalOpen = false;
 let activeCategoryPhotoId = null;
 let categoryPhotoDraft;
 let categoryPhotoDrag = null;
+const categoryPhotoCropSize = 260;
 
 const readProducts = () => readJson(productsKey, []);
 
@@ -123,19 +124,23 @@ const normalizeCategoryPhoto = (photo) =>
         name: photo.name || "",
         src: photo.src || photo.url || photo.preview,
         preview: photo.preview || photo.url || photo.src,
-        x: Number.isFinite(Number(photo.x)) ? Number(photo.x) : 0,
-        y: Number.isFinite(Number(photo.y)) ? Number(photo.y) : 0,
+        x: Number.isFinite(Number(photo.x)) ? Number(photo.x) : Number(photo.pos?.x) || 0,
+        y: Number.isFinite(Number(photo.y)) ? Number(photo.y) : Number(photo.pos?.y) || 0,
         scale: Number.isFinite(Number(photo.scale)) ? Number(photo.scale) : 1,
         aspect: Number.isFinite(Number(photo.aspect)) && Number(photo.aspect) > 0 ? Number(photo.aspect) : 1,
+        naturalWidth: Number.isFinite(Number(photo.naturalWidth)) ? Number(photo.naturalWidth) : 0,
+        naturalHeight: Number.isFinite(Number(photo.naturalHeight)) ? Number(photo.naturalHeight) : 0,
       }
     : null;
 
-const categoryPhotoStyle = (photo, size = 82) => {
+const categoryPhotoStyle = (photo, cropSize = categoryPhotoCropSize) => {
   const normalized = normalizeCategoryPhoto(photo);
   if (!normalized) return "";
-  const isWide = normalized.aspect >= 1;
-  const baseWidth = isWide ? size * normalized.aspect : size;
-  const baseHeight = isWide ? size : size / normalized.aspect;
+  const naturalWidth = normalized.naturalWidth || (normalized.aspect >= 1 ? normalized.aspect * cropSize : cropSize);
+  const naturalHeight = normalized.naturalHeight || (normalized.aspect >= 1 ? cropSize : cropSize / normalized.aspect);
+  const previewBaseScale = Math.max(cropSize / naturalWidth, cropSize / naturalHeight);
+  const baseWidth = naturalWidth * previewBaseScale;
+  const baseHeight = naturalHeight * previewBaseScale;
   return [
     `width:${baseWidth}px`,
     `height:${baseHeight}px`,
@@ -153,9 +158,9 @@ const clampPhotoDraft = (photo) => {
   if (!normalized) return null;
   return {
     ...normalized,
-    x: Math.max(-80, Math.min(80, normalized.x)),
-    y: Math.max(-80, Math.min(80, normalized.y)),
-    scale: Math.max(1, Math.min(3, normalized.scale)),
+    x: Math.max(-categoryPhotoCropSize, Math.min(categoryPhotoCropSize, normalized.x)),
+    y: Math.max(-categoryPhotoCropSize, Math.min(categoryPhotoCropSize, normalized.y)),
+    scale: Math.max(1, Math.min(5, normalized.scale)),
   };
 };
 
@@ -178,7 +183,7 @@ const buildCategoryPhotoPreview = (photo, outputSize = 164) =>
         return;
       }
 
-      const cropSize = 132;
+      const cropSize = categoryPhotoCropSize;
       const baseScale = Math.max(cropSize / image.width, cropSize / image.height);
       const finalScale = baseScale * normalized.scale;
       const width = image.width * finalScale * (outputSize / cropSize);
@@ -195,6 +200,8 @@ const buildCategoryPhotoPreview = (photo, outputSize = 164) =>
 
         resolve({
           ...normalized,
+          naturalWidth: image.naturalWidth || image.width,
+          naturalHeight: image.naturalHeight || image.height,
           preview: canvas.toDataURL("image/jpeg", 0.86),
         });
       } catch {
@@ -204,6 +211,33 @@ const buildCategoryPhotoPreview = (photo, outputSize = 164) =>
     image.addEventListener("error", () => resolve({ ...normalized, preview: normalized.src }));
     image.src = normalized.src;
   });
+
+const closeCategoryPhotoModal = () => {
+  activeCategoryPhotoId = null;
+  categoryPhotoDraft = undefined;
+  categoryPhotoDrag = null;
+  if (categoryPhotoModal) categoryPhotoModal.innerHTML = "";
+};
+
+const confirmCategoryPhotoSelection = async () => {
+  if (!activeCategoryPhotoId) return;
+
+  const categoryId = activeCategoryPhotoId;
+  const draft = normalizeCategoryPhoto(categoryPhotoDraft);
+
+  closeCategoryPhotoModal();
+  render();
+
+  const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
+  if (draft?.src) {
+    nextPhotos[categoryId] = await buildCategoryPhotoPreview(draft);
+  } else {
+    delete nextPhotos[categoryId];
+  }
+  homeConfig = cleanHomeConfig({ ...homeConfig, categoryPhotos: nextPhotos });
+  writeJson(homeConfigKey, homeConfig);
+  render();
+};
 
 const categoryIcon = (category) => {
   const normalized = String(category || "").toLowerCase();
@@ -300,7 +334,7 @@ const renderCategoryPhotoModal = () => {
         <div class="admin-vitrine-photo-preview" data-category-photo-crop style="--category-color:${category.color}">
           ${
             previewPhoto?.src
-              ? `<img src="${previewPhoto.src}" alt="${escapeHtml(previewPhoto.name || category.label)}" style="${categoryPhotoStyle(previewPhoto, 132)}" />`
+              ? `<img src="${previewPhoto.src}" alt="${escapeHtml(previewPhoto.name || category.label)}" style="${categoryPhotoStyle(previewPhoto)}" />`
               : `<span aria-hidden="true">${category.icon}</span>`
           }
         </div>
@@ -579,8 +613,7 @@ document.addEventListener("click", async (event) => {
     closeCategoryPhoto ||
     (event.target.closest(".admin-vitrine-photo-backdrop") && !event.target.closest(".admin-vitrine-photo-modal"))
   ) {
-    activeCategoryPhotoId = null;
-    categoryPhotoDraft = undefined;
+    closeCategoryPhotoModal();
     render();
     return;
   }
@@ -599,19 +632,7 @@ document.addEventListener("click", async (event) => {
   if (confirmCategoryPhoto && activeCategoryPhotoId) {
     event.preventDefault();
     event.stopPropagation();
-    const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
-    if (categoryPhotoDraft?.src) {
-      nextPhotos[activeCategoryPhotoId] = await buildCategoryPhotoPreview(categoryPhotoDraft);
-    } else {
-      delete nextPhotos[activeCategoryPhotoId];
-    }
-    homeConfig = cleanHomeConfig({ ...homeConfig, categoryPhotos: nextPhotos });
-    writeJson(homeConfigKey, homeConfig);
-    activeCategoryPhotoId = null;
-    categoryPhotoDraft = undefined;
-    categoryPhotoDrag = null;
-    categoryPhotoModal.innerHTML = "";
-    render();
+    await confirmCategoryPhotoSelection();
     return;
   }
 
@@ -732,6 +753,8 @@ document.addEventListener("change", (event) => {
         y: 0,
         scale: 1,
         aspect: image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1,
+        naturalWidth: image.naturalWidth || 0,
+        naturalHeight: image.naturalHeight || 0,
       };
       render();
     });
@@ -743,6 +766,8 @@ document.addEventListener("change", (event) => {
         y: 0,
         scale: 1,
         aspect: 1,
+        naturalWidth: 0,
+        naturalHeight: 0,
       };
       render();
     });

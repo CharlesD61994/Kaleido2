@@ -1663,16 +1663,16 @@
 }
 
 .admin-vitrine-photo-modal {
-  width: min(100%, 342px);
+  width: min(100%, 380px);
 }
 
 .admin-vitrine-photo-preview {
   position: relative;
   display: grid;
   place-items: center;
-  width: 132px;
-  height: 132px;
-  margin: 4px auto 2px;
+  width: 260px;
+  height: 260px;
+  margin: 8px auto 4px;
   overflow: hidden;
   border-radius: 50%;
   touch-action: none;
@@ -1690,9 +1690,6 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
   transform-origin: center;
   user-select: none;
   pointer-events: none;
