@@ -118,10 +118,11 @@ const isProductReady = (product) => product.status === "ready";
 const isProductInCatalog = (product) => isProductReady(product) && product.inCatalog !== false;
 
 const normalizeCategoryPhoto = (photo) =>
-  photo?.url
+  (photo?.src || photo?.url || photo?.preview)
     ? {
         name: photo.name || "",
-        url: photo.url,
+        src: photo.src || photo.url || photo.preview,
+        preview: photo.preview || photo.url || photo.src,
         x: Number.isFinite(Number(photo.x)) ? Number(photo.x) : 0,
         y: Number.isFinite(Number(photo.y)) ? Number(photo.y) : 0,
         scale: Number.isFinite(Number(photo.scale)) ? Number(photo.scale) : 1,
@@ -157,6 +158,52 @@ const clampPhotoDraft = (photo) => {
     scale: Math.max(1, Math.min(3, normalized.scale)),
   };
 };
+
+const buildCategoryPhotoPreview = (photo, outputSize = 164) =>
+  new Promise((resolve) => {
+    const normalized = normalizeCategoryPhoto(photo);
+    if (!normalized?.src) {
+      resolve(null);
+      return;
+    }
+
+    const image = new Image();
+    image.addEventListener("load", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = outputSize;
+      canvas.height = outputSize;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        resolve({ ...normalized, preview: normalized.src });
+        return;
+      }
+
+      const cropSize = 132;
+      const baseScale = Math.max(cropSize / image.width, cropSize / image.height);
+      const finalScale = baseScale * normalized.scale;
+      const width = image.width * finalScale * (outputSize / cropSize);
+      const height = image.height * finalScale * (outputSize / cropSize);
+
+      try {
+        context.drawImage(
+          image,
+          (outputSize - width) / 2 + normalized.x * (outputSize / cropSize),
+          (outputSize - height) / 2 + normalized.y * (outputSize / cropSize),
+          width,
+          height,
+        );
+
+        resolve({
+          ...normalized,
+          preview: canvas.toDataURL("image/jpeg", 0.86),
+        });
+      } catch {
+        resolve({ ...normalized, preview: normalized.src });
+      }
+    });
+    image.addEventListener("error", () => resolve({ ...normalized, preview: normalized.src }));
+    image.src = normalized.src;
+  });
 
 const categoryIcon = (category) => {
   const normalized = String(category || "").toLowerCase();
@@ -206,8 +253,8 @@ const renderCategoryCard = (category, orderedCategories, index) => {
       <div class="admin-vitrine-category-main">
         <button type="button" class="admin-vitrine-category-photo-button" data-category-photo="${category.id}" aria-label="Modifier la photo de ${escapeHtml(category.label)}">
           ${
-            category.photo?.url
-              ? `<img src="${category.photo.url}" alt="${escapeHtml(category.photo.name || category.label)}" style="${categoryPhotoStyle(category.photo, 82)}" />`
+            category.photo?.preview || category.photo?.url || category.photo?.src
+              ? `<img src="${category.photo.preview || category.photo.url || category.photo.src}" alt="${escapeHtml(category.photo.name || category.label)}" />`
               : `<span class="admin-vitrine-category-symbol" aria-hidden="true">${category.icon}</span>`
           }
         </button>
@@ -252,16 +299,16 @@ const renderCategoryPhotoModal = () => {
         <h2 id="category-photo-title">Photo de catégorie</h2>
         <div class="admin-vitrine-photo-preview" data-category-photo-crop style="--category-color:${category.color}">
           ${
-            previewPhoto?.url
-              ? `<img src="${previewPhoto.url}" alt="${escapeHtml(previewPhoto.name || category.label)}" style="${categoryPhotoStyle(previewPhoto, 132)}" />`
+            previewPhoto?.src
+              ? `<img src="${previewPhoto.src}" alt="${escapeHtml(previewPhoto.name || category.label)}" style="${categoryPhotoStyle(previewPhoto, 132)}" />`
               : `<span aria-hidden="true">${category.icon}</span>`
           }
         </div>
-        <p class="admin-vitrine-photo-hint">${previewPhoto?.url ? "Glisse la photo dans le cercle pour la cadrer." : "Importe une photo pour la cadrer."}</p>
+        <p class="admin-vitrine-photo-hint">${previewPhoto?.src ? "Glisse la photo dans le cercle pour la cadrer." : "Importe une photo pour la cadrer."}</p>
         <input id="categoryPhotoInput" type="file" accept="image/*" hidden />
         <div class="admin-vitrine-photo-actions">
-          <button class="admin-vitrine-primary-action" type="button" data-pick-category-photo>${previewPhoto?.url ? "Remplacer" : "Importer"}</button>
-          <button class="admin-vitrine-danger-action" type="button" data-remove-category-photo ${previewPhoto?.url ? "" : "disabled"}>Supprimer</button>
+          <button class="admin-vitrine-primary-action" type="button" data-pick-category-photo>${previewPhoto?.src ? "Remplacer" : "Importer"}</button>
+          <button class="admin-vitrine-danger-action" type="button" data-remove-category-photo ${previewPhoto?.src ? "" : "disabled"}>Supprimer</button>
           <button class="admin-vitrine-confirm-action admin-vitrine-primary-action" type="button" data-confirm-category-photo>Confirmer</button>
         </div>
       </section>
@@ -452,7 +499,7 @@ function render() {
   renderCategoryPhotoModal();
 }
 
-document.addEventListener("click", (event) => {
+document.addEventListener("click", async (event) => {
   const categoryToggle = event.target.closest("[data-category-toggle]");
   const categoryMove = event.target.closest("[data-category-move]");
   const categoryRemove = event.target.closest("[data-category-remove]");
@@ -550,9 +597,11 @@ document.addEventListener("click", (event) => {
   }
 
   if (confirmCategoryPhoto && activeCategoryPhotoId) {
+    event.preventDefault();
+    event.stopPropagation();
     const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
-    if (categoryPhotoDraft?.url) {
-      nextPhotos[activeCategoryPhotoId] = normalizeCategoryPhoto(categoryPhotoDraft);
+    if (categoryPhotoDraft?.src) {
+      nextPhotos[activeCategoryPhotoId] = await buildCategoryPhotoPreview(categoryPhotoDraft);
     } else {
       delete nextPhotos[activeCategoryPhotoId];
     }
@@ -560,6 +609,8 @@ document.addEventListener("click", (event) => {
     writeJson(homeConfigKey, homeConfig);
     activeCategoryPhotoId = null;
     categoryPhotoDraft = undefined;
+    categoryPhotoDrag = null;
+    categoryPhotoModal.innerHTML = "";
     render();
     return;
   }
@@ -613,7 +664,7 @@ document.addEventListener("click", (event) => {
 
 document.addEventListener("pointerdown", (event) => {
   const cropTarget = event.target.closest("[data-category-photo-crop]");
-  if (!cropTarget || !categoryPhotoDraft?.url) return;
+  if (!cropTarget || !categoryPhotoDraft?.src) return;
 
   event.preventDefault();
   cropTarget.setPointerCapture?.(event.pointerId);
@@ -628,7 +679,7 @@ document.addEventListener("pointerdown", (event) => {
 });
 
 document.addEventListener("pointermove", (event) => {
-  if (!categoryPhotoDrag || event.pointerId !== categoryPhotoDrag.pointerId || !categoryPhotoDraft?.url) return;
+  if (!categoryPhotoDrag || event.pointerId !== categoryPhotoDrag.pointerId || !categoryPhotoDraft?.src) return;
 
   event.preventDefault();
   categoryPhotoDraft = clampPhotoDraft({
@@ -653,7 +704,7 @@ document.addEventListener(
   "wheel",
   (event) => {
     const cropTarget = event.target.closest("[data-category-photo-crop]");
-    if (!cropTarget || !categoryPhotoDraft?.url) return;
+    if (!cropTarget || !categoryPhotoDraft?.src) return;
 
     event.preventDefault();
     const nextScale = (normalizeCategoryPhoto(categoryPhotoDraft)?.scale || 1) + (event.deltaY < 0 ? 0.08 : -0.08);
@@ -676,7 +727,7 @@ document.addEventListener("change", (event) => {
     image.addEventListener("load", () => {
       categoryPhotoDraft = {
         name: file.name,
-        url: String(reader.result || ""),
+        src: String(reader.result || ""),
         x: 0,
         y: 0,
         scale: 1,
@@ -687,7 +738,7 @@ document.addEventListener("change", (event) => {
     image.addEventListener("error", () => {
       categoryPhotoDraft = {
         name: file.name,
-        url: String(reader.result || ""),
+        src: String(reader.result || ""),
         x: 0,
         y: 0,
         scale: 1,
