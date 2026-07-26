@@ -58,7 +58,12 @@ const renderProducts = () => {
           const productInitial = (product.name || "?").trim().charAt(0).toUpperCase() || "?";
 
           return `
-            <article class="admin-product-library-card" style="--product-color:${primaryColor}">
+            <a
+              class="admin-product-library-card"
+              href="./admin-produit.html?id=${encodeURIComponent(product.id)}"
+              style="--product-color:${primaryColor}"
+              aria-label="Modifier ${escapeHtml(product.name || "Produit sans nom")}"
+            >
               <div class="admin-product-card-bubble">
                 <span>${escapeHtml(productInitial)}</span>
                 <small>${productPhotoCount || "0"}</small>
@@ -72,7 +77,7 @@ const renderProducts = () => {
                 </div>
                 <small>${colors.length} couleur(s) · ${choiceCount} choix · ${colorPhotoCount} laine</small>
               </div>
-            </article>
+            </a>
           `;
         })
         .join("")

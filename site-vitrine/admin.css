@@ -425,6 +425,7 @@
   min-width: 0;
   color: var(--k-ink);
   text-align: center;
+  text-decoration: none;
 }
 
 .admin-product-card-bubble {

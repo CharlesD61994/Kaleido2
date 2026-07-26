@@ -76,6 +76,7 @@ const colorPageKicker = document.querySelector("#colorPageKicker");
 const colorPageTitle = document.querySelector("#colorPageTitle");
 const colorPageDescription = document.querySelector("#colorPageDescription");
 const colorPageContent = document.querySelector("#colorPageContent");
+const editingProductId = new URLSearchParams(window.location.search).get("id");
 
 let activeColorMenuId = null;
 let selectedColorsBySection = { mainColors: [], accentColors: [] };
@@ -86,6 +87,7 @@ let photoColorContext = null;
 let colorManageView = "list";
 let productPhotoPreviews = [];
 let productPreviewSelections = {};
+let savedProductPhotoNames = [];
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(
@@ -504,10 +506,13 @@ const renderProductPhotoList = () => {
   if (!productPhotoList || !form) return;
   const input = form.elements.productPhotos;
   const files = Array.from(input?.files || []);
+  const savedNames = files.length ? [] : savedProductPhotoNames;
 
   productPhotoList.innerHTML = files.length
     ? files.map((file) => `<span>${escapeHtml(file.name)}</span>`).join("")
-    : '<small>Aucune photo du produit ajoutée.</small>';
+    : savedNames.length
+      ? savedNames.map((name) => `<span>${escapeHtml(name)}</span>`).join("")
+      : '<small>Aucune photo du produit ajoutée.</small>';
 };
 
 const getPreviewData = () => {
@@ -778,6 +783,32 @@ const renderDrafts = () => {
       `;
     })
     .join("");
+};
+
+const loadEditingProduct = () => {
+  if (!form || !editingProductId) return;
+  const product = readDrafts().find((draft) => draft.id === editingProductId);
+  if (!product) return;
+
+  form.elements.name.value = product.name || "";
+  form.elements.category.value = product.category || form.elements.category.value;
+  form.elements.price.value = product.price || "";
+  form.elements.description.value = product.description || "";
+  form.elements.shopify.value = product.shopify || "";
+  savedProductPhotoNames = product.productPhotos || [];
+  selectedChoicesBySection = product.optionChoices || {};
+
+  Array.from(optionSelector?.querySelectorAll("input[name='options']") || []).forEach((input) => {
+    input.checked = (product.options || []).includes(input.value);
+  });
+
+  if (saveProductButton) saveProductButton.textContent = "Enregistrer le produit";
+  document.querySelector("#admin-title")?.replaceChildren("Modifier le produit");
+  document.querySelector("#builder-title")?.replaceChildren("Produit boutique");
+  syncSelectedChoices();
+  syncSelectedColors();
+  renderColorSections();
+  updatePreview();
 };
 
 const readFileAsPhoto = (file) =>
@@ -1349,8 +1380,11 @@ form?.addEventListener("submit", (event) => {
   event.preventDefault();
   syncSelectedColors();
   const formData = new FormData(form);
+  const currentDrafts = readDrafts();
+  const previousDraft = editingProductId ? currentDrafts.find((draft) => draft.id === editingProductId) : null;
+  const selectedProductPhotos = Array.from(form.elements.productPhotos?.files || []).map((file) => file.name);
   const draft = {
-    id: crypto.randomUUID(),
+    id: previousDraft?.id || crypto.randomUUID(),
     name: formData.get("name")?.toString().trim() || "Produit sans nom",
     category: formData.get("category")?.toString() || "Catalogue",
     price: formData.get("price")?.toString().trim(),
@@ -1360,7 +1394,7 @@ form?.addEventListener("submit", (event) => {
     optionChoices: Object.fromEntries(
       choiceSectionsConfig.map((section) => [section.name, selectedChoicesBySection[section.name] || []]),
     ),
-    productPhotos: Array.from(form.elements.productPhotos?.files || []).map((file) => file.name),
+    productPhotos: selectedProductPhotos.length ? selectedProductPhotos : previousDraft?.productPhotos || [],
     colorPhotos: readCustomColors()
       .filter((color) => getColorPhotos(color).length > 0)
       .map((color) => ({ label: color.label, value: color.value, photos: getColorPhotos(color) })),
@@ -1368,20 +1402,30 @@ form?.addEventListener("submit", (event) => {
       main: selectedColorsBySection.mainColors,
       accent: selectedColorsBySection.accentColors,
     },
-    createdAt: new Date().toISOString(),
+    createdAt: previousDraft?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
-  saveDrafts([draft, ...readDrafts()]);
+  saveDrafts([draft, ...currentDrafts.filter((item) => item.id !== draft.id)]);
   renderDrafts();
   if (saveProductButton) {
     saveProductButton.textContent = "Produit enregistré";
     window.setTimeout(() => {
-      saveProductButton.textContent = "Enregistrer le brouillon";
+      saveProductButton.textContent = "Enregistrer le produit";
     }, 1800);
   }
+
+  if (editingProductId) {
+    savedProductPhotoNames = draft.productPhotos || [];
+    renderProductPhotoList();
+    updatePreview();
+    return;
+  }
+
   form.reset();
   selectedColorsBySection = { mainColors: [], accentColors: [] };
   selectedChoicesBySection = {};
+  savedProductPhotoNames = [];
   activeColorMenuId = null;
   closeColorEditModal();
   closeColorManageModal();
@@ -1421,3 +1465,4 @@ renderPreviewPhotoStrip();
 renderProductPhotoList();
 renderColorPhotoModal();
 renderDrafts();
+loadEditingProduct();
