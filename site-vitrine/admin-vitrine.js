@@ -139,7 +139,7 @@ let categoryActionSwipe = null;
 let suppressCategoryClick = false;
 let isCategoryPhotoDeleteConfirmOpen = false;
 const categoryPhotoCropSize = 260;
-const categoryActionsOffset = 82;
+const categoryActionsOffset = 144;
 
 const readProducts = () => readJson(productsKey, []);
 

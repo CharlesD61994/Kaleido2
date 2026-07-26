@@ -1211,7 +1211,7 @@
 }
 
 .admin-vitrine-category-shell.is-actions-open .admin-vitrine-category-card {
-  --category-swipe-offset: 82px;
+  --category-swipe-offset: 144px;
 }
 
 .admin-vitrine-category-shell.is-actions-open {
@@ -1384,6 +1384,16 @@
   justify-content: flex-end;
 }
 
+.admin-vitrine-order-actions {
+  transition: opacity 140ms ease;
+}
+
+.admin-vitrine-category-shell.is-actions-open .admin-vitrine-order-actions,
+.admin-vitrine-category-shell.is-swiping .admin-vitrine-order-actions {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .admin-vitrine-category-slide-actions {
   position: absolute;
   inset: 0 0 0 auto;
@@ -1393,8 +1403,8 @@
   gap: 8px;
   align-items: stretch;
   justify-content: end;
-  width: 132px;
-  padding: 10px 0 10px 8px;
+  width: 144px;
+  padding: 10px 8px;
   border-radius: 20px;
   background:
     linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.38) 24%, rgba(255, 255, 255, 0.58)),
