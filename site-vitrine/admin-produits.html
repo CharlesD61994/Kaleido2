@@ -21,7 +21,10 @@
             <span>Produits</span>
           </a>
 
-          <a class="admin-public-link" href="./admin-produit.html">Créer</a>
+          <div class="admin-topbar-actions">
+            <button class="admin-public-link admin-cloud-publish" type="button" id="publishProducts">Publier</button>
+            <a class="admin-public-link" href="./admin-produit.html">Créer</a>
+          </div>
         </header>
 
         <section class="admin-products-controls" aria-label="Recherche et filtres produits">
@@ -67,6 +70,8 @@
       </section>
     </main>
 
+    <script src="./storefront-config.js"></script>
+    <script src="./storefront-cloud.js"></script>
     <script src="./admin-products.js"></script>
   </body>
 </html>

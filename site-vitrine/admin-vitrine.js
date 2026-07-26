@@ -9,6 +9,7 @@ const featuredProducts = document.querySelector("#featuredProducts");
 const productPickerModal = document.querySelector("#productPickerModal");
 const categoryModal = document.querySelector("#categoryModal");
 const categoryPhotoModal = document.querySelector("#categoryPhotoModal");
+const publishStorefrontButton = document.querySelector("#publishStorefront");
 
 const defaultCategories = [
   { id: "vetements", label: "Vêtements", color: "#7c3aed", icon: "♢" },
@@ -153,6 +154,25 @@ const productCover = (product) => (product.productPhotos || []).map(normalizePro
 const isProductReady = (product) => product.status === "ready";
 
 const isProductInCatalog = (product) => isProductReady(product) && product.inCatalog !== false;
+
+const setPublishState = (button, state, label) => {
+  if (!button) return;
+  button.dataset.state = state;
+  button.textContent = label;
+  button.disabled = state === "saving";
+};
+
+const publishStorefront = async () => {
+  if (!window.KaleidoStorefrontCloud?.isConfigured) {
+    setPublishState(publishStorefrontButton, "error", "Cloud non configuré");
+    return;
+  }
+  if (publishStorefrontButton?.disabled) return;
+  setPublishState(publishStorefrontButton, "saving", "Publication...");
+  const result = await window.KaleidoStorefrontCloud.publishLocalStorefront({ productsKey, homeConfigKey });
+  setPublishState(publishStorefrontButton, result.ok ? "saved" : "error", result.ok ? "Publié" : "Erreur");
+  window.setTimeout(() => setPublishState(publishStorefrontButton, "idle", "Publier"), 2200);
+};
 
 const normalizeCategoryPhoto = (photo) =>
   (photo?.src || photo?.url || photo?.preview || photo?.original)
@@ -1201,4 +1221,15 @@ document.addEventListener("keydown", (event) => {
   render();
 });
 
-render();
+publishStorefrontButton?.addEventListener("click", publishStorefront);
+
+const start = async () => {
+  render();
+  if (!window.KaleidoStorefrontCloud?.isConfigured) return;
+  const result = await window.KaleidoStorefrontCloud.hydrateLocalFromCloud({ productsKey, homeConfigKey });
+  if (!result.ok) return;
+  homeConfig = cleanHomeConfig(readJson(homeConfigKey, null));
+  render();
+};
+
+start();

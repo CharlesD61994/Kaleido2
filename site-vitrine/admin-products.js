@@ -5,6 +5,8 @@ const productFilters = document.querySelector("#productFilters");
 const productCount = document.querySelector("#productCount");
 const optionCount = document.querySelector("#optionCount");
 const colorCount = document.querySelector("#colorCount");
+const publishProductsButton = document.querySelector("#publishProducts");
+const homeConfigKey = "kaleido-storefront-home-config";
 
 const optionLabels = {
   mainColor: "Couleur principale",
@@ -45,6 +47,28 @@ const readProducts = () => {
 
 const saveProducts = (products) => {
   localStorage.setItem(draftsKey, JSON.stringify(products));
+};
+
+const setPublishState = (button, state, label) => {
+  if (!button) return;
+  button.dataset.state = state;
+  button.textContent = label;
+  button.disabled = state === "saving";
+};
+
+const publishProducts = async () => {
+  if (!window.KaleidoStorefrontCloud?.isConfigured) {
+    setPublishState(publishProductsButton, "error", "Cloud non configuré");
+    return;
+  }
+  if (publishProductsButton?.disabled) return;
+  setPublishState(publishProductsButton, "saving", "Publication...");
+  const result = await window.KaleidoStorefrontCloud.publishLocalStorefront({
+    productsKey: draftsKey,
+    homeConfigKey,
+  });
+  setPublishState(publishProductsButton, result.ok ? "saved" : "error", result.ok ? "Publié" : "Erreur");
+  window.setTimeout(() => setPublishState(publishProductsButton, "idle", "Publier"), 2200);
 };
 
 const categoryIcon = (category) => {
@@ -401,4 +425,16 @@ document.addEventListener("keydown", (event) => {
   closeProductAction();
 });
 
-renderProducts();
+publishProductsButton?.addEventListener("click", publishProducts);
+
+const start = async () => {
+  renderProducts();
+  if (!window.KaleidoStorefrontCloud?.isConfigured) return;
+  const result = await window.KaleidoStorefrontCloud.hydrateLocalFromCloud({
+    productsKey: draftsKey,
+    homeConfigKey,
+  });
+  if (result.ok) renderProducts();
+};
+
+start();

@@ -57,6 +57,52 @@
   font-weight: 900;
 }
 
+.admin-topbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-topbar:has(.admin-header-back) .admin-topbar-actions {
+  margin-left: auto;
+}
+
+.admin-topbar:has(.admin-header-back) .admin-topbar-actions .admin-public-link {
+  margin-left: 0;
+}
+
+button.admin-public-link {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.admin-cloud-publish {
+  min-width: 82px;
+  color: #fff;
+  background: linear-gradient(120deg, var(--k-cyan), var(--k-purple));
+  border-color: rgba(255, 255, 255, 0.66);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.48) inset,
+    0 0 18px rgba(48, 199, 201, 0.22);
+}
+
+.admin-cloud-publish[data-state="saving"] {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.admin-cloud-publish[data-state="saved"] {
+  background: linear-gradient(120deg, #16a34a, #34d399);
+  box-shadow: 0 0 18px rgba(22, 163, 74, 0.24);
+}
+
+.admin-cloud-publish[data-state="error"] {
+  color: #fff;
+  background: linear-gradient(120deg, #f05b4f, #e84b94);
+  box-shadow: 0 0 18px rgba(240, 91, 79, 0.24);
+}
+
 .admin-detail-page {
   position: fixed;
   inset: 0;
