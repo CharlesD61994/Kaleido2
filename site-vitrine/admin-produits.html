@@ -25,20 +25,44 @@
         </header>
 
         <section class="admin-hero admin-products-hero" aria-labelledby="products-title">
-          <p class="eyebrow">Bibliothèque</p>
           <h1 id="products-title">Produits</h1>
-          <p>Retrouve les fiches produits créées pour tester la future boutique.</p>
         </section>
 
-        <section class="admin-products-panel" aria-labelledby="products-list-title">
-          <div class="admin-section-heading">
-            <div>
-              <span class="admin-kicker">Fiches locales</span>
-              <h2 id="products-list-title">Tous les produits</h2>
-            </div>
-            <button class="clear-drafts" id="clearProducts" type="button">Vider</button>
+        <section class="admin-products-controls" aria-label="Recherche et filtres produits">
+          <div class="admin-products-stats" aria-label="Résumé des produits">
+            <article style="--stat-color:#7C3AED">
+              <span class="admin-stat-icon admin-stat-products" aria-hidden="true"></span>
+              <strong id="productCount">0</strong>
+              <small>PRODUITS</small>
+            </article>
+            <article style="--stat-color:#0891B2">
+              <span class="admin-stat-icon admin-stat-options" aria-hidden="true"></span>
+              <strong id="optionCount">0</strong>
+              <small>OPTIONS</small>
+            </article>
+            <article style="--stat-color:#059669">
+              <span class="admin-stat-icon admin-stat-colors" aria-hidden="true"></span>
+              <strong id="colorCount">0</strong>
+              <small>COULEURS</small>
+            </article>
           </div>
 
+          <label class="admin-products-search">
+            <span aria-hidden="true"></span>
+            <input id="productSearch" type="search" placeholder="Rechercher un produit..." />
+          </label>
+
+          <div class="admin-products-tags" id="productFilters" aria-label="Filtres produits">
+            <button class="is-active" type="button" data-filter="Tous">Tous</button>
+            <button type="button" data-filter="Vêtement">Vêtements</button>
+            <button type="button" data-filter="Amigurumi">Amigurumi</button>
+            <button type="button" data-filter="Pantoufles">Pantoufles</button>
+            <button type="button" data-filter="Porte-clé">Porte-clés</button>
+            <button type="button" data-filter="Couverture">Couvertures</button>
+          </div>
+        </section>
+
+        <section class="admin-products-panel" aria-labelledby="products-title">
           <div class="admin-products-grid" id="productsGrid"></div>
         </section>
       </section>
