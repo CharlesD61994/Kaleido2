@@ -1194,7 +1194,7 @@
 }
 
 .admin-vitrine-add-category-card {
-  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-columns: 92px minmax(0, 1fr);
   align-items: center;
   width: 100%;
   border: 1.5px dashed rgba(48, 199, 201, 0.48);
@@ -1245,8 +1245,8 @@
 
 .admin-vitrine-category-main {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
   min-width: 0;
   text-align: left;
@@ -1256,35 +1256,42 @@
 .admin-vitrine-category-icon {
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 17px;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
 }
 
 .admin-vitrine-category-photo-button {
   padding: 0;
-  overflow: hidden;
-  border: 0;
-  background: transparent;
+  overflow: visible;
+  border: 3px solid white;
+  background:
+    radial-gradient(circle at 44% 36%, rgba(255, 255, 255, 0.8), transparent 22%),
+    linear-gradient(135deg, color-mix(in srgb, var(--category-color), white 78%), #fffdfa);
+  box-shadow:
+    0 0 0 2px var(--category-color),
+    0 0 18px color-mix(in srgb, var(--category-color), transparent 30%),
+    0 12px 24px rgba(16, 39, 68, 0.10);
   cursor: pointer;
 }
 
 .admin-vitrine-category-photo-button img {
   width: 100%;
   height: 100%;
-  border-radius: 17px;
+  border-radius: 50%;
   object-fit: cover;
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--category-color), white 28%) inset,
-    0 0 18px color-mix(in srgb, var(--category-color), transparent 62%);
 }
 
 .admin-vitrine-category-icon {
   color: white;
   background: linear-gradient(135deg, var(--category-color), color-mix(in srgb, var(--category-color), white 18%));
-  box-shadow: 0 0 18px color-mix(in srgb, var(--category-color), transparent 62%);
+  border: 3px solid white;
+  box-shadow:
+    0 0 0 2px var(--category-color),
+    0 0 18px color-mix(in srgb, var(--category-color), transparent 30%),
+    0 12px 24px rgba(16, 39, 68, 0.10);
   font-family: "Syne", sans-serif;
-  font-size: 25px;
+  font-size: 34px;
   font-weight: 900;
 }
 
@@ -1650,23 +1657,25 @@
 .admin-vitrine-photo-preview {
   display: grid;
   place-items: center;
-  width: 128px;
-  height: 128px;
+  width: 132px;
+  height: 132px;
   margin: 4px auto 2px;
   overflow: hidden;
-  border-radius: 32px;
+  border-radius: 50%;
   background:
-    radial-gradient(circle at 32% 22%, rgba(255, 255, 255, 0.74), transparent 30%),
-    linear-gradient(135deg, color-mix(in srgb, var(--category-color), white 74%), #fffdfa);
-  border: 2px solid color-mix(in srgb, var(--category-color), white 18%);
+    radial-gradient(circle at 44% 36%, rgba(255, 255, 255, 0.8), transparent 22%),
+    linear-gradient(135deg, color-mix(in srgb, var(--category-color), white 78%), #fffdfa);
+  border: 4px solid white;
   box-shadow:
-    inset 0 0 22px rgba(255, 255, 255, 0.46),
-    0 0 24px color-mix(in srgb, var(--category-color), transparent 70%);
+    0 0 0 3px var(--category-color),
+    0 0 26px color-mix(in srgb, var(--category-color), transparent 26%),
+    0 16px 30px rgba(16, 39, 68, 0.12);
 }
 
 .admin-vitrine-photo-preview img {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   object-fit: cover;
 }
 
@@ -1682,6 +1691,33 @@
   grid-template-columns: 1fr 1fr;
   gap: 9px;
   margin-top: 6px;
+}
+
+.admin-vitrine-photo-position {
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+  justify-content: center;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.admin-vitrine-photo-position button {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(16, 39, 68, 0.10);
+  box-shadow: 0 8px 16px rgba(16, 39, 68, 0.06);
+  font: 900 12px "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.admin-vitrine-photo-position button:disabled {
+  color: rgba(16, 39, 68, 0.28);
+  box-shadow: none;
+  cursor: default;
 }
 
 .admin-vitrine-photo-modal .admin-vitrine-photo-actions button {
@@ -1710,6 +1746,10 @@
   background: rgba(16, 39, 68, 0.06);
   border-color: rgba(16, 39, 68, 0.08);
   cursor: default;
+}
+
+.admin-vitrine-photo-modal .admin-vitrine-photo-actions .admin-vitrine-confirm-action {
+  grid-column: 1 / -1;
 }
 
 .admin-vitrine-preview {
