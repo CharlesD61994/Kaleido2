@@ -1,6 +1,11 @@
 .admin-storefront {
   --products-edge: 22px;
   padding-bottom: 34px;
+  background: #F7F4FB;
+}
+
+.admin-storefront::before {
+  display: none;
 }
 
 .admin-topbar {
@@ -39,11 +44,7 @@
   min-height: 100dvh;
   padding: 0 24px 34px;
   overflow: auto;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.72)),
-    radial-gradient(circle at 14% 18%, rgba(240, 91, 79, 0.11), transparent 34%),
-    radial-gradient(circle at 88% 54%, rgba(48, 199, 201, 0.13), transparent 35%),
-    var(--k-paper);
+  background: #F7F4FB;
   transform: translateX(-50%);
 }
 
