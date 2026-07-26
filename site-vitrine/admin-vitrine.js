@@ -77,9 +77,34 @@ const allCategoriesFrom = (rawConfig) => {
   const categoryPhotos = rawConfig?.categoryPhotos || {};
   return [...defaultCategories, ...customCategories].map((category) => ({
     ...category,
-    photo: categoryPhotos[category.id] || null,
+    photo: pendingCategoryPhotos[category.id] || categoryPhotos[category.id] || null,
   }));
 };
+
+const compactCategoryPhoto = (photo) => {
+  if (!photo?.src && !photo?.url && !photo?.preview) return null;
+  const preview = photo.preview || photo.url || photo.src;
+  return {
+    name: photo.name || "",
+    src: preview,
+    preview,
+    x: 0,
+    y: 0,
+    scale: 1,
+    aspect: 1,
+    naturalWidth: Number.isFinite(Number(photo.naturalWidth)) ? Number(photo.naturalWidth) : 164,
+    naturalHeight: Number.isFinite(Number(photo.naturalHeight)) ? Number(photo.naturalHeight) : 164,
+  };
+};
+
+const compactCategoryPhotos = (categoryPhotos = {}) =>
+  Object.fromEntries(
+    Object.entries(categoryPhotos)
+      .map(([id, photo]) => [id, compactCategoryPhoto(photo)])
+      .filter(([, photo]) => Boolean(photo)),
+  );
+
+const pendingCategoryPhotos = {};
 
 const cleanHomeConfig = (rawConfig) => {
   const allCategories = allCategoriesFrom(rawConfig);
@@ -90,7 +115,7 @@ const cleanHomeConfig = (rawConfig) => {
   return {
     categories: selectedCategories.length ? selectedCategories : allCategories.map((category) => category.id),
     customCategories: customCategoriesFrom(rawConfig),
-    categoryPhotos: rawConfig?.categoryPhotos || {},
+    categoryPhotos: compactCategoryPhotos(rawConfig?.categoryPhotos || {}),
     featuredProductIds: Array.isArray(rawConfig?.featuredProductIds)
       ? rawConfig.featuredProductIds.map(String)
       : [],
@@ -166,6 +191,58 @@ const clampPhotoDraft = (photo) => {
   };
 };
 
+const drawCategoryPhotoPreview = (image, photo, outputSize = 164) => {
+  const normalized = normalizeCategoryPhoto(photo);
+  if (!normalized?.src) return null;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = outputSize;
+  canvas.height = outputSize;
+  const context = canvas.getContext("2d");
+  if (!context) return null;
+
+  const cropSize = categoryPhotoCropSize;
+  const imageWidth = image.naturalWidth || image.width;
+  const imageHeight = image.naturalHeight || image.height;
+  const baseScale = Math.max(cropSize / imageWidth, cropSize / imageHeight);
+  const finalScale = baseScale * normalized.scale;
+  const width = imageWidth * finalScale * (outputSize / cropSize);
+  const height = imageHeight * finalScale * (outputSize / cropSize);
+
+  context.drawImage(
+    image,
+    (outputSize - width) / 2 + normalized.x * (outputSize / cropSize),
+    (outputSize - height) / 2 + normalized.y * (outputSize / cropSize),
+    width,
+    height,
+  );
+
+  const preview = canvas.toDataURL("image/jpeg", 0.86);
+  return {
+    name: normalized.name,
+    src: preview,
+    preview,
+    x: 0,
+    y: 0,
+    scale: 1,
+    aspect: 1,
+    naturalWidth: outputSize,
+    naturalHeight: outputSize,
+  };
+};
+
+const buildImmediateCategoryPhotoPreview = (photo) => {
+  const normalized = normalizeCategoryPhoto(photo);
+  const image = document.querySelector("[data-category-photo-crop] img");
+  if (!normalized?.src || !image?.complete) return normalized?.src ? { ...normalized, src: normalized.src, preview: normalized.src } : null;
+
+  try {
+    return drawCategoryPhotoPreview(image, normalized);
+  } catch {
+    return { ...normalized, src: normalized.src, preview: normalized.src };
+  }
+};
+
 const buildCategoryPhotoPreview = (photo, outputSize = 164) =>
   new Promise((resolve) => {
     const normalized = normalizeCategoryPhoto(photo);
@@ -176,41 +253,13 @@ const buildCategoryPhotoPreview = (photo, outputSize = 164) =>
 
     const image = new Image();
     image.addEventListener("load", () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = outputSize;
-      canvas.height = outputSize;
-      const context = canvas.getContext("2d");
-      if (!context) {
-        resolve({ ...normalized, preview: normalized.src });
-        return;
-      }
-
-      const cropSize = categoryPhotoCropSize;
-      const baseScale = Math.max(cropSize / image.width, cropSize / image.height);
-      const finalScale = baseScale * normalized.scale;
-      const width = image.width * finalScale * (outputSize / cropSize);
-      const height = image.height * finalScale * (outputSize / cropSize);
-
       try {
-        context.drawImage(
-          image,
-          (outputSize - width) / 2 + normalized.x * (outputSize / cropSize),
-          (outputSize - height) / 2 + normalized.y * (outputSize / cropSize),
-          width,
-          height,
-        );
-
-        resolve({
-          ...normalized,
-          naturalWidth: image.naturalWidth || image.width,
-          naturalHeight: image.naturalHeight || image.height,
-          preview: canvas.toDataURL("image/jpeg", 0.86),
-        });
+        resolve(drawCategoryPhotoPreview(image, normalized, outputSize) || { ...normalized, src: normalized.preview || normalized.src, preview: normalized.preview || normalized.src });
       } catch {
-        resolve({ ...normalized, preview: normalized.src });
+        resolve({ ...normalized, src: normalized.preview || normalized.src, preview: normalized.preview || normalized.src });
       }
     });
-    image.addEventListener("error", () => resolve({ ...normalized, preview: normalized.src }));
+    image.addEventListener("error", () => resolve({ ...normalized, src: normalized.preview || normalized.src, preview: normalized.preview || normalized.src }));
     image.src = normalized.src;
   });
 
@@ -239,19 +288,21 @@ const confirmCategoryPhotoSelection = (forcedCategoryId = activeCategoryPhotoId)
 
   const categoryId = forcedCategoryId;
   const draft = normalizeCategoryPhoto(categoryPhotoDraft);
-  const immediatePhoto = draft?.src ? { ...draft, preview: draft.src } : null;
-
-  const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
-  if (immediatePhoto) nextPhotos[categoryId] = immediatePhoto;
-  else delete nextPhotos[categoryId];
-
-  homeConfig = cleanHomeConfig({ ...homeConfig, categoryPhotos: nextPhotos });
-  writeJson(homeConfigKey, homeConfig);
+  const immediatePhoto = buildImmediateCategoryPhotoPreview(draft);
+  if (immediatePhoto) pendingCategoryPhotos[categoryId] = immediatePhoto;
+  else delete pendingCategoryPhotos[categoryId];
 
   closeCategoryPhotoModal();
   render();
 
-  if (!draft?.src) return;
+  if (!draft?.src) {
+    const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
+    delete nextPhotos[categoryId];
+    homeConfig = cleanHomeConfig({ ...homeConfig, categoryPhotos: nextPhotos });
+    writeJson(homeConfigKey, homeConfig);
+    render();
+    return;
+  }
 
   buildCategoryPhotoPreview(draft)
     .then((finalPhoto) => {
@@ -263,9 +314,12 @@ const confirmCategoryPhotoSelection = (forcedCategoryId = activeCategoryPhotoId)
         },
       });
       writeJson(homeConfigKey, homeConfig);
+      delete pendingCategoryPhotos[categoryId];
       render();
     })
-    .catch(() => {});
+    .catch(() => {
+      render();
+    });
 };
 
 const bindCategoryPhotoModalControls = (categoryId) => {
@@ -667,12 +721,6 @@ document.addEventListener("click", async (event) => {
   const categoryPhoto = event.target.closest("[data-category-photo]");
   const openCategoryModal = event.target.closest("[data-open-category-modal]");
   const closeCategoryModal = event.target.closest("[data-close-category-modal]");
-  const closeCategoryPhoto = event.target.closest("[data-close-category-photo]");
-  const pickCategoryPhoto = event.target.closest("[data-pick-category-photo]");
-  const removeCategoryPhoto = event.target.closest("[data-remove-category-photo]");
-  const cancelRemoveCategoryPhoto = event.target.closest("[data-cancel-remove-category-photo]");
-  const confirmRemoveCategoryPhoto = event.target.closest("[data-confirm-remove-category-photo]");
-  const confirmCategoryPhoto = event.target.closest("[data-confirm-category-photo]");
   const openProductPicker = event.target.closest("[data-open-product-picker]");
   const closeProductPicker = event.target.closest("[data-close-product-picker]");
   const featureAdd = event.target.closest("[data-feature-add]");
@@ -735,53 +783,6 @@ document.addEventListener("click", async (event) => {
     isCategoryModalOpen = true;
     render();
     window.requestAnimationFrame(() => document.querySelector("#newCategoryName")?.focus());
-    return;
-  }
-
-  if (
-    closeCategoryPhoto ||
-    (event.target.closest(".admin-vitrine-photo-backdrop") &&
-      !event.target.closest(".admin-vitrine-photo-modal") &&
-      !event.target.closest(".admin-vitrine-delete-photo-modal"))
-  ) {
-    if (isCategoryPhotoDeleteConfirmOpen && !closeCategoryPhoto && !event.target.closest(".admin-vitrine-delete-photo-modal")) {
-      isCategoryPhotoDeleteConfirmOpen = false;
-      render();
-      return;
-    }
-    closeCategoryPhotoModal();
-    render();
-    return;
-  }
-
-  if (pickCategoryPhoto) {
-    document.querySelector("#categoryPhotoInput")?.click();
-    return;
-  }
-
-  if (removeCategoryPhoto && activeCategoryPhotoId) {
-    isCategoryPhotoDeleteConfirmOpen = true;
-    render();
-    return;
-  }
-
-  if (cancelRemoveCategoryPhoto && activeCategoryPhotoId) {
-    isCategoryPhotoDeleteConfirmOpen = false;
-    render();
-    return;
-  }
-
-  if (confirmRemoveCategoryPhoto && activeCategoryPhotoId) {
-    categoryPhotoDraft = null;
-    isCategoryPhotoDeleteConfirmOpen = false;
-    render();
-    return;
-  }
-
-  if (confirmCategoryPhoto && activeCategoryPhotoId) {
-    event.preventDefault();
-    event.stopPropagation();
-    await confirmCategoryPhotoSelection();
     return;
   }
 
