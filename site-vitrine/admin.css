@@ -409,7 +409,8 @@
 }
 
 .admin-products-hero {
-  padding: 18px 20px 10px;
+  --products-edge: 12px;
+  padding: 18px var(--products-edge) 10px;
 }
 
 .admin-products-hero h1 {
@@ -417,9 +418,10 @@
 }
 
 .admin-products-controls {
+  --products-edge: 12px;
   position: relative;
   z-index: 1;
-  padding: 0 20px 14px;
+  padding: 0 var(--products-edge) 14px;
 }
 
 .admin-products-stats {
@@ -572,9 +574,10 @@
 }
 
 .admin-products-panel {
+  --products-edge: 12px;
   position: relative;
   z-index: 1;
-  padding: 0 12px 28px;
+  padding: 0 var(--products-edge) 28px;
 }
 
 .admin-products-panel .admin-section-heading {
