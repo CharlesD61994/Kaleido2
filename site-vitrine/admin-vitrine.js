@@ -8,6 +8,9 @@ const homeCategories = document.querySelector("#homeCategories");
 const featuredProducts = document.querySelector("#featuredProducts");
 const availableProducts = document.querySelector("#availableProducts");
 const homePreview = document.querySelector("#homePreview");
+const addCategoryForm = document.querySelector("#addCategoryForm");
+const newCategoryName = document.querySelector("#newCategoryName");
+const newCategoryColor = document.querySelector("#newCategoryColor");
 
 const defaultCategories = [
   { id: "vetements", label: "Vêtements", color: "#7c3aed", icon: "♢" },
@@ -16,6 +19,8 @@ const defaultCategories = [
   { id: "porte-cles", label: "Porte-clés", color: "#f4831f", icon: "◇" },
   { id: "couvertures", label: "Couvertures", color: "#8bbf3f", icon: "▧" },
 ];
+
+const categoryPalette = ["✦", "◌", "●", "◒", "◇", "▧", "♢"];
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(
@@ -42,13 +47,47 @@ const writeJson = (key, value) => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
+const slugifyCategory = (value) =>
+  String(value || "categorie")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 34) || "categorie";
+
+const customCategoriesFrom = (rawConfig) =>
+  Array.isArray(rawConfig?.customCategories)
+    ? rawConfig.customCategories
+        .filter((category) => category?.id && category?.label)
+        .map((category, index) => ({
+          id: String(category.id),
+          label: String(category.label),
+          color: category.color || "#30c7c9",
+          icon: category.icon || categoryPalette[index % categoryPalette.length],
+          custom: true,
+        }))
+    : [];
+
+const allCategoriesFrom = (rawConfig) => {
+  const usedIds = new Set(defaultCategories.map((category) => category.id));
+  const customCategories = customCategoriesFrom(rawConfig).filter((category) => {
+    if (usedIds.has(category.id)) return false;
+    usedIds.add(category.id);
+    return true;
+  });
+  return [...defaultCategories, ...customCategories];
+};
+
 const cleanHomeConfig = (rawConfig) => {
+  const allCategories = allCategoriesFrom(rawConfig);
   const selectedCategories = Array.isArray(rawConfig?.categories)
-    ? rawConfig.categories.filter((id) => defaultCategories.some((category) => category.id === id))
-    : defaultCategories.map((category) => category.id);
+    ? rawConfig.categories.filter((id) => allCategories.some((category) => category.id === id))
+    : allCategories.map((category) => category.id);
 
   return {
-    categories: selectedCategories.length ? selectedCategories : defaultCategories.map((category) => category.id),
+    categories: selectedCategories.length ? selectedCategories : allCategories.map((category) => category.id),
+    customCategories: customCategoriesFrom(rawConfig),
     featuredProductIds: Array.isArray(rawConfig?.featuredProductIds)
       ? rawConfig.featuredProductIds.map(String)
       : [],
@@ -111,6 +150,7 @@ const renderStats = (products, selected) => {
 const renderCategoryCard = (category, orderedCategories, index) => {
   const isSelected = orderedCategories.includes(category.id);
   const selectedIndex = orderedCategories.indexOf(category.id);
+  const canRemove = category.custom || isSelected;
 
   return `
     <article class="admin-vitrine-category-card ${isSelected ? "is-selected" : ""}" style="--category-color:${category.color}">
@@ -126,6 +166,7 @@ const renderCategoryCard = (category, orderedCategories, index) => {
         <button type="button" data-category-move="${category.id}" data-direction="1" ${
           !isSelected || selectedIndex >= orderedCategories.length - 1 ? "disabled" : ""
         }>↓</button>
+        <button type="button" data-category-remove="${category.id}" ${!canRemove ? "disabled" : ""}>${category.custom ? "Supprimer" : "Retirer"}</button>
       </div>
     </article>
   `;
@@ -133,12 +174,13 @@ const renderCategoryCard = (category, orderedCategories, index) => {
 
 const renderCategories = () => {
   if (!homeCategories) return;
+  const allCategories = allCategoriesFrom(homeConfig);
   const ordered = [
     ...homeConfig.categories,
-    ...defaultCategories.map((category) => category.id).filter((id) => !homeConfig.categories.includes(id)),
+    ...allCategories.map((category) => category.id).filter((id) => !homeConfig.categories.includes(id)),
   ];
   const categories = ordered
-    .map((id) => defaultCategories.find((category) => category.id === id))
+    .map((id) => allCategories.find((category) => category.id === id))
     .filter(Boolean);
 
   homeCategories.innerHTML = categories
@@ -239,7 +281,7 @@ const renderAvailableProducts = (products) => {
 const renderPreview = (selected) => {
   if (!homePreview) return;
   const selectedCategories = homeConfig.categories
-    .map((id) => defaultCategories.find((category) => category.id === id))
+    .map((id) => allCategoriesFrom(homeConfig).find((category) => category.id === id))
     .filter(Boolean);
 
   homePreview.innerHTML = `
@@ -301,6 +343,7 @@ function render() {
 document.addEventListener("click", (event) => {
   const categoryToggle = event.target.closest("[data-category-toggle]");
   const categoryMove = event.target.closest("[data-category-move]");
+  const categoryRemove = event.target.closest("[data-category-remove]");
   const featureAdd = event.target.closest("[data-feature-add]");
   const featureRemove = event.target.closest("[data-feature-remove]");
   const featureMove = event.target.closest("[data-feature-move]");
@@ -324,6 +367,25 @@ document.addEventListener("click", (event) => {
       ...homeConfig,
       categories: moveItem(homeConfig.categories, index, Number(categoryMove.dataset.direction || 0)),
     });
+    return;
+  }
+
+  if (categoryRemove) {
+    const categoryId = categoryRemove.dataset.categoryRemove;
+    const category = allCategoriesFrom(homeConfig).find((item) => item.id === categoryId);
+    const nextCategories = homeConfig.categories.filter((id) => id !== categoryId);
+
+    if (category?.custom) {
+      if (!window.confirm(`Supprimer la catégorie "${category.label}" ?`)) return;
+      saveHomeConfig({
+        ...homeConfig,
+        categories: nextCategories,
+        customCategories: homeConfig.customCategories.filter((item) => item.id !== categoryId),
+      });
+      return;
+    }
+
+    saveHomeConfig({ ...homeConfig, categories: nextCategories });
     return;
   }
 
@@ -351,6 +413,41 @@ document.addEventListener("click", (event) => {
       featuredProductIds: moveItem(homeConfig.featuredProductIds, index, Number(featureMove.dataset.direction || 0)),
     });
   }
+});
+
+addCategoryForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const label = newCategoryName?.value.trim();
+  if (!label) {
+    newCategoryName?.focus();
+    return;
+  }
+
+  const existingIds = new Set(allCategoriesFrom(homeConfig).map((category) => category.id));
+  const baseId = slugifyCategory(label);
+  let id = baseId;
+  let suffix = 2;
+
+  while (existingIds.has(id)) {
+    id = `${baseId}-${suffix}`;
+    suffix += 1;
+  }
+
+  const customCategory = {
+    id,
+    label,
+    color: newCategoryColor?.value || "#30c7c9",
+    icon: categoryPalette[(homeConfig.customCategories || []).length % categoryPalette.length],
+    custom: true,
+  };
+
+  saveHomeConfig({
+    ...homeConfig,
+    categories: [...homeConfig.categories, id],
+    customCategories: [...(homeConfig.customCategories || []), customCategory],
+  });
+
+  if (newCategoryName) newCategoryName.value = "";
 });
 
 render();
