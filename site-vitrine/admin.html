@@ -17,36 +17,33 @@
         <header class="topbar admin-topbar" aria-label="Navigation admin">
           <a class="brand" href="./index.html" aria-label="Retour à la vitrine Atelier Kaleido">
             <img src="./assets/kaleido-logo.jpg" alt="" />
-            <span>Atelier<br />Kaleido</span>
+            <span>Admin</span>
           </a>
 
           <a class="admin-public-link" href="./index.html">Vitrine</a>
         </header>
 
-        <section class="admin-hero admin-dashboard-hero" aria-labelledby="admin-title">
-          <p class="eyebrow">Boutique atelier</p>
-          <h1 id="admin-title">Admin Kaleido</h1>
-        </section>
-
-        <section class="admin-dashboard-stats" aria-label="Résumé boutique">
-          <article>
-            <span id="draftCount">0</span>
-            <small>brouillon(s)</small>
+        <section class="admin-dashboard-stats admin-products-stats" aria-label="Résumé boutique">
+          <article style="--stat-color:#7C3AED">
+            <span class="admin-stat-icon admin-stat-products" aria-hidden="true"></span>
+            <strong id="draftCount">0</strong>
+            <small>BROUILLONS</small>
           </article>
-          <article>
-            <span>0</span>
-            <small>prêt(s)</small>
+          <article style="--stat-color:#0891B2">
+            <span class="admin-stat-icon admin-stat-options" aria-hidden="true"></span>
+            <strong id="readyCount">0</strong>
+            <small>TERMINÉS</small>
           </article>
-          <article>
-            <span>0</span>
-            <small>publié(s)</small>
+          <article style="--stat-color:#059669">
+            <span class="admin-stat-icon admin-stat-colors" aria-hidden="true"></span>
+            <strong id="catalogCount">0</strong>
+            <small>CATALOGUE</small>
           </article>
         </section>
 
-        <section class="admin-panel admin-dashboard-panel" aria-labelledby="modules-title">
+        <section class="admin-dashboard-panel admin-dashboard-modules" aria-labelledby="modules-title">
           <div class="admin-section-heading">
             <div>
-              <span class="admin-kicker">Modules</span>
               <h2 id="modules-title">Gestion boutique</h2>
             </div>
           </div>

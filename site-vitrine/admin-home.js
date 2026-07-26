@@ -1,5 +1,7 @@
 const draftsKey = "kaleido-storefront-product-drafts";
 const draftCount = document.querySelector("#draftCount");
+const readyCount = document.querySelector("#readyCount");
+const catalogCount = document.querySelector("#catalogCount");
 const dashboardDraftList = document.querySelector("#dashboardDraftList");
 
 const escapeHtml = (value) =>
@@ -25,8 +27,13 @@ const readDrafts = () => {
 
 const renderDashboard = () => {
   const drafts = readDrafts();
+  const draftProducts = drafts.filter((draft) => draft.status !== "ready");
+  const readyProducts = drafts.filter((draft) => draft.status === "ready");
+  const catalogProducts = readyProducts.filter((draft) => draft.inCatalog !== false);
 
-  if (draftCount) draftCount.textContent = drafts.length.toString();
+  if (draftCount) draftCount.textContent = draftProducts.length.toString();
+  if (readyCount) readyCount.textContent = readyProducts.length.toString();
+  if (catalogCount) catalogCount.textContent = catalogProducts.length.toString();
   if (!dashboardDraftList) return;
 
   dashboardDraftList.innerHTML = drafts.length

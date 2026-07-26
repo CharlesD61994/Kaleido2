@@ -219,8 +219,8 @@
 .admin-dashboard-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 24px 18px;
+  gap: 8px;
+  margin: 18px var(--products-edge) 18px;
 }
 
 .admin-dashboard-stats article {
@@ -239,7 +239,7 @@
   text-align: center;
 }
 
-.admin-dashboard-stats span {
+.admin-dashboard-stats > article > span:not(.admin-stat-icon) {
   color: var(--k-ink);
   font-family: "Syne", sans-serif;
   font-size: 36px;
@@ -278,6 +278,22 @@
 
 .admin-dashboard-panel {
   overflow: hidden;
+}
+
+.admin-dashboard-modules {
+  position: relative;
+  z-index: 1;
+  margin: 0 var(--products-edge) 18px;
+}
+
+.admin-dashboard-modules .admin-section-heading {
+  margin-bottom: 12px;
+}
+
+.admin-dashboard-modules .admin-section-heading h2 {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 900;
 }
 
 .admin-module-grid {
@@ -611,9 +627,9 @@
 }
 
 .admin-products-section-title strong {
-  font-family: "Syne", sans-serif;
+  font-family: "DM Sans", system-ui, sans-serif;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1;
 }
 
