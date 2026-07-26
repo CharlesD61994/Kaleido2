@@ -6,11 +6,11 @@ const homeFeaturedCount = document.querySelector("#homeFeaturedCount");
 const homeCatalogCount = document.querySelector("#homeCatalogCount");
 const homeCategories = document.querySelector("#homeCategories");
 const featuredProducts = document.querySelector("#featuredProducts");
-const availableProducts = document.querySelector("#availableProducts");
 const homePreview = document.querySelector("#homePreview");
 const addCategoryForm = document.querySelector("#addCategoryForm");
 const newCategoryName = document.querySelector("#newCategoryName");
 const newCategoryColor = document.querySelector("#newCategoryColor");
+const productPickerModal = document.querySelector("#productPickerModal");
 
 const defaultCategories = [
   { id: "vetements", label: "Vêtements", color: "#7c3aed", icon: "♢" },
@@ -95,6 +95,7 @@ const cleanHomeConfig = (rawConfig) => {
 };
 
 let homeConfig = cleanHomeConfig(readJson(homeConfigKey, null));
+let isProductPickerOpen = false;
 
 const readProducts = () => readJson(productsKey, []);
 
@@ -166,7 +167,7 @@ const renderCategoryCard = (category, orderedCategories, index) => {
         <button type="button" data-category-move="${category.id}" data-direction="1" ${
           !isSelected || selectedIndex >= orderedCategories.length - 1 ? "disabled" : ""
         }>↓</button>
-        <button type="button" data-category-remove="${category.id}" ${!canRemove ? "disabled" : ""}>${category.custom ? "Supprimer" : "Retirer"}</button>
+        <button type="button" data-category-remove="${category.id}" ${!canRemove ? "disabled" : ""}>Retirer</button>
       </div>
     </article>
   `;
@@ -242,7 +243,11 @@ const renderFeaturedProducts = (products, selected) => {
   if (!featuredProducts) return;
 
   featuredProducts.innerHTML = selected.length
-    ? selected
+    ? `
+        <button type="button" class="admin-vitrine-add-products-button" data-open-product-picker>
+          Ajouter des produits
+        </button>
+        ${selected
         .map((product, index) =>
           renderProductCard(product, {
             selected: true,
@@ -250,32 +255,52 @@ const renderFeaturedProducts = (products, selected) => {
             total: selected.length,
           }),
         )
-        .join("")
+        .join("")}
+      `
     : `
-      <div class="admin-vitrine-empty">
+      <button type="button" class="admin-vitrine-empty admin-vitrine-empty-button" data-open-product-picker>
         <strong>Aucun produit choisi</strong>
         <p>Ajoute des produits du catalogue pour composer la section d'accueil.</p>
-      </div>
+      </button>
     `;
 };
 
-const renderAvailableProducts = (products) => {
-  if (!availableProducts) return;
+const renderProductPicker = (products) => {
+  if (!productPickerModal) return;
+  if (!isProductPickerOpen) {
+    productPickerModal.innerHTML = "";
+    return;
+  }
+
   const selectedIds = new Set(homeConfig.featuredProductIds.map(String));
   const available = products.filter((product) => !selectedIds.has(String(product.id)));
 
-  availableProducts.innerHTML = available.length
-    ? available.map((product) => renderProductCard(product)).join("")
-    : `
-      <div class="admin-vitrine-empty">
-        <strong>${products.length ? "Tous les produits du catalogue sont déjà placés" : "Aucun produit au catalogue"}</strong>
-        <p>${
-          products.length
-            ? "Tu peux réorganiser les produits d'accueil plus haut."
-            : "Finalise un produit dans le module Produits pour le rendre disponible ici."
-        }</p>
-      </div>
-    `;
+  productPickerModal.innerHTML = `
+    <div class="admin-product-modal-backdrop admin-vitrine-picker-backdrop" role="presentation">
+      <section class="admin-product-modal admin-vitrine-picker" role="dialog" aria-modal="true" aria-labelledby="product-picker-title">
+        <button class="admin-product-modal-close" type="button" data-close-product-picker aria-label="Fermer">×</button>
+        <span>Catalogue</span>
+        <h2 id="product-picker-title">Ajouter aux populaires</h2>
+        <p>Sélectionne les produits qui doivent apparaître dans la section Nos populaires.</p>
+        <div class="admin-vitrine-picker-list">
+          ${
+            available.length
+              ? available.map((product) => renderProductCard(product)).join("")
+              : `
+                <div class="admin-vitrine-empty">
+                  <strong>${products.length ? "Tous les produits sont déjà ajoutés" : "Aucun produit au catalogue"}</strong>
+                  <p>${
+                    products.length
+                      ? "Ferme cette fenêtre pour réorganiser ou retirer les produits déjà choisis."
+                      : "Finalise un produit dans le module Produits pour le rendre disponible ici."
+                  }</p>
+                </div>
+              `
+          }
+        </div>
+      </section>
+    </div>
+  `;
 };
 
 const renderPreview = (selected) => {
@@ -336,7 +361,7 @@ function render() {
   renderStats(products, selected);
   renderCategories();
   renderFeaturedProducts(products, selected);
-  renderAvailableProducts(products);
+  renderProductPicker(products);
   renderPreview(selected);
 }
 
@@ -344,6 +369,8 @@ document.addEventListener("click", (event) => {
   const categoryToggle = event.target.closest("[data-category-toggle]");
   const categoryMove = event.target.closest("[data-category-move]");
   const categoryRemove = event.target.closest("[data-category-remove]");
+  const openProductPicker = event.target.closest("[data-open-product-picker]");
+  const closeProductPicker = event.target.closest("[data-close-product-picker]");
   const featureAdd = event.target.closest("[data-feature-add]");
   const featureRemove = event.target.closest("[data-feature-remove]");
   const featureMove = event.target.closest("[data-feature-move]");
@@ -376,7 +403,7 @@ document.addEventListener("click", (event) => {
     const nextCategories = homeConfig.categories.filter((id) => id !== categoryId);
 
     if (category?.custom) {
-      if (!window.confirm(`Supprimer la catégorie "${category.label}" ?`)) return;
+      if (!window.confirm(`Retirer la catégorie "${category.label}" ?`)) return;
       saveHomeConfig({
         ...homeConfig,
         categories: nextCategories,
@@ -386,6 +413,18 @@ document.addEventListener("click", (event) => {
     }
 
     saveHomeConfig({ ...homeConfig, categories: nextCategories });
+    return;
+  }
+
+  if (openProductPicker) {
+    isProductPickerOpen = true;
+    render();
+    return;
+  }
+
+  if (closeProductPicker || (event.target.closest(".admin-vitrine-picker-backdrop") && !event.target.closest(".admin-vitrine-picker"))) {
+    isProductPickerOpen = false;
+    render();
     return;
   }
 
@@ -448,6 +487,12 @@ addCategoryForm?.addEventListener("submit", (event) => {
   });
 
   if (newCategoryName) newCategoryName.value = "";
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !isProductPickerOpen) return;
+  isProductPickerOpen = false;
+  render();
 });
 
 render();

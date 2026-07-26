@@ -1150,6 +1150,12 @@
   cursor: pointer;
 }
 
+.admin-vitrine-add-category button[type="submit"] {
+  color: #fff !important;
+  font-size: 13px;
+  text-align: center;
+}
+
 .admin-vitrine-category-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1419,6 +1425,17 @@
   border: 1px dashed rgba(16, 39, 68, 0.16);
 }
 
+.admin-vitrine-empty-button {
+  width: 100%;
+  border-style: solid;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-vitrine-empty-button:active {
+  transform: scale(0.985);
+}
+
 .admin-vitrine-empty strong {
   color: var(--k-ink);
   font-family: "Syne", sans-serif;
@@ -1430,6 +1447,66 @@
   font-size: 13px;
   font-weight: 800;
   line-height: 1.32;
+}
+
+.admin-vitrine-add-products-button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 16px;
+  color: white;
+  background: linear-gradient(135deg, var(--k-pink), var(--k-purple));
+  box-shadow: 0 0 18px rgba(232, 75, 148, 0.18);
+  font: 900 13px "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.admin-vitrine-picker {
+  width: min(100%, 372px);
+  max-height: min(76dvh, 680px);
+  overflow: hidden;
+}
+
+.admin-vitrine-picker > .admin-vitrine-picker-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  max-height: 48dvh;
+  margin-top: 3px;
+  padding: 2px 2px 6px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.admin-vitrine-picker > .admin-vitrine-picker-list::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-vitrine-picker .admin-vitrine-product-card {
+  grid-template-columns: 58px minmax(0, 1fr);
+  padding: 8px;
+  border-radius: 20px;
+}
+
+.admin-vitrine-picker .admin-vitrine-product-image {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+}
+
+.admin-vitrine-picker .admin-vitrine-product-info strong {
+  font-size: 14px;
+}
+
+.admin-vitrine-picker .admin-vitrine-card-actions button {
+  min-width: 70px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 12px;
+  color: white;
+  background: linear-gradient(135deg, var(--product-color), color-mix(in srgb, var(--product-color), white 18%));
+  border: 1px solid color-mix(in srgb, var(--product-color), transparent 54%);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--product-color), transparent 68%);
+  font: 900 12px "DM Sans", system-ui, sans-serif;
 }
 
 .admin-vitrine-preview {
