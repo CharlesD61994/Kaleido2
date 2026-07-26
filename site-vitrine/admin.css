@@ -1212,15 +1212,15 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .admin-vitrine-add-category-card strong {
   color: var(--k-ink);
-  font-family: "Syne", sans-serif;
-  font-size: 17px;
-  font-weight: 900;
-  line-height: 1;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.12;
 }
 
 .admin-vitrine-add-category-card small {
@@ -1273,15 +1273,15 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .admin-vitrine-category-main strong {
   color: var(--k-ink);
-  font-family: "Syne", sans-serif;
-  font-size: 17px;
-  font-weight: 900;
-  line-height: 1;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.12;
 }
 
 .admin-vitrine-category-main small {
