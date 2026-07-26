@@ -482,6 +482,16 @@
   text-shadow: 0 8px 22px rgba(16, 39, 68, 0.10);
 }
 
+.admin-product-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-product-card-image.has-product-photo {
+  background: rgba(255, 255, 255, 0.92);
+}
+
 .admin-product-card-favorite {
   position: absolute;
   top: 7px;

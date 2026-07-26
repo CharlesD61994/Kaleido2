@@ -48,6 +48,9 @@ const categoryIcon = (category) => {
   return "✦";
 };
 
+const normalizeProductPhoto = (photo) =>
+  typeof photo === "string" ? { id: "", name: photo, url: "" } : photo;
+
 const renderProducts = () => {
   const products = readProducts();
 
@@ -59,7 +62,9 @@ const renderProducts = () => {
           const colors = [...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])])];
           const options = (product.options || []).map((id) => optionLabels[id]).filter(Boolean);
           const choiceCount = Object.values(product.optionChoices || {}).flat().length;
-          const productPhotoCount = (product.productPhotos || []).length;
+          const productPhotos = (product.productPhotos || []).map(normalizeProductPhoto);
+          const productPhotoCount = productPhotos.length;
+          const coverPhoto = productPhotos.find((photo) => photo.url);
           const colorPhotoCount = (product.colorPhotos || []).reduce(
             (total, color) => total + (color.photos || []).length,
             0,
@@ -76,9 +81,13 @@ const renderProducts = () => {
               style="--product-color:${primaryColor}; --product-accent:${accentColor}"
               aria-label="Modifier ${escapeHtml(product.name || "Produit sans nom")}"
             >
-              <div class="admin-product-card-image">
+              <div class="admin-product-card-image ${coverPhoto ? "has-product-photo" : ""}">
                 <span class="admin-product-card-favorite" aria-hidden="true">♡</span>
-                <span class="admin-product-card-icon" aria-hidden="true">${categoryIcon(product.category)}</span>
+                ${
+                  coverPhoto
+                    ? `<img src="${coverPhoto.url}" alt="${escapeHtml(coverPhoto.name || product.name || "Produit")}" />`
+                    : `<span class="admin-product-card-icon" aria-hidden="true">${categoryIcon(product.category)}</span>`
+                }
                 <small>${productPhotoCount ? `${productPhotoCount} photo` : "photo"}</small>
               </div>
               <div class="admin-product-card-body">

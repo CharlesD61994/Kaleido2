@@ -124,6 +124,8 @@ const readDrafts = () => readJson(draftsKey, []);
 const saveDrafts = (drafts) => writeJson(draftsKey, drafts);
 const normalizeColorPhoto = (photo) =>
   typeof photo === "string" ? { id: crypto.randomUUID(), name: photo, url: "" } : photo;
+const normalizeProductPhoto = (photo) =>
+  typeof photo === "string" ? { id: crypto.randomUUID(), name: photo, url: "" } : photo;
 
 const normalizeColor = (color) => ({
   ...color,
@@ -522,7 +524,7 @@ const renderProductPhotoList = () => {
   productPhotoList.innerHTML = files.length
     ? files.map((file) => `<span>${escapeHtml(file.name)}</span>`).join("")
     : savedNames.length
-      ? savedNames.map((name) => `<span>${escapeHtml(name)}</span>`).join("")
+      ? savedNames.map((photo) => `<span>${escapeHtml(photo.name || photo)}</span>`).join("")
       : '<small>Aucune photo du produit ajoutée.</small>';
 };
 
@@ -806,7 +808,7 @@ const loadEditingProduct = () => {
   form.elements.price.value = product.price || "";
   form.elements.description.value = product.description || "";
   form.elements.shopify.value = product.shopify || "";
-  savedProductPhotoNames = product.productPhotos || [];
+  savedProductPhotoNames = (product.productPhotos || []).map(normalizeProductPhoto);
   selectedChoicesBySection = product.optionChoices || {};
 
   Array.from(optionSelector?.querySelectorAll("input[name='options']") || []).forEach((input) => {
@@ -829,6 +831,46 @@ const readFileAsPhoto = (file) =>
       resolve({ id: crypto.randomUUID(), name: file.name, url: reader.result?.toString() || "" }),
     );
     reader.addEventListener("error", () => resolve({ id: crypto.randomUUID(), name: file.name, url: "" }));
+    reader.readAsDataURL(file);
+  });
+
+const readFileAsProductPhoto = (file) =>
+  new Promise((resolve) => {
+    const fallback = () => resolve({ id: crypto.randomUUID(), name: file.name, url: "" });
+    const image = new Image();
+    const reader = new FileReader();
+
+    reader.addEventListener("load", () => {
+      const source = reader.result?.toString() || "";
+      if (!source) {
+        fallback();
+        return;
+      }
+
+      image.addEventListener("load", () => {
+        const maxSize = 520;
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          fallback();
+          return;
+        }
+
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve({
+          id: crypto.randomUUID(),
+          name: file.name,
+          url: canvas.toDataURL("image/jpeg", 0.82),
+        });
+      });
+      image.addEventListener("error", fallback, { once: true });
+      image.src = source;
+    });
+    reader.addEventListener("error", fallback, { once: true });
     reader.readAsDataURL(file);
   });
 
@@ -1387,13 +1429,16 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-form?.addEventListener("submit", (event) => {
+form?.addEventListener("submit", async (event) => {
   event.preventDefault();
   syncSelectedColors();
   const formData = new FormData(form);
   const currentDrafts = readDrafts();
   const previousDraft = editingProductId ? currentDrafts.find((draft) => draft.id === editingProductId) : null;
-  const selectedProductPhotos = Array.from(form.elements.productPhotos?.files || []).map((file) => file.name);
+  const selectedProductFiles = Array.from(form.elements.productPhotos?.files || []);
+  const selectedProductPhotos = selectedProductFiles.length
+    ? await Promise.all(selectedProductFiles.map(readFileAsProductPhoto))
+    : (previousDraft?.productPhotos || []).map(normalizeProductPhoto);
   const draft = {
     id: previousDraft?.id || crypto.randomUUID(),
     name: formData.get("name")?.toString().trim() || "Produit sans nom",
@@ -1405,7 +1450,7 @@ form?.addEventListener("submit", (event) => {
     optionChoices: Object.fromEntries(
       choiceSectionsConfig.map((section) => [section.name, selectedChoicesBySection[section.name] || []]),
     ),
-    productPhotos: selectedProductPhotos.length ? selectedProductPhotos : previousDraft?.productPhotos || [],
+    productPhotos: selectedProductPhotos,
     colorPhotos: readCustomColors()
       .filter((color) => getColorPhotos(color).length > 0)
       .map((color) => ({ label: color.label, value: color.value, photos: getStoredColorPhotos(color) })),
