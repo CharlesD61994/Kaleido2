@@ -139,6 +139,7 @@ let categoryActionSwipe = null;
 let suppressCategoryClick = false;
 let isCategoryPhotoDeleteConfirmOpen = false;
 const categoryPhotoCropSize = 260;
+const categoryActionsOffset = 82;
 
 const readProducts = () => readJson(productsKey, []);
 
@@ -198,6 +199,20 @@ const clampPhotoDraft = (photo) => {
     y: Math.max(-categoryPhotoCropSize, Math.min(categoryPhotoCropSize, normalized.y)),
     scale: Math.max(1, Math.min(5, normalized.scale)),
   };
+};
+
+const setCategorySwipeOffset = (categoryId, offset) => {
+  const shell = document.querySelector(`.admin-vitrine-category-shell[data-category-shell="${CSS.escape(categoryId)}"]`);
+  if (!shell) return;
+  shell.style.setProperty("--category-swipe-offset", `${Math.max(0, Math.min(categoryActionsOffset, offset))}px`);
+  shell.classList.add("is-swiping");
+};
+
+const clearCategorySwipeOffset = (categoryId) => {
+  const shell = document.querySelector(`.admin-vitrine-category-shell[data-category-shell="${CSS.escape(categoryId)}"]`);
+  if (!shell) return;
+  shell.classList.remove("is-swiping");
+  shell.style.removeProperty("--category-swipe-offset");
 };
 
 const drawCategoryPhotoPreview = (image, photo, outputSize = 164) => {
@@ -442,7 +457,7 @@ const renderCategoryCard = (category, orderedCategories, index) => {
   const isActionsOpen = openCategoryActionsId === category.id;
 
   return `
-    <article class="admin-vitrine-category-shell ${isActionsOpen ? "is-actions-open" : ""}" style="--category-color:${category.color}">
+    <article class="admin-vitrine-category-shell ${isActionsOpen ? "is-actions-open" : ""}" data-category-shell="${category.id}" style="--category-color:${category.color}">
       <div class="admin-vitrine-category-slide-actions" aria-label="Actions de ${escapeHtml(category.label)}">
         <label class="admin-vitrine-category-slide-button color">
           <i style="--swatch:${category.color}" aria-hidden="true"></i>
@@ -885,6 +900,7 @@ document.addEventListener("pointerdown", (event) => {
       categoryId: categoryCard.dataset.categoryCard,
       startX: event.clientX,
       startY: event.clientY,
+      wasOpen: openCategoryActionsId === categoryCard.dataset.categoryCard,
     };
     return;
   }
@@ -906,7 +922,16 @@ document.addEventListener("pointerdown", (event) => {
 
 document.addEventListener("pointermove", (event) => {
   if (event.pointerType === "touch") return;
-  if (categoryActionSwipe?.pointerId === event.pointerId) return;
+  if (categoryActionSwipe?.pointerId === event.pointerId) {
+    const deltaX = event.clientX - categoryActionSwipe.startX;
+    const deltaY = event.clientY - categoryActionSwipe.startY;
+    if (Math.abs(deltaX) > 4 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      event.preventDefault();
+      const baseOffset = categoryActionSwipe.wasOpen ? categoryActionsOffset : 0;
+      setCategorySwipeOffset(categoryActionSwipe.categoryId, baseOffset - deltaX);
+    }
+    return;
+  }
   if (!categoryPhotoDrag || event.pointerId !== categoryPhotoDrag.pointerId || !categoryPhotoDraft?.src) return;
 
   event.preventDefault();
@@ -923,6 +948,7 @@ document.addEventListener("pointerup", (event) => {
   if (categoryActionSwipe?.pointerId === event.pointerId) {
     const deltaX = event.clientX - categoryActionSwipe.startX;
     const deltaY = event.clientY - categoryActionSwipe.startY;
+    clearCategorySwipeOffset(categoryActionSwipe.categoryId);
     if (Math.abs(deltaX) > 34 && Math.abs(deltaX) > Math.abs(deltaY) * 1.35) {
       openCategoryActionsId = deltaX < 0 ? categoryActionSwipe.categoryId : null;
       suppressCategoryClick = true;
@@ -934,7 +960,10 @@ document.addEventListener("pointerup", (event) => {
 });
 
 document.addEventListener("pointercancel", (event) => {
-  if (categoryActionSwipe?.pointerId === event.pointerId) categoryActionSwipe = null;
+  if (categoryActionSwipe?.pointerId === event.pointerId) {
+    clearCategorySwipeOffset(categoryActionSwipe.categoryId);
+    categoryActionSwipe = null;
+  }
   if (categoryPhotoDrag?.pointerId === event.pointerId) categoryPhotoDrag = null;
 });
 
@@ -957,6 +986,7 @@ document.addEventListener(
         categoryId: categoryCard.dataset.categoryCard,
         startX: touch.clientX,
         startY: touch.clientY,
+        wasOpen: openCategoryActionsId === categoryCard.dataset.categoryCard,
       };
       return;
     }
@@ -993,7 +1023,17 @@ document.addEventListener(
 document.addEventListener(
   "touchmove",
   (event) => {
-    if (categoryActionSwipe?.pointerId === "touch") return;
+    if (categoryActionSwipe?.pointerId === "touch") {
+      const touch = event.touches[0];
+      const deltaX = touch.clientX - categoryActionSwipe.startX;
+      const deltaY = touch.clientY - categoryActionSwipe.startY;
+      if (Math.abs(deltaX) > 4 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        event.preventDefault();
+        const baseOffset = categoryActionSwipe.wasOpen ? categoryActionsOffset : 0;
+        setCategorySwipeOffset(categoryActionSwipe.categoryId, baseOffset - deltaX);
+      }
+      return;
+    }
     if (!categoryPhotoTouch || !categoryPhotoDraft?.src) return;
 
     if (categoryPhotoTouch.mode === "pan" && event.touches.length === 1) {
@@ -1030,6 +1070,7 @@ document.addEventListener("touchend", (event) => {
     const touch = event.changedTouches[0];
     const deltaX = touch.clientX - categoryActionSwipe.startX;
     const deltaY = touch.clientY - categoryActionSwipe.startY;
+    clearCategorySwipeOffset(categoryActionSwipe.categoryId);
     if (Math.abs(deltaX) > 34 && Math.abs(deltaX) > Math.abs(deltaY) * 1.35) {
       openCategoryActionsId = deltaX < 0 ? categoryActionSwipe.categoryId : null;
       suppressCategoryClick = true;
@@ -1041,6 +1082,7 @@ document.addEventListener("touchend", (event) => {
 });
 
 document.addEventListener("touchcancel", () => {
+  if (categoryActionSwipe?.categoryId) clearCategorySwipeOffset(categoryActionSwipe.categoryId);
   categoryActionSwipe = null;
   categoryPhotoTouch = null;
 });
