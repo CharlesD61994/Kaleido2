@@ -103,6 +103,7 @@ let isCategoryModalOpen = false;
 let activeCategoryPhotoId = null;
 let categoryPhotoDraft;
 let categoryPhotoDrag = null;
+let isCategoryPhotoDeleteConfirmOpen = false;
 const categoryPhotoCropSize = 260;
 
 const readProducts = () => readJson(productsKey, []);
@@ -216,6 +217,7 @@ const closeCategoryPhotoModal = () => {
   activeCategoryPhotoId = null;
   categoryPhotoDraft = undefined;
   categoryPhotoDrag = null;
+  isCategoryPhotoDeleteConfirmOpen = false;
   if (categoryPhotoModal) categoryPhotoModal.innerHTML = "";
 };
 
@@ -224,17 +226,28 @@ const confirmCategoryPhotoSelection = async () => {
 
   const categoryId = activeCategoryPhotoId;
   const draft = normalizeCategoryPhoto(categoryPhotoDraft);
+  const immediatePhoto = draft?.src ? { ...draft, preview: draft.preview || draft.src } : null;
+
+  const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
+  if (immediatePhoto) nextPhotos[categoryId] = immediatePhoto;
+  else delete nextPhotos[categoryId];
+
+  homeConfig = cleanHomeConfig({ ...homeConfig, categoryPhotos: nextPhotos });
+  writeJson(homeConfigKey, homeConfig);
 
   closeCategoryPhotoModal();
   render();
 
-  const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
-  if (draft?.src) {
-    nextPhotos[categoryId] = await buildCategoryPhotoPreview(draft);
-  } else {
-    delete nextPhotos[categoryId];
-  }
-  homeConfig = cleanHomeConfig({ ...homeConfig, categoryPhotos: nextPhotos });
+  if (!draft?.src) return;
+
+  const finalPhoto = await buildCategoryPhotoPreview(draft);
+  homeConfig = cleanHomeConfig({
+    ...homeConfig,
+    categoryPhotos: {
+      ...(homeConfig.categoryPhotos || {}),
+      [categoryId]: finalPhoto,
+    },
+  });
   writeJson(homeConfigKey, homeConfig);
   render();
 };
@@ -312,6 +325,7 @@ const renderCategoryPhotoModal = () => {
   if (!categoryPhotoModal) return;
   if (!activeCategoryPhotoId) {
     categoryPhotoModal.innerHTML = "";
+    isCategoryPhotoDeleteConfirmOpen = false;
     return;
   }
 
@@ -319,6 +333,7 @@ const renderCategoryPhotoModal = () => {
   if (!category) {
     activeCategoryPhotoId = null;
     categoryPhotoDraft = null;
+    isCategoryPhotoDeleteConfirmOpen = false;
     categoryPhotoModal.innerHTML = "";
     return;
   }
@@ -346,6 +361,22 @@ const renderCategoryPhotoModal = () => {
           <button class="admin-vitrine-confirm-action admin-vitrine-primary-action" type="button" data-confirm-category-photo>Confirmer</button>
         </div>
       </section>
+      ${
+        isCategoryPhotoDeleteConfirmOpen
+          ? `
+            <section class="admin-product-modal admin-vitrine-delete-photo-modal" role="dialog" aria-modal="true" aria-labelledby="delete-category-photo-title">
+              <button class="admin-product-modal-close" type="button" data-cancel-remove-category-photo aria-label="Fermer">×</button>
+              <span>${escapeHtml(category.label)}</span>
+              <h2 id="delete-category-photo-title">Supprimer la photo?</h2>
+              <p>La catégorie reviendra à son icône de base. Tu pourras importer une autre photo ensuite.</p>
+              <div class="admin-vitrine-delete-photo-actions">
+                <button type="button" data-cancel-remove-category-photo>Annuler</button>
+                <button type="button" data-confirm-remove-category-photo>Supprimer</button>
+              </div>
+            </section>
+          `
+          : ""
+      }
     </div>
   `;
 };
@@ -543,6 +574,8 @@ document.addEventListener("click", async (event) => {
   const closeCategoryPhoto = event.target.closest("[data-close-category-photo]");
   const pickCategoryPhoto = event.target.closest("[data-pick-category-photo]");
   const removeCategoryPhoto = event.target.closest("[data-remove-category-photo]");
+  const cancelRemoveCategoryPhoto = event.target.closest("[data-cancel-remove-category-photo]");
+  const confirmRemoveCategoryPhoto = event.target.closest("[data-confirm-remove-category-photo]");
   const confirmCategoryPhoto = event.target.closest("[data-confirm-category-photo]");
   const openProductPicker = event.target.closest("[data-open-product-picker]");
   const closeProductPicker = event.target.closest("[data-close-product-picker]");
@@ -611,8 +644,15 @@ document.addEventListener("click", async (event) => {
 
   if (
     closeCategoryPhoto ||
-    (event.target.closest(".admin-vitrine-photo-backdrop") && !event.target.closest(".admin-vitrine-photo-modal"))
+    (event.target.closest(".admin-vitrine-photo-backdrop") &&
+      !event.target.closest(".admin-vitrine-photo-modal") &&
+      !event.target.closest(".admin-vitrine-delete-photo-modal"))
   ) {
+    if (isCategoryPhotoDeleteConfirmOpen && !closeCategoryPhoto && !event.target.closest(".admin-vitrine-delete-photo-modal")) {
+      isCategoryPhotoDeleteConfirmOpen = false;
+      render();
+      return;
+    }
     closeCategoryPhotoModal();
     render();
     return;
@@ -624,7 +664,20 @@ document.addEventListener("click", async (event) => {
   }
 
   if (removeCategoryPhoto && activeCategoryPhotoId) {
+    isCategoryPhotoDeleteConfirmOpen = true;
+    render();
+    return;
+  }
+
+  if (cancelRemoveCategoryPhoto && activeCategoryPhotoId) {
+    isCategoryPhotoDeleteConfirmOpen = false;
+    render();
+    return;
+  }
+
+  if (confirmRemoveCategoryPhoto && activeCategoryPhotoId) {
     categoryPhotoDraft = null;
+    isCategoryPhotoDeleteConfirmOpen = false;
     render();
     return;
   }

@@ -1751,6 +1751,50 @@
   grid-column: 1 / -1;
 }
 
+.admin-vitrine-delete-photo-modal {
+  position: fixed;
+  z-index: 2;
+  width: min(calc(100% - 36px), 330px);
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+}
+
+.admin-vitrine-delete-photo-modal p {
+  margin: 0;
+  color: var(--k-muted);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.admin-vitrine-delete-photo-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-vitrine-delete-photo-actions button {
+  min-height: 42px;
+  border-radius: 999px;
+  font: 900 13px "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.admin-vitrine-delete-photo-actions button:first-child {
+  color: var(--k-text);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(16, 39, 68, 0.12);
+}
+
+.admin-vitrine-delete-photo-actions button:last-child {
+  color: #fff;
+  background: linear-gradient(135deg, #f05b4f, #e84b94);
+  border: 0;
+  box-shadow: 0 0 18px rgba(240, 91, 79, 0.22);
+}
+
 .admin-vitrine-preview {
   display: grid;
   gap: 12px;
