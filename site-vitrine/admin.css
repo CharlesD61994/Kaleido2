@@ -292,6 +292,70 @@ button.admin-public-link {
   margin: 18px var(--products-edge) 18px;
 }
 
+.admin-publish-panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  margin: 0 var(--products-edge) 18px;
+  padding: 4px;
+}
+
+.admin-publish-main-button {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 19px;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  background-color: #30c7c9;
+  background-image: linear-gradient(120deg, var(--k-cyan), var(--k-purple), var(--k-pink));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.52) inset,
+    0 0 24px rgba(48, 199, 201, 0.26),
+    0 16px 32px rgba(16, 39, 68, 0.12);
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-publish-main-button[data-state="saving"] {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.admin-publish-main-button[data-state="saved"] {
+  background-color: #16a34a;
+  background-image: linear-gradient(120deg, #16a34a, #34d399);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.52) inset,
+    0 0 24px rgba(22, 163, 74, 0.24),
+    0 16px 32px rgba(16, 39, 68, 0.10);
+}
+
+.admin-publish-main-button[data-state="error"] {
+  background-color: #f05b4f;
+  background-image: linear-gradient(120deg, #f05b4f, #e84b94);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.52) inset,
+    0 0 24px rgba(240, 91, 79, 0.24),
+    0 16px 32px rgba(16, 39, 68, 0.10);
+}
+
+.admin-publish-panel small {
+  color: var(--k-muted);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.3;
+  text-align: center;
+}
+
 .admin-dashboard-stats article {
   display: grid;
   gap: 4px;

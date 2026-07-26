@@ -1,8 +1,11 @@
 const draftsKey = "kaleido-storefront-product-drafts";
+const homeConfigKey = "kaleido-storefront-home-config";
 const draftCount = document.querySelector("#draftCount");
 const readyCount = document.querySelector("#readyCount");
 const catalogCount = document.querySelector("#catalogCount");
 const dashboardDraftList = document.querySelector("#dashboardDraftList");
+const publishStorefrontButton = document.querySelector("#publishStorefront");
+const publishStorefrontStatus = document.querySelector("#publishStorefrontStatus");
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(
@@ -23,6 +26,44 @@ const readDrafts = () => {
   } catch {
     return [];
   }
+};
+
+const setPublishState = (state, message) => {
+  if (publishStorefrontButton) {
+    publishStorefrontButton.dataset.state = state;
+    publishStorefrontButton.disabled = state === "saving";
+    publishStorefrontButton.textContent =
+      state === "saving" ? "Publication..." : state === "saved" ? "Boutique publiee" : "Publier la boutique";
+  }
+  if (publishStorefrontStatus) publishStorefrontStatus.textContent = message;
+};
+
+const publishStorefront = async () => {
+  if (!window.KaleidoStorefrontCloud?.isConfigured) {
+    setPublishState("error", "Cloud non configure. Verifie storefront-config.js.");
+    return;
+  }
+  if (publishStorefrontButton?.disabled) return;
+
+  setPublishState("saving", "Publication vers Supabase en cours...");
+  const result = await window.KaleidoStorefrontCloud.publishLocalStorefront({
+    productsKey: draftsKey,
+    homeConfigKey,
+  });
+
+  if (!result.ok) {
+    setPublishState(
+      "error",
+      `Publication impossible (${result.reason}). Verifie que le SQL boutique a ete lance dans Supabase.`,
+    );
+    return;
+  }
+
+  setPublishState("saved", "Boutique publiee. La vitrine lira cette version au prochain chargement.");
+  window.setTimeout(
+    () => setPublishState("idle", "Envoie les produits et l'accueil boutique vers la vitrine."),
+    2600,
+  );
 };
 
 const renderDashboard = () => {
@@ -55,3 +96,4 @@ const renderDashboard = () => {
 };
 
 renderDashboard();
+publishStorefrontButton?.addEventListener("click", publishStorefront);

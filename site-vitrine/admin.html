@@ -19,8 +19,6 @@
             <img src="./assets/kaleido-logo.jpg" alt="" />
             <span>Admin</span>
           </a>
-
-          <a class="admin-public-link" href="./index.html">Vitrine</a>
         </header>
 
         <section class="admin-dashboard-stats admin-products-stats" aria-label="Résumé boutique">
@@ -39,6 +37,13 @@
             <strong id="catalogCount">0</strong>
             <small>CATALOGUE</small>
           </article>
+        </section>
+
+        <section class="admin-publish-panel" aria-label="Publication de la boutique">
+          <button class="admin-publish-main-button" type="button" id="publishStorefront">
+            Publier la boutique
+          </button>
+          <small id="publishStorefrontStatus">Envoie les produits et l'accueil boutique vers la vitrine.</small>
         </section>
 
         <section class="admin-dashboard-panel admin-dashboard-modules" aria-labelledby="modules-title">
@@ -92,6 +97,8 @@
       </section>
     </main>
 
+    <script src="./storefront-config.js"></script>
+    <script src="./storefront-cloud.js"></script>
     <script src="./admin-home.js"></script>
   </body>
 </html>
