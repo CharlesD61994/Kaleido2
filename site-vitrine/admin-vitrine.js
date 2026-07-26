@@ -68,6 +68,7 @@ const customCategoriesFrom = (rawConfig) =>
     : [];
 
 const allCategoriesFrom = (rawConfig) => {
+  const categoryColors = rawConfig?.categoryColors || {};
   const usedIds = new Set(defaultCategories.map((category) => category.id));
   const customCategories = customCategoriesFrom(rawConfig).filter((category) => {
     if (usedIds.has(category.id)) return false;
@@ -77,6 +78,7 @@ const allCategoriesFrom = (rawConfig) => {
   const categoryPhotos = rawConfig?.categoryPhotos || {};
   return [...defaultCategories, ...customCategories].map((category) => ({
     ...category,
+    color: categoryColors[category.id] || category.color,
     photo: pendingCategoryPhotos[category.id] || categoryPhotos[category.id] || null,
   }));
 };
@@ -117,6 +119,7 @@ const cleanHomeConfig = (rawConfig) => {
   return {
     categories: selectedCategories.length ? selectedCategories : allCategories.map((category) => category.id),
     customCategories: customCategoriesFrom(rawConfig),
+    categoryColors: rawConfig?.categoryColors || {},
     categoryPhotos: compactCategoryPhotos(rawConfig?.categoryPhotos || {}),
     featuredProductIds: Array.isArray(rawConfig?.featuredProductIds)
       ? rawConfig.featuredProductIds.map(String)
@@ -127,6 +130,7 @@ const cleanHomeConfig = (rawConfig) => {
 let homeConfig = cleanHomeConfig(readJson(homeConfigKey, null));
 let isProductPickerOpen = false;
 let isCategoryModalOpen = false;
+let activeCategoryMenuId = null;
 let activeCategoryPhotoId = null;
 let categoryPhotoDraft;
 let categoryPhotoDrag = null;
@@ -429,13 +433,26 @@ const renderStats = (products, selected) => {
   if (homeCatalogCount) homeCatalogCount.textContent = products.length.toString();
 };
 
+const categoryMenuMarkup = (category, canRemove) => `
+  <div class="admin-vitrine-category-menu" role="menu">
+    <span>Couleur</span>
+    <label class="admin-vitrine-category-color-action">
+      <i style="--swatch:${category.color}" aria-hidden="true"></i>
+      <strong>Changer</strong>
+      <input type="color" value="${category.color}" data-category-color="${category.id}" aria-label="Changer la couleur de ${escapeHtml(category.label)}" />
+    </label>
+    <button class="danger" type="button" data-category-remove="${category.id}" ${!canRemove ? "disabled" : ""}>Retirer</button>
+  </div>
+`;
+
 const renderCategoryCard = (category, orderedCategories, index) => {
   const isSelected = orderedCategories.includes(category.id);
   const selectedIndex = orderedCategories.indexOf(category.id);
   const canRemove = category.custom || isSelected;
+  const isMenuOpen = activeCategoryMenuId === category.id;
 
   return `
-    <article class="admin-vitrine-category-card ${isSelected ? "is-selected" : ""}" style="--category-color:${category.color}">
+    <article class="admin-vitrine-category-card ${isSelected ? "is-selected" : ""} ${isMenuOpen ? "is-menu-open" : ""}" style="--category-color:${category.color}">
       <div class="admin-vitrine-category-main">
         <button type="button" class="admin-vitrine-category-photo-button" data-category-photo="${category.id}" aria-label="Modifier la photo de ${escapeHtml(category.label)}">
           ${
@@ -449,12 +466,13 @@ const renderCategoryCard = (category, orderedCategories, index) => {
           <small>${isSelected ? `Position ${selectedIndex + 1}` : "Masquée"}</small>
         </button>
       </div>
+      <button class="admin-vitrine-category-menu-button" type="button" data-category-menu="${category.id}" aria-label="Options de ${escapeHtml(category.label)}">•••</button>
+      ${isMenuOpen ? categoryMenuMarkup(category, canRemove) : ""}
       <div class="admin-vitrine-order-actions" aria-label="Ordre de ${escapeHtml(category.label)}">
         <button type="button" data-category-move="${category.id}" data-direction="-1" ${!isSelected || selectedIndex <= 0 ? "disabled" : ""}>↑</button>
         <button type="button" data-category-move="${category.id}" data-direction="1" ${
           !isSelected || selectedIndex >= orderedCategories.length - 1 ? "disabled" : ""
         }>↓</button>
-        <button type="button" data-category-remove="${category.id}" ${!canRemove ? "disabled" : ""}>Retirer</button>
       </div>
     </article>
   `;
@@ -535,7 +553,6 @@ const renderCategories = () => {
   homeCategories.innerHTML = `
     ${categories.map((category, index) => renderCategoryCard(category, homeConfig.categories, index)).join("")}
     <button type="button" class="admin-vitrine-category-card admin-vitrine-add-category-card" data-open-category-modal>
-      <span class="admin-vitrine-category-icon" aria-hidden="true">+</span>
       <span>
         <strong>Ajouter une catégorie</strong>
         <small>Créer une nouvelle entrée</small>
@@ -709,6 +726,7 @@ document.addEventListener("click", async (event) => {
 
   const categoryToggle = event.target.closest("[data-category-toggle]");
   const categoryMove = event.target.closest("[data-category-move]");
+  const categoryMenu = event.target.closest("[data-category-menu]");
   const categoryRemove = event.target.closest("[data-category-remove]");
   const categoryPhoto = event.target.closest("[data-category-photo]");
   const openCategoryModal = event.target.closest("[data-open-category-modal]");
@@ -718,8 +736,41 @@ document.addEventListener("click", async (event) => {
   const featureAdd = event.target.closest("[data-feature-add]");
   const featureRemove = event.target.closest("[data-feature-remove]");
   const featureMove = event.target.closest("[data-feature-move]");
+  const shouldCloseCategoryMenu =
+    activeCategoryMenuId && !event.target.closest(".admin-vitrine-category-menu") && !categoryMenu;
+
+  if (shouldCloseCategoryMenu) {
+    activeCategoryMenuId = null;
+  }
+
+  if (categoryMenu) {
+    event.preventDefault();
+    event.stopPropagation();
+    activeCategoryMenuId = activeCategoryMenuId === categoryMenu.dataset.categoryMenu ? null : categoryMenu.dataset.categoryMenu;
+    render();
+    return;
+  }
+
+  if (
+    shouldCloseCategoryMenu &&
+    !categoryToggle &&
+    !categoryMove &&
+    !categoryRemove &&
+    !categoryPhoto &&
+    !openCategoryModal &&
+    !closeCategoryModal &&
+    !openProductPicker &&
+    !closeProductPicker &&
+    !featureAdd &&
+    !featureRemove &&
+    !featureMove
+  ) {
+    render();
+    return;
+  }
 
   if (categoryToggle) {
+    activeCategoryMenuId = null;
     const categoryId = categoryToggle.dataset.categoryToggle;
     const isSelected = homeConfig.categories.includes(categoryId);
     saveHomeConfig({
@@ -732,6 +783,7 @@ document.addEventListener("click", async (event) => {
   }
 
   if (categoryMove) {
+    activeCategoryMenuId = null;
     const categoryId = categoryMove.dataset.categoryMove;
     const index = homeConfig.categories.indexOf(categoryId);
     saveHomeConfig({
@@ -742,6 +794,7 @@ document.addEventListener("click", async (event) => {
   }
 
   if (categoryRemove) {
+    activeCategoryMenuId = null;
     const categoryId = categoryRemove.dataset.categoryRemove;
     const category = allCategoriesFrom(homeConfig).find((item) => item.id === categoryId);
     const nextCategories = homeConfig.categories.filter((id) => id !== categoryId);
@@ -947,6 +1000,23 @@ document.addEventListener("touchcancel", () => {
 });
 
 document.addEventListener("change", (event) => {
+  const categoryColor = event.target.closest("[data-category-color]");
+  if (categoryColor) {
+    const categoryId = categoryColor.dataset.categoryColor;
+    saveHomeConfig({
+      ...homeConfig,
+      categoryColors: {
+        ...(homeConfig.categoryColors || {}),
+        [categoryId]: categoryColor.value,
+      },
+      customCategories: homeConfig.customCategories.map((category) =>
+        category.id === categoryId ? { ...category, color: categoryColor.value } : category,
+      ),
+    });
+    activeCategoryMenuId = categoryId;
+    return;
+  }
+
   const input = event.target.closest("#categoryPhotoInput");
   const file = input?.files?.[0];
   if (!input || !file || !activeCategoryPhotoId) return;
