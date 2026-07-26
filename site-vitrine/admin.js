@@ -55,6 +55,7 @@ const previewDetailGallery = document.querySelector("#previewDetailGallery");
 const productPhotoList = document.querySelector("#productPhotoList");
 const draftList = document.querySelector("#draftList");
 const clearDraftsButton = document.querySelector("#clearDrafts");
+const saveProductButton = document.querySelector("#saveProductButton");
 const colorEditModal = document.querySelector("#colorEditModal");
 const colorEditName = document.querySelector("#colorEditName");
 const colorEditValue = document.querySelector("#colorEditValue");
@@ -1372,6 +1373,12 @@ form?.addEventListener("submit", (event) => {
 
   saveDrafts([draft, ...readDrafts()]);
   renderDrafts();
+  if (saveProductButton) {
+    saveProductButton.textContent = "Produit enregistré";
+    window.setTimeout(() => {
+      saveProductButton.textContent = "Enregistrer le brouillon";
+    }, 1800);
+  }
   form.reset();
   selectedColorsBySection = { mainColors: [], accentColors: [] };
   selectedChoicesBySection = {};

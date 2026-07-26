@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atelier Kaleido - Produits</title>
+    <meta
+      name="description"
+      content="Bibliothèque des produits préparés pour la boutique Atelier Kaleido."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <main class="phone-shell" aria-label="Produits boutique Atelier Kaleido">
+      <section class="storefront admin-storefront">
+        <header class="topbar admin-topbar" aria-label="Navigation admin">
+          <a class="brand" href="./admin.html" aria-label="Retour au tableau de bord admin">
+            <img src="./assets/kaleido-logo.jpg" alt="" />
+            <span>Atelier<br />Kaleido</span>
+          </a>
+
+          <a class="admin-public-link" href="./admin-produit.html">Créer</a>
+        </header>
+
+        <a class="admin-page-back" href="./admin.html" aria-label="Retour au tableau de bord admin">← Admin</a>
+
+        <section class="admin-hero admin-products-hero" aria-labelledby="products-title">
+          <p class="eyebrow">Bibliothèque</p>
+          <h1 id="products-title">Produits</h1>
+          <p>Retrouve les fiches produits créées pour tester la future boutique.</p>
+        </section>
+
+        <section class="admin-panel admin-products-panel" aria-labelledby="products-list-title">
+          <div class="admin-section-heading">
+            <div>
+              <span class="admin-kicker">Fiches locales</span>
+              <h2 id="products-list-title">Tous les produits</h2>
+            </div>
+            <button class="clear-drafts" id="clearProducts" type="button">Vider</button>
+          </div>
+
+          <div class="admin-products-grid" id="productsGrid"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./admin-products.js"></script>
+  </body>
+</html>
