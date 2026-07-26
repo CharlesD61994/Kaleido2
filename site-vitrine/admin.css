@@ -15,9 +15,31 @@
   gap: 12px;
 }
 
+.admin-topbar:has(.admin-header-back) {
+  justify-content: flex-start;
+}
+
+.admin-topbar:has(.admin-header-back) .brand {
+  margin-left: -3px;
+  transform: none;
+}
+
+.admin-topbar:has(.admin-header-back) .admin-public-link {
+  margin-left: auto;
+}
+
 .admin-header-back {
   flex: 0 0 auto;
   text-decoration: none;
+}
+
+.admin-storefront input,
+.admin-storefront textarea,
+.admin-storefront select,
+.admin-detail-page input,
+.admin-detail-page textarea,
+.admin-detail-page select {
+  font-size: 16px !important;
 }
 
 .admin-public-link {
@@ -440,7 +462,7 @@
 .admin-products-controls {
   position: relative;
   z-index: 1;
-  padding: 0 var(--products-edge) 14px;
+  padding: 18px var(--products-edge) 14px;
 }
 
 .admin-products-stats {
@@ -1672,6 +1694,10 @@
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.82) inset,
     0 18px 40px rgba(16, 39, 68, 0.10);
+}
+
+.admin-topbar + .admin-panel {
+  margin-top: 18px;
 }
 
 .admin-product-preview-content h2 {
