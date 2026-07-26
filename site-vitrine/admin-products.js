@@ -17,7 +17,9 @@ const optionLabels = {
   delay: "Délai",
 };
 
+const cardColors = ["#f05b4f", "#30c7c9", "#e84b94", "#7c3aed", "#f3b51b", "#8bbf3f", "#f4831f"];
 let activeFilter = "Tous";
+let activeMenuId = null;
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(
@@ -38,6 +40,10 @@ const readProducts = () => {
   } catch {
     return [];
   }
+};
+
+const saveProducts = (products) => {
+  localStorage.setItem(draftsKey, JSON.stringify(products));
 };
 
 const categoryIcon = (category) => {
@@ -88,6 +94,29 @@ const renderStats = (products) => {
   if (colorCount) colorCount.textContent = colorsTotal.toString();
 };
 
+const productMenuMarkup = (productId) => `
+  <div class="admin-product-card-menu" role="menu">
+    <span>Couleur de carte</span>
+    <div class="admin-card-color-row">
+      ${cardColors
+        .map(
+          (color) => `
+            <button
+              type="button"
+              data-card-color="${color}"
+              data-product-id="${productId}"
+              style="--swatch:${color}"
+              aria-label="Changer la carte à ${color}"
+            ></button>
+          `,
+        )
+        .join("")}
+    </div>
+    <button type="button" data-duplicate-product="${productId}">Dupliquer</button>
+    <button class="danger" type="button" data-delete-product="${productId}">Supprimer</button>
+  </div>
+`;
+
 const renderProducts = () => {
   const products = readProducts();
   const filteredProducts = products.filter((product) => productMatchesFilter(product) && productMatchesSearch(product));
@@ -108,7 +137,7 @@ const renderProducts = () => {
             (total, color) => total + (color.photos || []).length,
             0,
           );
-          const primaryColor = colors[0] || "#30c7c9";
+          const primaryColor = product.cardColor || colors[0] || "#30c7c9";
           const accentColor = colors[1] || "#e84b94";
           const visibleColors = colors.slice(0, 4);
           const remainingColors = Math.max(0, colors.length - visibleColors.length);
@@ -121,13 +150,19 @@ const renderProducts = () => {
               aria-label="Modifier ${escapeHtml(product.name || "Produit sans nom")}"
             >
               <div class="admin-product-card-image ${coverPhoto ? "has-product-photo" : ""}">
-                <span class="admin-product-card-favorite" aria-hidden="true">♡</span>
+                <button
+                  class="admin-product-card-menu-button"
+                  type="button"
+                  data-product-menu="${product.id}"
+                  aria-label="Options du produit"
+                >•••</button>
                 ${
                   coverPhoto
                     ? `<img src="${coverPhoto.url}" alt="${escapeHtml(coverPhoto.name || product.name || "Produit")}" />`
                     : `<span class="admin-product-card-icon" aria-hidden="true">${categoryIcon(product.category)}</span>`
                 }
                 <small>${productPhotoCount ? `${productPhotoCount} photo` : "photo"}</small>
+                ${activeMenuId === String(product.id) ? productMenuMarkup(product.id) : ""}
               </div>
               <div class="admin-product-card-body">
                 <h3>${escapeHtml(product.name || "Produit sans nom")}</h3>
@@ -164,6 +199,11 @@ const renderProducts = () => {
       `;
 };
 
+const updateProduct = (productId, updater) => {
+  saveProducts(readProducts().map((product) => (String(product.id) === String(productId) ? updater(product) : product)));
+  renderProducts();
+};
+
 productSearchInput?.addEventListener("input", renderProducts);
 
 productFilters?.addEventListener("click", (event) => {
@@ -174,6 +214,61 @@ productFilters?.addEventListener("click", (event) => {
   productFilters.querySelectorAll("button").forEach((item) => {
     item.classList.toggle("is-active", item === button);
   });
+  renderProducts();
+});
+
+productsGrid?.addEventListener("click", (event) => {
+  const menuButton = event.target.closest("[data-product-menu]");
+  const colorButton = event.target.closest("[data-card-color]");
+  const duplicateButton = event.target.closest("[data-duplicate-product]");
+  const deleteButton = event.target.closest("[data-delete-product]");
+
+  if (menuButton || colorButton || duplicateButton || deleteButton) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  if (menuButton) {
+    activeMenuId = activeMenuId === String(menuButton.dataset.productMenu) ? null : String(menuButton.dataset.productMenu);
+    renderProducts();
+    return;
+  }
+
+  if (colorButton) {
+    const color = colorButton.dataset.cardColor;
+    activeMenuId = null;
+    updateProduct(colorButton.dataset.productId, (product) => ({ ...product, cardColor: color }));
+    return;
+  }
+
+  if (duplicateButton) {
+    const product = readProducts().find((item) => String(item.id) === String(duplicateButton.dataset.duplicateProduct));
+    if (!product) return;
+    const copy = {
+      ...product,
+      id: crypto.randomUUID(),
+      name: `${product.name || "Produit sans nom"} copie`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    activeMenuId = null;
+    saveProducts([copy, ...readProducts()]);
+    renderProducts();
+    return;
+  }
+
+  if (deleteButton) {
+    const product = readProducts().find((item) => String(item.id) === String(deleteButton.dataset.deleteProduct));
+    if (!window.confirm(`Supprimer ${product?.name || "ce produit"} ?`)) return;
+    activeMenuId = null;
+    saveProducts(readProducts().filter((item) => String(item.id) !== String(deleteButton.dataset.deleteProduct)));
+    renderProducts();
+  }
+});
+
+document.addEventListener("click", (event) => {
+  if (!activeMenuId || event.target.closest(".admin-product-library-card")) return;
+  activeMenuId = null;
   renderProducts();
 });
 

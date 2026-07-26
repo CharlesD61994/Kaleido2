@@ -654,20 +654,26 @@
   background: rgba(255, 255, 255, 0.92);
 }
 
-.admin-product-card-favorite {
+.admin-product-card-menu-button {
   position: absolute;
   top: 7px;
   right: 7px;
+  z-index: 6;
   display: grid;
   place-items: center;
   width: 28px;
   height: 28px;
+  padding: 0 0 2px;
+  border: 0;
   border-radius: 50%;
   color: white;
   background: rgba(16, 39, 68, 0.58);
-  font-size: 19px;
+  box-shadow: 0 0 12px rgba(16, 39, 68, 0.12);
+  font-size: 11px;
   font-weight: 900;
+  letter-spacing: -1px;
   line-height: 1;
+  cursor: pointer;
 }
 
 .admin-product-card-image small {
@@ -686,6 +692,64 @@
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.admin-product-card-menu {
+  position: absolute;
+  top: 40px;
+  right: 7px;
+  z-index: 8;
+  display: grid;
+  gap: 7px;
+  width: min(160px, calc(100% - 14px));
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(16, 39, 68, 0.10);
+  box-shadow:
+    0 16px 30px rgba(16, 39, 68, 0.18),
+    0 0 18px color-mix(in srgb, var(--product-color, var(--k-cyan)), transparent 78%);
+}
+
+.admin-product-card-menu > span {
+  color: var(--k-muted);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.admin-card-color-row {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.admin-card-color-row button {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 1px solid rgba(16, 39, 68, 0.18);
+  cursor: pointer;
+}
+
+.admin-product-card-menu > button {
+  min-height: 28px;
+  padding: 7px 8px 0;
+  border-radius: 10px;
+  color: var(--k-ink);
+  background: rgba(16, 39, 68, 0.05);
+  border: 1px solid rgba(16, 39, 68, 0.08);
+  font: 900 11px "DM Sans", system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-product-card-menu > button.danger {
+  color: #c2410c;
+  background: rgba(240, 91, 79, 0.10);
+  border-color: rgba(240, 91, 79, 0.22);
 }
 
 .admin-product-card-body {
