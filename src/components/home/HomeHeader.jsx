@@ -6,6 +6,7 @@ import { IOS_TOP_PADDING } from "../../styles/layout";
 export default function HomeHeader({
   mode,
   setMode,
+  onOpenBoutiqueAdmin,
   navigateToLibrary,
   setShowSettingsModal,
 }) {
@@ -20,6 +21,11 @@ export default function HomeHeader({
           <button onClick={navigateToLibrary} aria-label="Ouvrir la bibliothèque de patrons" style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 10, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA", cursor: "pointer" }}>
             <Icon name="library" size={24} stroke={2.2} color="#A78BFA" />
           </button>
+          {onOpenBoutiqueAdmin ? (
+            <button onClick={onOpenBoutiqueAdmin} aria-label="Ouvrir l'admin boutique" style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 10, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: "#22D3EE", cursor: "pointer" }}>
+              <Icon name="admin" size={24} stroke={2.1} color="#22D3EE" />
+            </button>
+          ) : null}
           <button onClick={() => setShowSettingsModal(true)} aria-label="Paramètres" style={{ background: "var(--k-surface-2)", border: "1px solid var(--k-control-border)", borderRadius: 10, width: 40, height: 40, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA" }}>
             <Icon name="settings" size={24} stroke={2.1} color="#A78BFA" />
           </button>

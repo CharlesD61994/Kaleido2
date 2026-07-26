@@ -13,6 +13,17 @@ export default function Icon({ name, size = 20, stroke = 1.9, color = "currentCo
   };
 
   switch (name) {
+    case "admin":
+      return (
+        <svg {...common}>
+          <rect x="4" y="4.5" width="16" height="15" rx="3" />
+          <path d="M8 9h8" />
+          <path d="M8 12.5h3.5" />
+          <path d="M14.5 12.5H16" />
+          <path d="M8 16h1.5" />
+          <path d="M12.5 16H16" />
+        </svg>
+      );
     case "library":
       return (
         <svg {...common}>

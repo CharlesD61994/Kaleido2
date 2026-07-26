@@ -38,6 +38,12 @@ export default function HomeView({
 
   const { navigateToLibrary } = navigation;
   const unreadProjectIds = useClientMessageNotifications(database.projectsPro || []);
+  const canOpenBoutiqueAdmin = typeof window !== "undefined" && window.location?.protocol === "capacitor:";
+  const openBoutiqueAdmin = canOpenBoutiqueAdmin
+    ? () => {
+        window.location.href = "/admin-boutique/admin.html";
+      }
+    : null;
 
   const {
     setCurrentPatron,
@@ -62,6 +68,7 @@ export default function HomeView({
       <HomeHeader
         mode={mode}
         setMode={setMode}
+        onOpenBoutiqueAdmin={openBoutiqueAdmin}
         navigateToLibrary={navigateToLibrary}
         setShowSettingsModal={setShowSettingsModal}
       />
