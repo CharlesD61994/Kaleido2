@@ -1247,6 +1247,7 @@
   place-items: center;
   width: 100%;
   min-height: 96px;
+  border-radius: 20px;
   border: 1.5px dashed rgba(48, 199, 201, 0.48);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 253, 250, 0.62)),
