@@ -221,10 +221,14 @@ const closeCategoryPhotoModal = () => {
   if (categoryPhotoModal) categoryPhotoModal.innerHTML = "";
 };
 
-const confirmCategoryPhotoSelection = () => {
-  if (!activeCategoryPhotoId) return;
+const confirmCategoryPhotoSelection = (forcedCategoryId = activeCategoryPhotoId) => {
+  if (!forcedCategoryId) {
+    closeCategoryPhotoModal();
+    render();
+    return;
+  }
 
-  const categoryId = activeCategoryPhotoId;
+  const categoryId = forcedCategoryId;
   const draft = normalizeCategoryPhoto(categoryPhotoDraft);
   const immediatePhoto = draft?.src ? { ...draft, preview: draft.src } : null;
 
@@ -253,6 +257,13 @@ const confirmCategoryPhotoSelection = () => {
       render();
     })
     .catch(() => {});
+};
+
+window.kaleidoConfirmCategoryPhoto = (event, categoryId) => {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  confirmCategoryPhotoSelection(categoryId);
+  return false;
 };
 
 categoryPhotoModal?.addEventListener(
@@ -326,7 +337,7 @@ categoryPhotoModal?.addEventListener(
     }
 
     if (confirmCategoryPhoto && activeCategoryPhotoId) {
-      confirmCategoryPhotoSelection();
+      confirmCategoryPhotoSelection(confirmCategoryPhoto.dataset.confirmCategoryPhoto);
     }
   },
   true,
@@ -434,11 +445,21 @@ const renderCategoryPhotoModal = () => {
           }
         </div>
         <p class="admin-vitrine-photo-hint">${previewPhoto?.src ? "Glisse la photo dans le cercle pour la cadrer." : "Importe une photo pour la cadrer."}</p>
+        ${
+          previewPhoto?.src
+            ? `
+              <label class="admin-vitrine-photo-zoom">
+                <span>Zoom</span>
+                <input type="range" min="1" max="5" step="0.01" value="${previewPhoto.scale || 1}" data-category-photo-zoom />
+              </label>
+            `
+            : ""
+        }
         <input id="categoryPhotoInput" type="file" accept="image/*" hidden />
         <div class="admin-vitrine-photo-actions">
           <button class="admin-vitrine-primary-action" type="button" data-pick-category-photo>${previewPhoto?.src ? "Remplacer" : "Importer"}</button>
           <button class="admin-vitrine-danger-action" type="button" data-remove-category-photo ${previewPhoto?.src ? "" : "disabled"}>Supprimer</button>
-          <button class="admin-vitrine-confirm-action admin-vitrine-primary-action" type="button" data-confirm-category-photo>Confirmer</button>
+          <button class="admin-vitrine-confirm-action admin-vitrine-primary-action" type="button" data-confirm-category-photo="${activeCategoryPhotoId}" onclick="return window.kaleidoConfirmCategoryPhoto(event, this.dataset.confirmCategoryPhoto)">Confirmer</button>
         </div>
       </section>
       ${
@@ -871,6 +892,16 @@ document.addEventListener(
   },
   { passive: false },
 );
+
+document.addEventListener("input", (event) => {
+  const zoomInput = event.target.closest("[data-category-photo-zoom]");
+  if (!zoomInput || !categoryPhotoDraft?.src) return;
+
+  const nextScale = Number(zoomInput.value);
+  categoryPhotoDraft = clampPhotoDraft({ ...categoryPhotoDraft, scale: nextScale });
+  const previewImage = document.querySelector("[data-category-photo-crop] img");
+  if (previewImage) previewImage.style.transform = categoryPhotoTransform(categoryPhotoDraft);
+});
 
 document.addEventListener("change", (event) => {
   const input = event.target.closest("#categoryPhotoInput");
