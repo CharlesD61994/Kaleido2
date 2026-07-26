@@ -377,19 +377,101 @@
 }
 
 .admin-module-icon {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 17px;
+  width: 54px;
+  height: 54px;
+  border-radius: 20px;
   color: white;
   background: linear-gradient(135deg, var(--module-color), color-mix(in srgb, var(--module-color), white 16%));
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.66) inset,
-    0 0 22px color-mix(in srgb, var(--module-color), transparent 55%);
-  font-size: 22px;
+    0 0 26px color-mix(in srgb, var(--module-color), transparent 50%);
+  overflow: hidden;
+  font-size: 24px;
   font-weight: 900;
   line-height: 1;
+}
+
+.admin-module-icon::before,
+.admin-module-icon::after {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.admin-module-icon-create::before {
+  width: 27px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)) 50% 50% / 17px 3px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)) 50% 50% / 3px 17px no-repeat;
+}
+
+.admin-module-icon-window::before {
+  width: 31px;
+  height: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.96);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1.5px), rgba(255, 255, 255, 0.9) 0 calc(50% + 1.5px), transparent 0),
+    linear-gradient(transparent calc(50% - 1.5px), rgba(255, 255, 255, 0.9) 0 calc(50% + 1.5px), transparent 0);
+}
+
+.admin-module-icon-products::before {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)) 0 0 / 14px 14px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)) 18px 0 / 14px 14px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)) 0 18px / 14px 14px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)) 18px 18px / 14px 14px no-repeat;
+}
+
+.admin-module-icon-storefront::before {
+  top: 14px;
+  left: 12px;
+  width: 30px;
+  height: 12px;
+  border-radius: 7px 7px 4px 4px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0 6px, rgba(255, 255, 255, 0.64) 6px 12px);
+}
+
+.admin-module-icon-storefront::after {
+  left: 15px;
+  bottom: 12px;
+  width: 24px;
+  height: 19px;
+  border: 3px solid rgba(255, 255, 255, 0.96);
+  border-top: 0;
+  border-radius: 0 0 7px 7px;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1.5px), rgba(255, 255, 255, 0.9) 0 calc(50% + 1.5px), transparent 0);
+}
+
+.admin-module-icon-orders::before {
+  width: 31px;
+  height: 31px;
+  border: 3px solid rgba(255, 255, 255, 0.96);
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)) 8px 9px / 15px 3px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)) 8px 17px / 15px 3px no-repeat;
+}
+
+.admin-module-icon-queue::before {
+  width: 31px;
+  height: 28px;
+  border-left: 3px solid rgba(255, 255, 255, 0.96);
+  border-right: 3px solid rgba(255, 255, 255, 0.96);
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.96) 0 4px, transparent 4.5px) 50% 3px / 100% 9px no-repeat,
+    radial-gradient(circle, rgba(255, 255, 255, 0.96) 0 4px, transparent 4.5px) 50% 16px / 100% 9px no-repeat;
 }
 
 .admin-module-tile strong {
