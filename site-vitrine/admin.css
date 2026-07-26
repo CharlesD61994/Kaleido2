@@ -277,7 +277,7 @@
 }
 
 .admin-dashboard-panel {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .admin-dashboard-modules {
@@ -300,6 +300,8 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 11px;
+  padding: 4px;
+  margin: 0 -4px;
 }
 
 .admin-module-tile {
@@ -309,7 +311,7 @@
   gap: 8px;
   min-height: 164px;
   padding: 15px;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 24px;
   color: var(--k-ink);
   background:
@@ -334,6 +336,7 @@
   border-radius: 50%;
   background: color-mix(in srgb, var(--module-color), transparent 86%);
   box-shadow: 0 0 34px color-mix(in srgb, var(--module-color), transparent 72%);
+  pointer-events: none;
 }
 
 .admin-module-tile:not(:disabled):active {
