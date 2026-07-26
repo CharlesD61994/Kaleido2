@@ -6,6 +6,12 @@
   position: sticky;
   top: 0;
   z-index: 5;
+  gap: 12px;
+}
+
+.admin-header-back {
+  flex: 0 0 auto;
+  text-decoration: none;
 }
 
 .admin-public-link {
@@ -408,59 +414,68 @@
 
 .admin-products-grid {
   display: grid;
-  gap: 13px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 10px;
 }
 
 .admin-product-library-card {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  gap: 13px;
-  align-items: stretch;
-  padding: 12px;
-  border-radius: 24px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.80), rgba(255, 253, 250, 0.58)),
-    radial-gradient(circle at 88% 12%, rgba(48, 199, 201, 0.12), transparent 36%);
-  border: 1px solid rgba(16, 39, 68, 0.09);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.82) inset,
-    0 16px 30px rgba(16, 39, 68, 0.09);
+  justify-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--k-ink);
+  text-align: center;
 }
 
-.admin-product-card-media {
+.admin-product-card-bubble {
+  position: relative;
   display: grid;
   place-items: center;
-  align-content: center;
-  gap: 4px;
-  min-height: 106px;
-  border-radius: 20px;
+  width: min(100%, 92px);
+  aspect-ratio: 1;
+  border-radius: 50%;
   color: white;
   background:
-    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.30), transparent 30%),
-    linear-gradient(135deg, var(--k-coral), var(--k-pink));
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.34), transparent 30%),
+    linear-gradient(135deg, var(--product-color, var(--k-cyan)), color-mix(in srgb, var(--product-color, var(--k-cyan)), white 16%));
+  border: 4px solid rgba(255, 255, 255, 0.78);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.54) inset,
-    0 0 24px rgba(232, 75, 148, 0.22);
+    0 0 0 2px color-mix(in srgb, var(--product-color, var(--k-cyan)), transparent 44%),
+    0 0 24px color-mix(in srgb, var(--product-color, var(--k-cyan)), transparent 58%),
+    0 14px 24px rgba(16, 39, 68, 0.12);
 }
 
-.admin-product-card-media span {
+.admin-product-card-bubble > span {
   font-family: "Syne", sans-serif;
-  font-size: 31px;
+  font-size: 36px;
   font-weight: 900;
   line-height: 1;
 }
 
-.admin-product-card-media small {
+.admin-product-card-bubble small {
+  position: absolute;
+  right: -3px;
+  top: 4px;
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: var(--k-ink);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid color-mix(in srgb, var(--product-color, var(--k-cyan)), transparent 48%);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--product-color, var(--k-cyan)), transparent 62%);
   font-size: 10px;
   font-weight: 900;
   line-height: 1;
-  text-transform: uppercase;
 }
 
 .admin-product-card-body {
   display: grid;
-  align-content: center;
-  gap: 7px;
+  justify-items: center;
+  gap: 5px;
+  width: 100%;
   min-width: 0;
 }
 
@@ -470,29 +485,44 @@
 }
 
 .admin-product-card-body h3 {
+  max-width: 100%;
+  overflow: hidden;
   color: var(--k-ink);
   font-family: "Syne", sans-serif;
-  font-size: 19px;
+  font-size: 13px;
   line-height: 1.02;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-product-card-body p,
 .admin-product-card-body small {
   color: var(--k-muted);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
-  line-height: 1.28;
+  line-height: 1.16;
+}
+
+.admin-product-card-body p,
+.admin-product-card-body small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-product-card-meta {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
 }
 
 .admin-product-card-meta span {
   min-height: 25px;
-  padding: 6px 8px 0;
+  max-width: 86px;
+  padding: 6px 7px 0;
+  overflow: hidden;
   border-radius: 999px;
   color: var(--k-teal);
   background: rgba(48, 199, 201, 0.10);
@@ -500,6 +530,8 @@
   font-size: 10px;
   font-weight: 900;
   line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-products-empty {

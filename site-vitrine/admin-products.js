@@ -7,10 +7,10 @@ const optionLabels = {
   accentColor: "Couleur secondaire",
   recipient: "Pour qui ?",
   shoeSize: "Pointure",
-  keychain: "Porte-clé",
+  keychain: "Porte-cle",
   personalization: "Personnalisation",
   finish: "Finition",
-  delay: "Délai",
+  delay: "Delai",
 };
 
 const escapeHtml = (value) =>
@@ -38,18 +38,6 @@ const saveProducts = (products) => {
   localStorage.setItem(draftsKey, JSON.stringify(products));
 };
 
-const formatDate = (dateValue) => {
-  if (!dateValue) return "Date inconnue";
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return "Date inconnue";
-
-  return new Intl.DateTimeFormat("fr-CA", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
-
 const renderProducts = () => {
   const products = readProducts();
 
@@ -66,26 +54,23 @@ const renderProducts = () => {
             (total, color) => total + (color.photos || []).length,
             0,
           );
+          const primaryColor = colors[0] || "#30c7c9";
+          const productInitial = (product.name || "?").trim().charAt(0).toUpperCase() || "?";
 
           return `
-            <article class="admin-product-library-card">
-              <div class="admin-product-card-media">
-                <span>${productPhotoCount || "0"}</span>
-                <small>photo(s)</small>
+            <article class="admin-product-library-card" style="--product-color:${primaryColor}">
+              <div class="admin-product-card-bubble">
+                <span>${escapeHtml(productInitial)}</span>
+                <small>${productPhotoCount || "0"}</small>
               </div>
               <div class="admin-product-card-body">
-                <span class="admin-kicker">Brouillon</span>
                 <h3>${escapeHtml(product.name || "Produit sans nom")}</h3>
-                <p>${escapeHtml(product.category || "Catalogue")} · À partir de ${escapeHtml(
-                  product.price || "prix à définir",
-                )}</p>
+                <p>${escapeHtml(product.category || "Catalogue")}</p>
                 <div class="admin-product-card-meta">
-                  <span>${colors.length} couleur(s)</span>
-                  <span>${options.length} option(s)</span>
-                  <span>${choiceCount} choix</span>
-                  <span>${colorPhotoCount} photo(s) laine</span>
+                  <span>${escapeHtml(product.price || "Prix a definir")}</span>
+                  <span>${options.length} opt.</span>
                 </div>
-                <small>Créé le ${formatDate(product.createdAt)}</small>
+                <small>${colors.length} couleur(s) · ${choiceCount} choix · ${colorPhotoCount} laine</small>
               </div>
             </article>
           `;
@@ -93,9 +78,9 @@ const renderProducts = () => {
         .join("")
     : `
         <div class="admin-products-empty">
-          <strong>Aucun produit créé</strong>
-          <p>Crée un premier produit pour le voir apparaître ici.</p>
-          <a class="buy-button" href="./admin-produit.html">Créer un produit</a>
+          <strong>Aucun produit cree</strong>
+          <p>Cree un premier produit pour le voir apparaitre ici.</p>
+          <a class="buy-button" href="./admin-produit.html">Creer un produit</a>
         </div>
       `;
 };
