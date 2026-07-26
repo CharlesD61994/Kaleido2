@@ -130,11 +130,13 @@ const cleanHomeConfig = (rawConfig) => {
 let homeConfig = cleanHomeConfig(readJson(homeConfigKey, null));
 let isProductPickerOpen = false;
 let isCategoryModalOpen = false;
-let activeCategoryMenuId = null;
+let openCategoryActionsId = null;
 let activeCategoryPhotoId = null;
 let categoryPhotoDraft;
 let categoryPhotoDrag = null;
 let categoryPhotoTouch = null;
+let categoryActionSwipe = null;
+let suppressCategoryClick = false;
 let isCategoryPhotoDeleteConfirmOpen = false;
 const categoryPhotoCropSize = 260;
 
@@ -433,26 +435,23 @@ const renderStats = (products, selected) => {
   if (homeCatalogCount) homeCatalogCount.textContent = products.length.toString();
 };
 
-const categoryMenuMarkup = (category, canRemove) => `
-  <div class="admin-vitrine-category-menu" role="menu">
-    <span>Couleur</span>
-    <label class="admin-vitrine-category-color-action">
-      <i style="--swatch:${category.color}" aria-hidden="true"></i>
-      <strong>Changer</strong>
-      <input type="color" value="${category.color}" data-category-color="${category.id}" aria-label="Changer la couleur de ${escapeHtml(category.label)}" />
-    </label>
-    <button class="danger" type="button" data-category-remove="${category.id}" ${!canRemove ? "disabled" : ""}>Retirer</button>
-  </div>
-`;
-
 const renderCategoryCard = (category, orderedCategories, index) => {
   const isSelected = orderedCategories.includes(category.id);
   const selectedIndex = orderedCategories.indexOf(category.id);
   const canRemove = category.custom || isSelected;
-  const isMenuOpen = activeCategoryMenuId === category.id;
+  const isActionsOpen = openCategoryActionsId === category.id;
 
   return `
-    <article class="admin-vitrine-category-card ${isSelected ? "is-selected" : ""} ${isMenuOpen ? "is-menu-open" : ""}" style="--category-color:${category.color}">
+    <article class="admin-vitrine-category-shell ${isActionsOpen ? "is-actions-open" : ""}" style="--category-color:${category.color}">
+      <div class="admin-vitrine-category-slide-actions" aria-label="Actions de ${escapeHtml(category.label)}">
+        <label class="admin-vitrine-category-slide-button color">
+          <i style="--swatch:${category.color}" aria-hidden="true"></i>
+          <span>Couleur</span>
+          <input type="color" value="${category.color}" data-category-color="${category.id}" aria-label="Changer la couleur de ${escapeHtml(category.label)}" />
+        </label>
+        <button class="danger" type="button" data-category-remove="${category.id}" ${!canRemove ? "disabled" : ""}>Retirer</button>
+      </div>
+      <div class="admin-vitrine-category-card ${isSelected ? "is-selected" : ""}" data-category-card="${category.id}">
       <div class="admin-vitrine-category-main">
         <button type="button" class="admin-vitrine-category-photo-button" data-category-photo="${category.id}" aria-label="Modifier la photo de ${escapeHtml(category.label)}">
           ${
@@ -466,13 +465,12 @@ const renderCategoryCard = (category, orderedCategories, index) => {
           <small>${isSelected ? `Position ${selectedIndex + 1}` : "Masquée"}</small>
         </button>
       </div>
-      <button class="admin-vitrine-category-menu-button" type="button" data-category-menu="${category.id}" aria-label="Options de ${escapeHtml(category.label)}">•••</button>
-      ${isMenuOpen ? categoryMenuMarkup(category, canRemove) : ""}
       <div class="admin-vitrine-order-actions" aria-label="Ordre de ${escapeHtml(category.label)}">
         <button type="button" data-category-move="${category.id}" data-direction="-1" ${!isSelected || selectedIndex <= 0 ? "disabled" : ""}>↑</button>
         <button type="button" data-category-move="${category.id}" data-direction="1" ${
           !isSelected || selectedIndex >= orderedCategories.length - 1 ? "disabled" : ""
         }>↓</button>
+      </div>
       </div>
     </article>
   `;
@@ -724,11 +722,18 @@ function render() {
 document.addEventListener("click", async (event) => {
   if (event.target instanceof Element && event.target.closest("#categoryPhotoModal")) return;
 
+  if (suppressCategoryClick && event.target.closest("[data-category-card]")) {
+    event.preventDefault();
+    event.stopPropagation();
+    suppressCategoryClick = false;
+    return;
+  }
+
   const categoryToggle = event.target.closest("[data-category-toggle]");
   const categoryMove = event.target.closest("[data-category-move]");
-  const categoryMenu = event.target.closest("[data-category-menu]");
   const categoryRemove = event.target.closest("[data-category-remove]");
   const categoryPhoto = event.target.closest("[data-category-photo]");
+  const categoryCard = event.target.closest("[data-category-card]");
   const openCategoryModal = event.target.closest("[data-open-category-modal]");
   const closeCategoryModal = event.target.closest("[data-close-category-modal]");
   const openProductPicker = event.target.closest("[data-open-product-picker]");
@@ -736,27 +741,20 @@ document.addEventListener("click", async (event) => {
   const featureAdd = event.target.closest("[data-feature-add]");
   const featureRemove = event.target.closest("[data-feature-remove]");
   const featureMove = event.target.closest("[data-feature-move]");
-  const shouldCloseCategoryMenu =
-    activeCategoryMenuId && !event.target.closest(".admin-vitrine-category-menu") && !categoryMenu;
+  const shouldCloseCategoryActions =
+    openCategoryActionsId && !event.target.closest(".admin-vitrine-category-shell");
 
-  if (shouldCloseCategoryMenu) {
-    activeCategoryMenuId = null;
-  }
-
-  if (categoryMenu) {
-    event.preventDefault();
-    event.stopPropagation();
-    activeCategoryMenuId = activeCategoryMenuId === categoryMenu.dataset.categoryMenu ? null : categoryMenu.dataset.categoryMenu;
-    render();
-    return;
+  if (shouldCloseCategoryActions) {
+    openCategoryActionsId = null;
   }
 
   if (
-    shouldCloseCategoryMenu &&
+    shouldCloseCategoryActions &&
     !categoryToggle &&
     !categoryMove &&
     !categoryRemove &&
     !categoryPhoto &&
+    !categoryCard &&
     !openCategoryModal &&
     !closeCategoryModal &&
     !openProductPicker &&
@@ -770,7 +768,7 @@ document.addEventListener("click", async (event) => {
   }
 
   if (categoryToggle) {
-    activeCategoryMenuId = null;
+    openCategoryActionsId = null;
     const categoryId = categoryToggle.dataset.categoryToggle;
     const isSelected = homeConfig.categories.includes(categoryId);
     saveHomeConfig({
@@ -783,7 +781,7 @@ document.addEventListener("click", async (event) => {
   }
 
   if (categoryMove) {
-    activeCategoryMenuId = null;
+    openCategoryActionsId = null;
     const categoryId = categoryMove.dataset.categoryMove;
     const index = homeConfig.categories.indexOf(categoryId);
     saveHomeConfig({
@@ -794,7 +792,7 @@ document.addEventListener("click", async (event) => {
   }
 
   if (categoryRemove) {
-    activeCategoryMenuId = null;
+    openCategoryActionsId = null;
     const categoryId = categoryRemove.dataset.categoryRemove;
     const category = allCategoriesFrom(homeConfig).find((item) => item.id === categoryId);
     const nextCategories = homeConfig.categories.filter((id) => id !== categoryId);
@@ -880,6 +878,17 @@ document.addEventListener("click", async (event) => {
 
 document.addEventListener("pointerdown", (event) => {
   if (event.pointerType === "touch") return;
+  const categoryCard = event.target.closest("[data-category-card]");
+  if (categoryCard && !event.target.closest("input, label")) {
+    categoryActionSwipe = {
+      pointerId: event.pointerId,
+      categoryId: categoryCard.dataset.categoryCard,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+    return;
+  }
+
   const cropTarget = event.target.closest("[data-category-photo-crop]");
   if (!cropTarget || !categoryPhotoDraft?.src) return;
 
@@ -897,6 +906,7 @@ document.addEventListener("pointerdown", (event) => {
 
 document.addEventListener("pointermove", (event) => {
   if (event.pointerType === "touch") return;
+  if (categoryActionSwipe?.pointerId === event.pointerId) return;
   if (!categoryPhotoDrag || event.pointerId !== categoryPhotoDrag.pointerId || !categoryPhotoDraft?.src) return;
 
   event.preventDefault();
@@ -910,10 +920,21 @@ document.addEventListener("pointermove", (event) => {
 });
 
 document.addEventListener("pointerup", (event) => {
+  if (categoryActionSwipe?.pointerId === event.pointerId) {
+    const deltaX = event.clientX - categoryActionSwipe.startX;
+    const deltaY = event.clientY - categoryActionSwipe.startY;
+    if (Math.abs(deltaX) > 34 && Math.abs(deltaX) > Math.abs(deltaY) * 1.35) {
+      openCategoryActionsId = deltaX < 0 ? categoryActionSwipe.categoryId : null;
+      suppressCategoryClick = true;
+      render();
+    }
+    categoryActionSwipe = null;
+  }
   if (categoryPhotoDrag?.pointerId === event.pointerId) categoryPhotoDrag = null;
 });
 
 document.addEventListener("pointercancel", (event) => {
+  if (categoryActionSwipe?.pointerId === event.pointerId) categoryActionSwipe = null;
   if (categoryPhotoDrag?.pointerId === event.pointerId) categoryPhotoDrag = null;
 });
 
@@ -928,6 +949,18 @@ const categoryTouchCenter = (firstTouch, secondTouch) => ({
 document.addEventListener(
   "touchstart",
   (event) => {
+    const categoryCard = event.target.closest("[data-category-card]");
+    if (categoryCard && !event.target.closest("input, label")) {
+      const touch = event.touches[0];
+      categoryActionSwipe = {
+        pointerId: "touch",
+        categoryId: categoryCard.dataset.categoryCard,
+        startX: touch.clientX,
+        startY: touch.clientY,
+      };
+      return;
+    }
+
     const cropTarget = event.target.closest("[data-category-photo-crop]");
     if (!cropTarget || !categoryPhotoDraft?.src) return;
 
@@ -960,6 +993,7 @@ document.addEventListener(
 document.addEventListener(
   "touchmove",
   (event) => {
+    if (categoryActionSwipe?.pointerId === "touch") return;
     if (!categoryPhotoTouch || !categoryPhotoDraft?.src) return;
 
     if (categoryPhotoTouch.mode === "pan" && event.touches.length === 1) {
@@ -991,11 +1025,23 @@ document.addEventListener(
   { passive: false },
 );
 
-document.addEventListener("touchend", () => {
+document.addEventListener("touchend", (event) => {
+  if (categoryActionSwipe?.pointerId === "touch") {
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - categoryActionSwipe.startX;
+    const deltaY = touch.clientY - categoryActionSwipe.startY;
+    if (Math.abs(deltaX) > 34 && Math.abs(deltaX) > Math.abs(deltaY) * 1.35) {
+      openCategoryActionsId = deltaX < 0 ? categoryActionSwipe.categoryId : null;
+      suppressCategoryClick = true;
+      render();
+    }
+    categoryActionSwipe = null;
+  }
   categoryPhotoTouch = null;
 });
 
 document.addEventListener("touchcancel", () => {
+  categoryActionSwipe = null;
   categoryPhotoTouch = null;
 });
 
@@ -1013,7 +1059,7 @@ document.addEventListener("change", (event) => {
         category.id === categoryId ? { ...category, color: categoryColor.value } : category,
       ),
     });
-    activeCategoryMenuId = categoryId;
+    openCategoryActionsId = categoryId;
     return;
   }
 
