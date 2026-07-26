@@ -1712,27 +1712,6 @@
   text-align: center;
 }
 
-.admin-vitrine-photo-zoom {
-  display: grid;
-  gap: 7px;
-  width: min(260px, 100%);
-  margin: 10px auto 0;
-}
-
-.admin-vitrine-photo-zoom span {
-  color: var(--k-muted);
-  font-size: 12px;
-  font-weight: 900;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0;
-}
-
-.admin-vitrine-photo-zoom input {
-  width: 100%;
-  accent-color: var(--category-color);
-}
-
 .admin-vitrine-photo-modal .admin-vitrine-photo-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

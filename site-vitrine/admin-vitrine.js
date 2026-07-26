@@ -82,16 +82,18 @@ const allCategoriesFrom = (rawConfig) => {
 };
 
 const compactCategoryPhoto = (photo) => {
-  if (!photo?.src && !photo?.url && !photo?.preview) return null;
+  if (!photo?.src && !photo?.url && !photo?.preview && !photo?.original) return null;
+  const original = photo.original || photo.src || photo.url || photo.preview;
   const preview = photo.preview || photo.url || photo.src;
   return {
     name: photo.name || "",
-    src: preview,
+    src: original,
+    original,
     preview,
-    x: 0,
-    y: 0,
-    scale: 1,
-    aspect: 1,
+    x: Number.isFinite(Number(photo.x)) ? Number(photo.x) : 0,
+    y: Number.isFinite(Number(photo.y)) ? Number(photo.y) : 0,
+    scale: Number.isFinite(Number(photo.scale)) ? Number(photo.scale) : 1,
+    aspect: Number.isFinite(Number(photo.aspect)) && Number(photo.aspect) > 0 ? Number(photo.aspect) : 1,
     naturalWidth: Number.isFinite(Number(photo.naturalWidth)) ? Number(photo.naturalWidth) : 164,
     naturalHeight: Number.isFinite(Number(photo.naturalHeight)) ? Number(photo.naturalHeight) : 164,
   };
@@ -146,10 +148,11 @@ const isProductReady = (product) => product.status === "ready";
 const isProductInCatalog = (product) => isProductReady(product) && product.inCatalog !== false;
 
 const normalizeCategoryPhoto = (photo) =>
-  (photo?.src || photo?.url || photo?.preview)
+  (photo?.src || photo?.url || photo?.preview || photo?.original)
     ? {
         name: photo.name || "",
-        src: photo.src || photo.url || photo.preview,
+        src: photo.src || photo.original || photo.url || photo.preview,
+        original: photo.original || photo.src || photo.url || photo.preview,
         preview: photo.preview || photo.url || photo.src,
         x: Number.isFinite(Number(photo.x)) ? Number(photo.x) : Number(photo.pos?.x) || 0,
         y: Number.isFinite(Number(photo.y)) ? Number(photo.y) : Number(photo.pos?.y) || 0,
@@ -220,26 +223,27 @@ const drawCategoryPhotoPreview = (image, photo, outputSize = 164) => {
   const preview = canvas.toDataURL("image/jpeg", 0.86);
   return {
     name: normalized.name,
-    src: preview,
+    src: normalized.original || normalized.src,
+    original: normalized.original || normalized.src,
     preview,
-    x: 0,
-    y: 0,
-    scale: 1,
-    aspect: 1,
-    naturalWidth: outputSize,
-    naturalHeight: outputSize,
+    x: normalized.x,
+    y: normalized.y,
+    scale: normalized.scale,
+    aspect: normalized.aspect,
+    naturalWidth: normalized.naturalWidth || imageWidth,
+    naturalHeight: normalized.naturalHeight || imageHeight,
   };
 };
 
 const buildImmediateCategoryPhotoPreview = (photo) => {
   const normalized = normalizeCategoryPhoto(photo);
   const image = document.querySelector("[data-category-photo-crop] img");
-  if (!normalized?.src || !image?.complete) return normalized?.src ? { ...normalized, src: normalized.src, preview: normalized.src } : null;
+  if (!normalized?.src || !image?.complete) return normalized;
 
   try {
     return drawCategoryPhotoPreview(image, normalized);
   } catch {
-    return { ...normalized, src: normalized.src, preview: normalized.src };
+    return normalized;
   }
 };
 
@@ -254,12 +258,12 @@ const buildCategoryPhotoPreview = (photo, outputSize = 164) =>
     const image = new Image();
     image.addEventListener("load", () => {
       try {
-        resolve(drawCategoryPhotoPreview(image, normalized, outputSize) || { ...normalized, src: normalized.preview || normalized.src, preview: normalized.preview || normalized.src });
+        resolve(drawCategoryPhotoPreview(image, normalized, outputSize) || normalized);
       } catch {
-        resolve({ ...normalized, src: normalized.preview || normalized.src, preview: normalized.preview || normalized.src });
+        resolve(normalized);
       }
     });
-    image.addEventListener("error", () => resolve({ ...normalized, src: normalized.preview || normalized.src, preview: normalized.preview || normalized.src }));
+    image.addEventListener("error", () => resolve(normalized));
     image.src = normalized.src;
   });
 
@@ -275,8 +279,6 @@ const closeCategoryPhotoModal = () => {
 const updateCategoryPhotoPreview = (root = document) => {
   const previewImage = root.querySelector("[data-category-photo-crop] img");
   if (previewImage) previewImage.style.transform = categoryPhotoTransform(categoryPhotoDraft);
-  const zoomInput = root.querySelector("[data-category-photo-zoom]");
-  if (zoomInput && categoryPhotoDraft?.scale) zoomInput.value = String(categoryPhotoDraft.scale);
 };
 
 const confirmCategoryPhotoSelection = (forcedCategoryId = activeCategoryPhotoId) => {
@@ -491,16 +493,6 @@ const renderCategoryPhotoModal = () => {
           }
         </div>
         <p class="admin-vitrine-photo-hint">${previewPhoto?.src ? "Glisse la photo dans le cercle pour la cadrer." : "Importe une photo pour la cadrer."}</p>
-        ${
-          previewPhoto?.src
-            ? `
-              <label class="admin-vitrine-photo-zoom">
-                <span>Zoom</span>
-                <input type="range" min="1" max="5" step="0.01" value="${previewPhoto.scale || 1}" data-category-photo-zoom />
-              </label>
-            `
-            : ""
-        }
         <input id="categoryPhotoInput" type="file" accept="image/*" hidden />
         <div class="admin-vitrine-photo-actions">
           <button class="admin-vitrine-primary-action" type="button" data-pick-category-photo>${previewPhoto?.src ? "Remplacer" : "Importer"}</button>
@@ -872,21 +864,6 @@ document.addEventListener("pointercancel", (event) => {
   if (categoryPhotoDrag?.pointerId === event.pointerId) categoryPhotoDrag = null;
 });
 
-document.addEventListener(
-  "wheel",
-  (event) => {
-    const cropTarget = event.target.closest("[data-category-photo-crop]");
-    if (!cropTarget || !categoryPhotoDraft?.src) return;
-
-    event.preventDefault();
-    const nextScale = (normalizeCategoryPhoto(categoryPhotoDraft)?.scale || 1) + (event.deltaY < 0 ? 0.08 : -0.08);
-    categoryPhotoDraft = clampPhotoDraft({ ...categoryPhotoDraft, scale: nextScale });
-
-    updateCategoryPhotoPreview(cropTarget.closest("#categoryPhotoModal") || document);
-  },
-  { passive: false },
-);
-
 const categoryTouchDistance = (firstTouch, secondTouch) =>
   Math.hypot(secondTouch.clientX - firstTouch.clientX, secondTouch.clientY - firstTouch.clientY);
 
@@ -967,15 +944,6 @@ document.addEventListener("touchend", () => {
 
 document.addEventListener("touchcancel", () => {
   categoryPhotoTouch = null;
-});
-
-document.addEventListener("input", (event) => {
-  const zoomInput = event.target.closest("[data-category-photo-zoom]");
-  if (!zoomInput || !categoryPhotoDraft?.src) return;
-
-  const nextScale = Number(zoomInput.value);
-  categoryPhotoDraft = clampPhotoDraft({ ...categoryPhotoDraft, scale: nextScale });
-  updateCategoryPhotoPreview();
 });
 
 document.addEventListener("change", (event) => {
