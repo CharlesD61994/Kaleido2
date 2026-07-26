@@ -102,6 +102,7 @@ let isProductPickerOpen = false;
 let isCategoryModalOpen = false;
 let activeCategoryPhotoId = null;
 let categoryPhotoDraft;
+let categoryPhotoDrag = null;
 
 const readProducts = () => readJson(productsKey, []);
 
@@ -121,14 +122,28 @@ const normalizeCategoryPhoto = (photo) =>
     ? {
         name: photo.name || "",
         url: photo.url,
-        positionX: Number.isFinite(Number(photo.positionX)) ? Number(photo.positionX) : 50,
-        positionY: Number.isFinite(Number(photo.positionY)) ? Number(photo.positionY) : 50,
+        x: Number.isFinite(Number(photo.x)) ? Number(photo.x) : 0,
+        y: Number.isFinite(Number(photo.y)) ? Number(photo.y) : 0,
+        scale: Number.isFinite(Number(photo.scale)) ? Number(photo.scale) : 1,
       }
     : null;
 
 const categoryPhotoStyle = (photo) => {
   const normalized = normalizeCategoryPhoto(photo);
-  return normalized ? `object-position:${normalized.positionX}% ${normalized.positionY}%` : "";
+  return normalized
+    ? `transform:translate(calc(-50% + ${normalized.x}px), calc(-50% + ${normalized.y}px)) scale(${normalized.scale})`
+    : "";
+};
+
+const clampPhotoDraft = (photo) => {
+  const normalized = normalizeCategoryPhoto(photo);
+  if (!normalized) return null;
+  return {
+    ...normalized,
+    x: Math.max(-80, Math.min(80, normalized.x)),
+    y: Math.max(-80, Math.min(80, normalized.y)),
+    scale: Math.max(1, Math.min(3, normalized.scale)),
+  };
 };
 
 const categoryIcon = (category) => {
@@ -181,7 +196,7 @@ const renderCategoryCard = (category, orderedCategories, index) => {
           ${
             category.photo?.url
               ? `<img src="${category.photo.url}" alt="${escapeHtml(category.photo.name || category.label)}" style="${categoryPhotoStyle(category.photo)}" />`
-              : `<span class="admin-vitrine-category-icon" aria-hidden="true">${category.icon}</span>`
+              : `<span class="admin-vitrine-category-symbol" aria-hidden="true">${category.icon}</span>`
           }
         </button>
         <button type="button" class="admin-vitrine-category-text" data-category-toggle="${category.id}">
@@ -223,20 +238,14 @@ const renderCategoryPhotoModal = () => {
         <button class="admin-product-modal-close" type="button" data-close-category-photo aria-label="Fermer">×</button>
         <span>${escapeHtml(category.label)}</span>
         <h2 id="category-photo-title">Photo de catégorie</h2>
-        <div class="admin-vitrine-photo-preview" style="--category-color:${category.color}">
+        <div class="admin-vitrine-photo-preview" data-category-photo-crop style="--category-color:${category.color}">
           ${
             previewPhoto?.url
               ? `<img src="${previewPhoto.url}" alt="${escapeHtml(previewPhoto.name || category.label)}" style="${categoryPhotoStyle(previewPhoto)}" />`
               : `<span aria-hidden="true">${category.icon}</span>`
           }
         </div>
-        <div class="admin-vitrine-photo-position" aria-label="Position de la photo">
-          <button type="button" data-move-category-photo="up" ${previewPhoto?.url ? "" : "disabled"}>â†‘</button>
-          <button type="button" data-move-category-photo="left" ${previewPhoto?.url ? "" : "disabled"}>â†</button>
-          <button type="button" data-move-category-photo="center" ${previewPhoto?.url ? "" : "disabled"}>Centrer</button>
-          <button type="button" data-move-category-photo="right" ${previewPhoto?.url ? "" : "disabled"}>â†’</button>
-          <button type="button" data-move-category-photo="down" ${previewPhoto?.url ? "" : "disabled"}>â†“</button>
-        </div>
+        <p class="admin-vitrine-photo-hint">${previewPhoto?.url ? "Glisse la photo dans le cercle pour la cadrer." : "Importe une photo pour la cadrer."}</p>
         <input id="categoryPhotoInput" type="file" accept="image/*" hidden />
         <div class="admin-vitrine-photo-actions">
           <button class="admin-vitrine-primary-action" type="button" data-pick-category-photo>${previewPhoto?.url ? "Remplacer" : "Importer"}</button>
@@ -442,7 +451,6 @@ document.addEventListener("click", (event) => {
   const pickCategoryPhoto = event.target.closest("[data-pick-category-photo]");
   const removeCategoryPhoto = event.target.closest("[data-remove-category-photo]");
   const confirmCategoryPhoto = event.target.closest("[data-confirm-category-photo]");
-  const moveCategoryPhoto = event.target.closest("[data-move-category-photo]");
   const openProductPicker = event.target.closest("[data-open-product-picker]");
   const closeProductPicker = event.target.closest("[data-close-product-picker]");
   const featureAdd = event.target.closest("[data-feature-add]");
@@ -529,27 +537,6 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  if (moveCategoryPhoto && activeCategoryPhotoId && categoryPhotoDraft?.url) {
-    const direction = moveCategoryPhoto.dataset.moveCategoryPhoto;
-    const step = 8;
-    const nextPhoto = { ...normalizeCategoryPhoto(categoryPhotoDraft) };
-    if (direction === "center") {
-      nextPhoto.positionX = 50;
-      nextPhoto.positionY = 50;
-    } else if (direction === "left") {
-      nextPhoto.positionX = Math.max(0, nextPhoto.positionX - step);
-    } else if (direction === "right") {
-      nextPhoto.positionX = Math.min(100, nextPhoto.positionX + step);
-    } else if (direction === "up") {
-      nextPhoto.positionY = Math.max(0, nextPhoto.positionY - step);
-    } else if (direction === "down") {
-      nextPhoto.positionY = Math.min(100, nextPhoto.positionY + step);
-    }
-    categoryPhotoDraft = nextPhoto;
-    render();
-    return;
-  }
-
   if (confirmCategoryPhoto && activeCategoryPhotoId) {
     const nextPhotos = { ...(homeConfig.categoryPhotos || {}) };
     if (categoryPhotoDraft?.url) {
@@ -611,6 +598,60 @@ document.addEventListener("click", (event) => {
   }
 });
 
+document.addEventListener("pointerdown", (event) => {
+  const cropTarget = event.target.closest("[data-category-photo-crop]");
+  if (!cropTarget || !categoryPhotoDraft?.url) return;
+
+  event.preventDefault();
+  cropTarget.setPointerCapture?.(event.pointerId);
+  const photo = clampPhotoDraft(categoryPhotoDraft);
+  categoryPhotoDrag = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    photoX: photo.x,
+    photoY: photo.y,
+  };
+});
+
+document.addEventListener("pointermove", (event) => {
+  if (!categoryPhotoDrag || event.pointerId !== categoryPhotoDrag.pointerId || !categoryPhotoDraft?.url) return;
+
+  event.preventDefault();
+  categoryPhotoDraft = clampPhotoDraft({
+    ...categoryPhotoDraft,
+    x: categoryPhotoDrag.photoX + event.clientX - categoryPhotoDrag.startX,
+    y: categoryPhotoDrag.photoY + event.clientY - categoryPhotoDrag.startY,
+  });
+
+  const previewImage = document.querySelector("[data-category-photo-crop] img");
+  if (previewImage) previewImage.style.transform = categoryPhotoStyle(categoryPhotoDraft).replace("transform:", "");
+});
+
+document.addEventListener("pointerup", (event) => {
+  if (categoryPhotoDrag?.pointerId === event.pointerId) categoryPhotoDrag = null;
+});
+
+document.addEventListener("pointercancel", (event) => {
+  if (categoryPhotoDrag?.pointerId === event.pointerId) categoryPhotoDrag = null;
+});
+
+document.addEventListener(
+  "wheel",
+  (event) => {
+    const cropTarget = event.target.closest("[data-category-photo-crop]");
+    if (!cropTarget || !categoryPhotoDraft?.url) return;
+
+    event.preventDefault();
+    const nextScale = (normalizeCategoryPhoto(categoryPhotoDraft)?.scale || 1) + (event.deltaY < 0 ? 0.08 : -0.08);
+    categoryPhotoDraft = clampPhotoDraft({ ...categoryPhotoDraft, scale: nextScale });
+
+    const previewImage = cropTarget.querySelector("img");
+    if (previewImage) previewImage.style.transform = categoryPhotoStyle(categoryPhotoDraft).replace("transform:", "");
+  },
+  { passive: false },
+);
+
 document.addEventListener("change", (event) => {
   const input = event.target.closest("#categoryPhotoInput");
   const file = input?.files?.[0];
@@ -621,8 +662,9 @@ document.addEventListener("change", (event) => {
     categoryPhotoDraft = {
       name: file.name,
       url: String(reader.result || ""),
-      positionX: 50,
-      positionY: 50,
+      x: 0,
+      y: 0,
+      scale: 1,
     };
     render();
   });
