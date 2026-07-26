@@ -19,7 +19,9 @@
             <img src="./assets/kaleido-logo.jpg" alt="" />
             <span>Admin</span>
           </a>
+          <button class="admin-header-publish-button" type="button" id="publishStorefront">Publier</button>
         </header>
+        <p class="admin-publish-error" id="publishStorefrontStatus" role="status" hidden></p>
 
         <section class="admin-dashboard-stats admin-products-stats" aria-label="Résumé boutique">
           <article style="--stat-color:#7C3AED">
@@ -37,13 +39,6 @@
             <strong id="catalogCount">0</strong>
             <small>CATALOGUE</small>
           </article>
-        </section>
-
-        <section class="admin-publish-panel" aria-label="Publication de la boutique">
-          <button class="admin-publish-main-button" type="button" id="publishStorefront">
-            Publier la boutique
-          </button>
-          <small id="publishStorefrontStatus">Envoie les produits et l'accueil boutique vers la vitrine.</small>
         </section>
 
         <section class="admin-dashboard-panel admin-dashboard-modules" aria-labelledby="modules-title">

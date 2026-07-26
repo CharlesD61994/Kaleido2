@@ -33,9 +33,12 @@ const setPublishState = (state, message) => {
     publishStorefrontButton.dataset.state = state;
     publishStorefrontButton.disabled = state === "saving";
     publishStorefrontButton.textContent =
-      state === "saving" ? "Publication..." : state === "saved" ? "Boutique publiee" : "Publier la boutique";
+      state === "saving" ? "Publication..." : state === "saved" ? "Publiee" : "Publier";
   }
-  if (publishStorefrontStatus) publishStorefrontStatus.textContent = message;
+  if (publishStorefrontStatus) {
+    publishStorefrontStatus.hidden = state !== "error";
+    publishStorefrontStatus.textContent = state === "error" ? message : "";
+  }
 };
 
 const publishStorefront = async () => {
@@ -61,7 +64,7 @@ const publishStorefront = async () => {
 
   setPublishState("saved", "Boutique publiee. La vitrine lira cette version au prochain chargement.");
   window.setTimeout(
-    () => setPublishState("idle", "Envoie les produits et l'accueil boutique vers la vitrine."),
+    () => setPublishState("idle", ""),
     2600,
   );
 };
