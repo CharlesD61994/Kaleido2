@@ -103,6 +103,7 @@ let isCategoryModalOpen = false;
 let activeCategoryPhotoId = null;
 let categoryPhotoDraft;
 let categoryPhotoDrag = null;
+let categoryPhotoTouch = null;
 let isCategoryPhotoDeleteConfirmOpen = false;
 const categoryPhotoCropSize = 260;
 
@@ -217,8 +218,16 @@ const closeCategoryPhotoModal = () => {
   activeCategoryPhotoId = null;
   categoryPhotoDraft = undefined;
   categoryPhotoDrag = null;
+  categoryPhotoTouch = null;
   isCategoryPhotoDeleteConfirmOpen = false;
   if (categoryPhotoModal) categoryPhotoModal.innerHTML = "";
+};
+
+const updateCategoryPhotoPreview = (root = document) => {
+  const previewImage = root.querySelector("[data-category-photo-crop] img");
+  if (previewImage) previewImage.style.transform = categoryPhotoTransform(categoryPhotoDraft);
+  const zoomInput = root.querySelector("[data-category-photo-zoom]");
+  if (zoomInput && categoryPhotoDraft?.scale) zoomInput.value = String(categoryPhotoDraft.scale);
 };
 
 const confirmCategoryPhotoSelection = (forcedCategoryId = activeCategoryPhotoId) => {
@@ -259,89 +268,72 @@ const confirmCategoryPhotoSelection = (forcedCategoryId = activeCategoryPhotoId)
     .catch(() => {});
 };
 
-window.kaleidoConfirmCategoryPhoto = (event, categoryId) => {
-  event?.preventDefault?.();
-  event?.stopPropagation?.();
-  confirmCategoryPhotoSelection(categoryId);
-  return false;
-};
+const bindCategoryPhotoModalControls = (categoryId) => {
+  if (!categoryPhotoModal) return;
 
-categoryPhotoModal?.addEventListener(
-  "click",
-  (event) => {
-    if (!(event.target instanceof Element)) return;
-    const closeCategoryPhoto = event.target.closest("[data-close-category-photo]");
-    const pickCategoryPhoto = event.target.closest("[data-pick-category-photo]");
-    const removeCategoryPhoto = event.target.closest("[data-remove-category-photo]");
-    const cancelRemoveCategoryPhoto = event.target.closest("[data-cancel-remove-category-photo]");
-    const confirmRemoveCategoryPhoto = event.target.closest("[data-confirm-remove-category-photo]");
-    const confirmCategoryPhoto = event.target.closest("[data-confirm-category-photo]");
-    const backdrop = event.target.closest(".admin-vitrine-photo-backdrop");
-    const insidePhotoModal = event.target.closest(".admin-vitrine-photo-modal");
-    const insideDeleteModal = event.target.closest(".admin-vitrine-delete-photo-modal");
+  categoryPhotoModal.querySelector("[data-confirm-category-photo]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    confirmCategoryPhotoSelection(categoryId);
+  });
 
+  categoryPhotoModal.querySelectorAll("[data-close-category-photo]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      closeCategoryPhotoModal();
+      render();
+    });
+  });
+
+  categoryPhotoModal.querySelector("[data-pick-category-photo]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    document.querySelector("#categoryPhotoInput")?.click();
+  });
+
+  categoryPhotoModal.querySelector("[data-remove-category-photo]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    isCategoryPhotoDeleteConfirmOpen = true;
+    render();
+  });
+
+  categoryPhotoModal.querySelectorAll("[data-cancel-remove-category-photo]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      isCategoryPhotoDeleteConfirmOpen = false;
+      render();
+    });
+  });
+
+  categoryPhotoModal.querySelector("[data-confirm-remove-category-photo]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    categoryPhotoDraft = null;
+    isCategoryPhotoDeleteConfirmOpen = false;
+    render();
+  });
+
+  categoryPhotoModal.querySelector(".admin-vitrine-photo-backdrop")?.addEventListener("click", (event) => {
     if (
-      !closeCategoryPhoto &&
-      !pickCategoryPhoto &&
-      !removeCategoryPhoto &&
-      !cancelRemoveCategoryPhoto &&
-      !confirmRemoveCategoryPhoto &&
-      !confirmCategoryPhoto &&
-      !(backdrop && !insidePhotoModal && !insideDeleteModal)
+      event.target.closest(".admin-vitrine-photo-modal") ||
+      event.target.closest(".admin-vitrine-delete-photo-modal")
     ) {
       return;
     }
-
     event.preventDefault();
-    event.stopPropagation();
-
-    if (closeCategoryPhoto) {
-      closeCategoryPhotoModal();
-      render();
-      return;
-    }
-
-    if (backdrop && !insidePhotoModal && !insideDeleteModal) {
-      if (isCategoryPhotoDeleteConfirmOpen) {
-        isCategoryPhotoDeleteConfirmOpen = false;
-        render();
-        return;
-      }
-      closeCategoryPhotoModal();
-      render();
-      return;
-    }
-
-    if (pickCategoryPhoto) {
-      document.querySelector("#categoryPhotoInput")?.click();
-      return;
-    }
-
-    if (removeCategoryPhoto && activeCategoryPhotoId) {
-      isCategoryPhotoDeleteConfirmOpen = true;
-      render();
-      return;
-    }
-
-    if (cancelRemoveCategoryPhoto && activeCategoryPhotoId) {
+    event.stopImmediatePropagation();
+    if (isCategoryPhotoDeleteConfirmOpen) {
       isCategoryPhotoDeleteConfirmOpen = false;
       render();
       return;
     }
-
-    if (confirmRemoveCategoryPhoto && activeCategoryPhotoId) {
-      categoryPhotoDraft = null;
-      isCategoryPhotoDeleteConfirmOpen = false;
-      render();
-      return;
-    }
-
-    if (confirmCategoryPhoto && activeCategoryPhotoId) {
-      confirmCategoryPhotoSelection(confirmCategoryPhoto.dataset.confirmCategoryPhoto);
-    }
-  },
-  true,
-);
+    closeCategoryPhotoModal();
+    render();
+  });
+};
 
 const categoryIcon = (category) => {
   const normalized = String(category || "").toLowerCase();
@@ -459,7 +451,7 @@ const renderCategoryPhotoModal = () => {
         <div class="admin-vitrine-photo-actions">
           <button class="admin-vitrine-primary-action" type="button" data-pick-category-photo>${previewPhoto?.src ? "Remplacer" : "Importer"}</button>
           <button class="admin-vitrine-danger-action" type="button" data-remove-category-photo ${previewPhoto?.src ? "" : "disabled"}>Supprimer</button>
-          <button class="admin-vitrine-confirm-action admin-vitrine-primary-action" type="button" data-confirm-category-photo="${activeCategoryPhotoId}" onclick="return window.kaleidoConfirmCategoryPhoto(event, this.dataset.confirmCategoryPhoto)">Confirmer</button>
+          <button class="admin-vitrine-confirm-action admin-vitrine-primary-action" type="button" data-confirm-category-photo>Confirmer</button>
         </div>
       </section>
       ${
@@ -480,6 +472,7 @@ const renderCategoryPhotoModal = () => {
       }
     </div>
   `;
+  bindCategoryPhotoModalControls(activeCategoryPhotoId);
 };
 
 const renderCategories = () => {
@@ -840,6 +833,7 @@ document.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "touch") return;
   const cropTarget = event.target.closest("[data-category-photo-crop]");
   if (!cropTarget || !categoryPhotoDraft?.src) return;
 
@@ -856,6 +850,7 @@ document.addEventListener("pointerdown", (event) => {
 });
 
 document.addEventListener("pointermove", (event) => {
+  if (event.pointerType === "touch") return;
   if (!categoryPhotoDrag || event.pointerId !== categoryPhotoDrag.pointerId || !categoryPhotoDraft?.src) return;
 
   event.preventDefault();
@@ -865,8 +860,7 @@ document.addEventListener("pointermove", (event) => {
     y: categoryPhotoDrag.photoY + event.clientY - categoryPhotoDrag.startY,
   });
 
-  const previewImage = document.querySelector("[data-category-photo-crop] img");
-  if (previewImage) previewImage.style.transform = categoryPhotoTransform(categoryPhotoDraft);
+  updateCategoryPhotoPreview();
 });
 
 document.addEventListener("pointerup", (event) => {
@@ -887,11 +881,92 @@ document.addEventListener(
     const nextScale = (normalizeCategoryPhoto(categoryPhotoDraft)?.scale || 1) + (event.deltaY < 0 ? 0.08 : -0.08);
     categoryPhotoDraft = clampPhotoDraft({ ...categoryPhotoDraft, scale: nextScale });
 
-    const previewImage = cropTarget.querySelector("img");
-    if (previewImage) previewImage.style.transform = categoryPhotoTransform(categoryPhotoDraft);
+    updateCategoryPhotoPreview(cropTarget.closest("#categoryPhotoModal") || document);
   },
   { passive: false },
 );
+
+const categoryTouchDistance = (firstTouch, secondTouch) =>
+  Math.hypot(secondTouch.clientX - firstTouch.clientX, secondTouch.clientY - firstTouch.clientY);
+
+const categoryTouchCenter = (firstTouch, secondTouch) => ({
+  x: (firstTouch.clientX + secondTouch.clientX) / 2,
+  y: (firstTouch.clientY + secondTouch.clientY) / 2,
+});
+
+document.addEventListener(
+  "touchstart",
+  (event) => {
+    const cropTarget = event.target.closest("[data-category-photo-crop]");
+    if (!cropTarget || !categoryPhotoDraft?.src) return;
+
+    const photo = clampPhotoDraft(categoryPhotoDraft);
+    if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      categoryPhotoTouch = {
+        mode: "pan",
+        startX: touch.clientX,
+        startY: touch.clientY,
+        photoX: photo.x,
+        photoY: photo.y,
+      };
+    } else if (event.touches.length === 2) {
+      const center = categoryTouchCenter(event.touches[0], event.touches[1]);
+      categoryPhotoTouch = {
+        mode: "pinch",
+        startDistance: categoryTouchDistance(event.touches[0], event.touches[1]),
+        startScale: photo.scale,
+        startX: center.x,
+        startY: center.y,
+        photoX: photo.x,
+        photoY: photo.y,
+      };
+    }
+  },
+  { passive: true },
+);
+
+document.addEventListener(
+  "touchmove",
+  (event) => {
+    if (!categoryPhotoTouch || !categoryPhotoDraft?.src) return;
+
+    if (categoryPhotoTouch.mode === "pan" && event.touches.length === 1) {
+      event.preventDefault();
+      const touch = event.touches[0];
+      categoryPhotoDraft = clampPhotoDraft({
+        ...categoryPhotoDraft,
+        x: categoryPhotoTouch.photoX + touch.clientX - categoryPhotoTouch.startX,
+        y: categoryPhotoTouch.photoY + touch.clientY - categoryPhotoTouch.startY,
+      });
+      updateCategoryPhotoPreview();
+      return;
+    }
+
+    if (categoryPhotoTouch.mode === "pinch" && event.touches.length === 2) {
+      event.preventDefault();
+      const center = categoryTouchCenter(event.touches[0], event.touches[1]);
+      const distance = categoryTouchDistance(event.touches[0], event.touches[1]);
+      const nextScale = categoryPhotoTouch.startScale * (distance / categoryPhotoTouch.startDistance);
+      categoryPhotoDraft = clampPhotoDraft({
+        ...categoryPhotoDraft,
+        scale: nextScale,
+        x: categoryPhotoTouch.photoX + center.x - categoryPhotoTouch.startX,
+        y: categoryPhotoTouch.photoY + center.y - categoryPhotoTouch.startY,
+      });
+      updateCategoryPhotoPreview();
+    }
+  },
+  { passive: false },
+);
+
+document.addEventListener("touchend", () => {
+  categoryPhotoTouch = null;
+});
+
+document.addEventListener("touchcancel", () => {
+  categoryPhotoTouch = null;
+});
 
 document.addEventListener("input", (event) => {
   const zoomInput = event.target.closest("[data-category-photo-zoom]");
@@ -899,8 +974,7 @@ document.addEventListener("input", (event) => {
 
   const nextScale = Number(zoomInput.value);
   categoryPhotoDraft = clampPhotoDraft({ ...categoryPhotoDraft, scale: nextScale });
-  const previewImage = document.querySelector("[data-category-photo-crop] img");
-  if (previewImage) previewImage.style.transform = categoryPhotoTransform(categoryPhotoDraft);
+  updateCategoryPhotoPreview();
 });
 
 document.addEventListener("change", (event) => {
