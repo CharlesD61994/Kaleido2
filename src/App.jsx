@@ -23,6 +23,7 @@ import AuthScreen from "./components/auth/AuthScreen";
 import { getThemeMode } from "./styles/theme";
 
 const APP_RESUME_KEY = "kaleido_resume_state";
+const APP_ADMIN_RETURN_KEY = "kaleido_admin_return_state";
 const APP_WARM_START_KEY = "kaleido_warm_start_seen";
 
 const canUseLocalStorage = () => {
@@ -103,7 +104,18 @@ function KaleidoHub({ auth }) {
     if (didRestoreResumeStateRef.current) return;
     didRestoreResumeStateRef.current = true;
 
-    const resume = readJSONStorage(APP_RESUME_KEY);
+    const adminReturn = readJSONStorage(APP_ADMIN_RETURN_KEY);
+    if (adminReturn && canUseLocalStorage()) {
+      try {
+        localStorage.removeItem(APP_ADMIN_RETURN_KEY);
+      } catch {
+        // Rien a faire.
+      }
+    }
+
+    const resume = adminReturn && typeof adminReturn === "object"
+      ? adminReturn
+      : readJSONStorage(APP_RESUME_KEY);
     if (!resume || typeof resume !== "object") return;
 
     if (resume.mode === "personal" || resume.mode === "pro") {

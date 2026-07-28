@@ -41,6 +41,26 @@ export default function HomeView({
   const canOpenBoutiqueAdmin = typeof window !== "undefined" && window.location?.protocol === "capacitor:";
   const openBoutiqueAdmin = canOpenBoutiqueAdmin
     ? () => {
+        try {
+          window.localStorage.setItem(
+            "kaleido_admin_return_state",
+            JSON.stringify({
+              view: "hub",
+              mode,
+              savedAt: new Date().toISOString(),
+            }),
+          );
+          window.localStorage.setItem(
+            "kaleido_resume_state",
+            JSON.stringify({
+              view: "hub",
+              mode,
+              savedAt: new Date().toISOString(),
+            }),
+          );
+        } catch {
+          // Le retour admin est un confort; l'ouverture du module reste prioritaire.
+        }
         window.location.href = "/admin-boutique/admin.html";
       }
     : null;
