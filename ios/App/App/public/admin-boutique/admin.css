@@ -12,14 +12,19 @@
   position: sticky;
   top: 0;
   z-index: 5;
+  height: auto;
+  min-height: calc(env(safe-area-inset-top, 0px) + 84px);
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px 12px 22px;
   gap: 12px;
 }
 
-.admin-topbar:has(.admin-header-back) {
+.admin-topbar:has(.admin-header-back),
+.admin-topbar:has(.admin-root-back) {
   justify-content: flex-start;
 }
 
-.admin-topbar:has(.admin-header-back) .brand {
+.admin-topbar:has(.admin-header-back) .brand,
+.admin-topbar:has(.admin-root-back) .brand {
   margin-left: -3px;
   transform: none;
 }
@@ -31,6 +36,16 @@
 .admin-header-back {
   flex: 0 0 auto;
   text-decoration: none;
+}
+
+.admin-root-back {
+  flex: 0 0 auto;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.admin-root-back + .brand {
+  min-width: 0;
 }
 
 .admin-storefront input,

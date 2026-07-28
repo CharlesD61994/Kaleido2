@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Atelier Kaleido - Admin boutique</title>
     <meta
       name="description"
@@ -16,6 +16,7 @@
     <main class="phone-shell" aria-label="Admin mobile Atelier Kaleido">
       <section class="storefront admin-storefront">
         <header class="topbar admin-topbar" aria-label="Navigation admin">
+          <button class="admin-back-button admin-root-back" type="button" id="adminBackButton" aria-label="Retour">←</button>
           <a class="brand" href="/" aria-label="Retour à Kaleido">
             <img src="./assets/kaleido-logo.jpg" alt="" />
             <span>Admin</span>
@@ -56,10 +57,10 @@
               <small>Préparer une fiche avec photos, options, couleurs et aperçu client.</small>
             </a>
 
-            <a class="admin-module-tile" href="/" style="--module-color:#7c3aed">
+            <a class="admin-module-tile" href="./index.html" style="--module-color:#7c3aed">
               <span class="admin-module-icon admin-module-icon-home" aria-hidden="true"></span>
-              <strong>Kaleido</strong>
-              <small>Retourner à l'application principale.</small>
+              <strong>Vitrine</strong>
+              <small>Visualiser le site boutique comme les clients le verront.</small>
             </a>
 
             <a class="admin-module-tile" href="./admin-produits.html" style="--module-color:#30c7c9">

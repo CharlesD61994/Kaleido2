@@ -6,6 +6,7 @@ const catalogCount = document.querySelector("#catalogCount");
 const dashboardDraftList = document.querySelector("#dashboardDraftList");
 const publishStorefrontButton = document.querySelector("#publishStorefront");
 const publishStorefrontStatus = document.querySelector("#publishStorefrontStatus");
+const adminBackButton = document.querySelector("#adminBackButton");
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(
@@ -100,3 +101,10 @@ const renderDashboard = () => {
 
 renderDashboard();
 publishStorefrontButton?.addEventListener("click", publishStorefront);
+adminBackButton?.addEventListener("click", () => {
+  if (window.history.length > 1) {
+    window.history.back();
+    return;
+  }
+  window.location.href = "/";
+});

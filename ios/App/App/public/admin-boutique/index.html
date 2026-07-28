@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atelier Kaleido - Produits faits main</title>
+    <meta
+      name="description"
+      content="Atelier Kaleido propose des projets de tricot et crochet faits main, sur commande, avec suivi client."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="phone-shell" aria-label="Maquette mobile Atelier Kaleido">
+      <section class="storefront">
+        <header class="topbar" aria-label="Navigation principale">
+          <button class="menu-button" type="button" aria-label="Ouvrir le menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <a class="brand" href="#accueil" aria-label="Atelier Kaleido">
+            <img src="./assets/kaleido-logo.jpg" alt="" />
+            <span>Atelier<br />Kaleido</span>
+          </a>
+
+          <div class="top-actions">
+            <button class="search-button" type="button" aria-label="Rechercher">
+            </button>
+            <button class="cart-button" type="button" aria-label="Panier">
+              <span class="cart-count">2</span>
+            </button>
+          </div>
+        </header>
+
+        <nav class="side-menu" aria-label="Menu secondaire" aria-hidden="true">
+          <a href="#patrons">Tous les produits</a>
+          <a href="#categories-title">Catégories</a>
+          <a href="https://app.atelierkaleido.ca">Suivre mon projet</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <section id="accueil" class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Fait main avec suivi</p>
+            <h1>
+              <span>Des</span>
+              <span>créations</span>
+              <span>à votre</span>
+              <span>image</span>
+            </h1>
+            <a class="primary-cta" href="#patrons">Voir le catalogue <span>→</span></a>
+          </div>
+
+          <div class="hero-showcase" aria-label="Parcours client Atelier Kaleido">
+            <article class="showcase-card showcase-card-main">
+              <span class="showcase-step">01</span>
+              <strong>Choisir dans le catalogue</strong>
+              <small>Parcourez les produits et les options</small>
+            </article>
+            <article class="showcase-card showcase-card-progress">
+              <span class="showcase-step">02</span>
+              <strong>Suivre la production</strong>
+              <span class="mini-progress"><span></span></span>
+              <small>Voyez votre projet avancer en direct</small>
+            </article>
+            <article class="showcase-card showcase-card-soft">
+              <span class="showcase-step">03</span>
+              <strong>Recevoir le produit final</strong>
+              <small>Une création faite à la main</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-block" aria-labelledby="categories-title">
+          <div class="section-heading">
+            <h2 id="categories-title">Catégories</h2>
+          </div>
+
+          <div class="category-row">
+            <button class="category-card color-teal" type="button">
+              <span class="category-photo photo-slippers"></span>
+              <span>Pantoufles</span>
+            </button>
+            <button class="category-card color-pink" type="button">
+              <span class="category-photo photo-socks"></span>
+              <span>Bas</span>
+            </button>
+            <button class="category-card color-yellow" type="button">
+              <span class="category-photo photo-plush"></span>
+              <span>Doudous</span>
+            </button>
+            <button class="category-card color-orange" type="button">
+              <span class="category-photo photo-accessories"></span>
+              <span>Accessoires</span>
+            </button>
+            <button class="category-card color-green" type="button">
+              <span class="category-photo photo-baby"></span>
+              <span>Bébé</span>
+            </button>
+          </div>
+        </section>
+
+        <section id="patrons" class="section-block products-section" aria-labelledby="popular-title">
+          <div class="section-heading stacked">
+            <div>
+              <h2 id="popular-title">Nos populaires</h2>
+              <span class="kaleido-underline" aria-hidden="true"></span>
+            </div>
+          </div>
+
+          <div class="product-grid">
+            <article class="product-card glow-coral" data-product-open="pantoufles" role="button" tabindex="0">
+              <button class="heart-button" type="button" aria-label="Ajouter aux favoris"></button>
+              <div class="product-image product-slippers"></div>
+              <div class="product-info">
+                <h3>Pantoufles douillettes</h3>
+                <p>À partir de <strong>42,00 $</strong></p>
+                <div class="swatches" aria-label="Couleurs disponibles">
+                  <span style="--swatch:#ead9c0"></span>
+                  <span style="--swatch:#c8aa86"></span>
+                  <span style="--swatch:#8a8f7b"></span>
+                  <span style="--swatch:#2f8f9d"></span>
+                  <button type="button" aria-label="Voir plus de couleurs">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card glow-teal">
+              <button class="heart-button" type="button" aria-label="Ajouter aux favoris"></button>
+              <div class="product-image product-socks"></div>
+              <div class="product-info">
+                <h3>Bas torsadés</h3>
+                <p>À partir de <strong>28,00 $</strong></p>
+                <div class="swatches" aria-label="Couleurs disponibles">
+                  <span style="--swatch:#f3ead8"></span>
+                  <span style="--swatch:#b9b7af"></span>
+                  <span style="--swatch:#c94f3d"></span>
+                  <span style="--swatch:#2d9aa0"></span>
+                  <button type="button" aria-label="Voir plus de couleurs">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card glow-yellow">
+              <button class="heart-button" type="button" aria-label="Ajouter aux favoris"></button>
+              <div class="product-image product-doudou"></div>
+              <div class="product-info">
+                <h3>Doudou lapin</h3>
+                <p>À partir de <strong>36,00 $</strong></p>
+                <div class="swatches" aria-label="Couleurs disponibles">
+                  <span style="--swatch:#e6c1b0"></span>
+                  <span style="--swatch:#bd9e7a"></span>
+                  <span style="--swatch:#9ba564"></span>
+                  <span style="--swatch:#8aa8c6"></span>
+                  <button type="button" aria-label="Voir plus de couleurs">+</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="contact" class="trust-strip" aria-label="Atouts Atelier Kaleido">
+          <article>
+            <span class="trust-icon yarn-icon"></span>
+            <div>
+              <strong>Fait main</strong>
+              <small>Avec passion</small>
+            </div>
+          </article>
+          <article>
+            <span class="trust-icon heart-icon"></span>
+            <div>
+              <strong>Sur mesure</strong>
+              <small>Adapté à vos besoins</small>
+            </div>
+          </article>
+          <article>
+            <span class="trust-icon chat-icon"></span>
+            <div>
+              <strong>Suivi client</strong>
+              <small>À chaque étape</small>
+            </div>
+          </article>
+        </section>
+
+        <section class="product-detail" data-product-detail="pantoufles" aria-label="Fiche produit Pantoufles douillettes" hidden>
+          <div class="detail-header">
+            <button class="detail-back" type="button" aria-label="Retour au catalogue">
+              <span aria-hidden="true">←</span>
+            </button>
+            <span class="detail-kicker">Produit fait main</span>
+          </div>
+
+          <div class="detail-hero">
+            <img src="./assets/product-pantoufles-kaleido.png" alt="Pantoufles douillettes faites à la main" />
+            <button class="heart-button detail-heart" type="button" aria-label="Ajouter aux favoris"></button>
+          </div>
+
+          <div class="detail-content">
+            <p class="eyebrow detail-eyebrow">Avec suivi Kaleido</p>
+            <h2>Pantoufles douillettes</h2>
+            <p class="detail-price">À partir de <strong>42,00 $</strong></p>
+            <p class="detail-copy">
+              Une paire confortable, douce et colorée, réalisée à la main selon vos préférences.
+              Chaque commande inclut un lien privé pour suivre la production et poser vos questions.
+            </p>
+
+            <div class="detail-panel">
+              <span class="panel-label">Couleurs populaires</span>
+              <div class="detail-swatches" aria-label="Couleurs disponibles">
+                <button style="--swatch:#f05b4f" type="button" aria-label="Corail"></button>
+                <button style="--swatch:#30c7c9" type="button" aria-label="Turquoise"></button>
+                <button style="--swatch:#f2d9c9" type="button" aria-label="Crème rosée"></button>
+                <button style="--swatch:#f3b51b" type="button" aria-label="Miel"></button>
+              </div>
+            </div>
+
+            <div class="detail-panel tracking-panel">
+              <span class="panel-label">Votre commande</span>
+              <div class="tracking-steps">
+                <span>Catalogue</span>
+                <span>Production</span>
+                <span>Produit final</span>
+              </div>
+              <div class="detail-progress"><span></span></div>
+              <small>Le suivi privé sera envoyé après la confirmation de la commande.</small>
+            </div>
+
+            <div class="detail-actions">
+              <button class="buy-button" type="button">Commander avec Shopify</button>
+              <button class="secondary-button" type="button">Demander une couleur</button>
+            </div>
+          </div>
+        </section>
+
+        <nav class="bottom-nav" aria-label="Navigation mobile">
+          <a class="active" href="#accueil">
+            <span class="nav-icon home-icon"></span>
+            Accueil
+          </a>
+          <a href="#patrons">
+            <span class="nav-icon grid-icon"></span>
+            Produits
+          </a>
+          <a href="#favoris">
+            <span class="nav-icon fav-icon"></span>
+            Favoris
+          </a>
+          <a href="#commandes">
+            <span class="nav-icon box-icon"></span>
+            Commandes
+          </a>
+        </nav>
+      </section>
+    </main>
+
+    <script src="./storefront-config.js"></script>
+    <script src="./storefront-cloud.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
