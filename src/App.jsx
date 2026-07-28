@@ -265,6 +265,7 @@ const folderRecords = useFolderRecords({
 });
 const {
   navigateBackFromClientPage,
+  navigateToBoutiqueAdmin,
   navigateToClientPage,
   navigateToHub,
   navigateToLibrary,
@@ -410,6 +411,7 @@ return (
   }}
   navigation={{
     navigateBackFromClientPage,
+    navigateToBoutiqueAdmin,
     navigateToClientPage,
     navigateToHub,
     navigateToLibrary,
