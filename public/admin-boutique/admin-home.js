@@ -118,5 +118,8 @@ adminBackButton?.addEventListener("click", () => {
   } catch {
     // Le retour retombera simplement sur l'accueil.
   }
-  window.location.href = "/";
+  document.documentElement.classList.add("admin-is-leaving");
+  window.setTimeout(() => {
+    window.location.href = "/";
+  }, 120);
 });
