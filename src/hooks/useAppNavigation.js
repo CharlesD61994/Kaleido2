@@ -104,6 +104,13 @@ export default function useAppNavigation({
     setCurrentView(VIEWS.CLIENT_PAGE);
   }, [currentProject, currentView, setCurrentProject, setCurrentView, setPrevView]);
 
+  const navigateToBoutiqueAdmin = useCallback(() => {
+    setPrevView(currentView);
+    setViewTransition("slide-in-right");
+    resetTransitionSoon();
+    setCurrentView(VIEWS.BOUTIQUE_ADMIN);
+  }, [currentView, resetTransitionSoon, setCurrentView, setPrevView, setViewTransition]);
+
   const navigateBackFromClientPage = useCallback(() => {
     if (prevView === VIEWS.HUB) {
       setCurrentView(VIEWS.HUB);
@@ -120,6 +127,7 @@ export default function useAppNavigation({
 
   return {
     navigateBackFromClientPage,
+    navigateToBoutiqueAdmin,
     navigateToClientPage,
     navigateToHub,
     navigateToLibrary,

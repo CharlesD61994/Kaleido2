@@ -2,6 +2,7 @@ import React from "react";
 import HomeScreen from "./HomeScreen";
 import LibraryScreen, { LibraryPreview } from "./LibraryScreen";
 import WorkScreens from "./WorkScreens";
+import BoutiqueAdminScreen from "./BoutiqueAdminScreen";
 import { VIEWS } from "../../constants/views";
 import { GLOBAL_MOTION_CSS, getViewMotionStyle } from "../../styles/motion";
 import { THEME_CSS } from "../../styles/theme";
@@ -44,6 +45,7 @@ export default function AppScreens({
 
   const {
     navigateBackFromClientPage,
+    navigateToBoutiqueAdmin,
     navigateToClientPage,
     navigateToHub,
     navigateToLibrary,
@@ -211,6 +213,12 @@ export default function AppScreens({
         themeMode={themeMode}
         viewWrapStyle={viewWrapStyle}
         viewTransition={viewTransition}
+      />
+
+      <BoutiqueAdminScreen
+        currentView={currentView}
+        navigateToHub={navigateToHub}
+        activeScreenInteractiveStyle={activeScreenInteractiveStyle}
       />
 
       <ClientModal

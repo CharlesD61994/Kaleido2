@@ -105,7 +105,7 @@ export default function useEdgeSwipePreviewStyles({
     activeScreenInteractiveStyle,
     clientPreviousPreviewStyle: null,
     inactivePreviewContentStyle,
-    keepHubMounted: currentView === VIEWS.HUB || currentView === VIEWS.PDF_VIEWER || previewUsesHub,
+    keepHubMounted: currentView === VIEWS.HUB || currentView === VIEWS.PDF_VIEWER || currentView === VIEWS.BOUTIQUE_ADMIN || previewUsesHub,
     keepLibraryMountedForPreview: usesLibraryBackPreview || previewUsesLibrary,
     previewLibraryFolderId,
     previewBackdropStyle,

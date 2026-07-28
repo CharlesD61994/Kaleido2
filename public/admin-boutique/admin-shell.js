@@ -38,6 +38,7 @@
   };
 
   const normalizeHref = (href) => new URL(href || "./admin.html", currentHref).href;
+  const isEmbeddedInApp = () => window.parent && window.parent !== window;
 
   const setFrameInteractivity = (enabled) => {
     [activeFrame, nextFrame].forEach((frame) => {
@@ -92,6 +93,10 @@
   };
 
   const finishToApp = () => {
+    if (isEmbeddedInApp()) {
+      window.parent.postMessage({ type: "kaleido-admin:return-app" }, "*");
+      return;
+    }
     writeAdminReturn();
     document.documentElement.classList.add("admin-shell-leaving");
     window.setTimeout(() => {
@@ -205,6 +210,10 @@
     if (data.type === "kaleido-admin:back") goBack();
     if (data.type === "kaleido-admin:swipe-progress" && activeFrame) {
       const progress = Math.max(0, Math.min(Number(data.progress) || 0, 132));
+      if (stack.length <= 1 && isEmbeddedInApp()) {
+        window.parent.postMessage({ type: "kaleido-admin-root:swipe-progress", progress: progress / 132 }, "*");
+        return;
+      }
       prepareBackFrame();
       activeFrame.style.transition = "none";
       activeFrame.style.transform = `translate3d(${progress}px, 0, 0)`;
@@ -215,8 +224,20 @@
         nextFrame.style.transform = `translate3d(${previewOffset}%, 0, 0)`;
       }
     }
-    if (data.type === "kaleido-admin:swipe-cancel") resetSwipe();
-    if (data.type === "kaleido-admin:swipe-complete") finishPreparedBack();
+    if (data.type === "kaleido-admin:swipe-cancel") {
+      if (stack.length <= 1 && isEmbeddedInApp()) {
+        window.parent.postMessage({ type: "kaleido-admin-root:swipe-cancel" }, "*");
+        return;
+      }
+      resetSwipe();
+    }
+    if (data.type === "kaleido-admin:swipe-complete") {
+      if (stack.length <= 1 && isEmbeddedInApp()) {
+        window.parent.postMessage({ type: "kaleido-admin-root:swipe-complete" }, "*");
+        return;
+      }
+      finishPreparedBack();
+    }
   });
 
   activeFrame?.addEventListener("load", () => {

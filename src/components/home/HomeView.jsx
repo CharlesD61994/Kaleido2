@@ -36,7 +36,7 @@ export default function HomeView({
     showSettingsModal,
   } = modals;
 
-  const { navigateToLibrary } = navigation;
+  const { navigateToBoutiqueAdmin, navigateToLibrary } = navigation;
   const unreadProjectIds = useClientMessageNotifications(database.projectsPro || []);
   const canOpenBoutiqueAdmin = typeof window !== "undefined" && window.location?.protocol === "capacitor:";
   const openBoutiqueAdmin = canOpenBoutiqueAdmin
@@ -61,7 +61,7 @@ export default function HomeView({
         } catch {
           // Le retour admin est un confort; l'ouverture du module reste prioritaire.
         }
-        window.location.href = "/admin-boutique/admin-shell.html";
+        navigateToBoutiqueAdmin?.();
       }
     : null;
 

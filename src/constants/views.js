@@ -7,4 +7,5 @@ export const VIEWS = {
   ROW_COUNTER: "row_counter",
   PDF_VIEWER: "pdf_viewer",
   CLIENT_PAGE: "client_page",
+  BOUTIQUE_ADMIN: "boutique_admin",
 };
