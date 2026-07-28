@@ -4,6 +4,7 @@
   const COMPLETE_DISTANCE = 72;
   const EDGE_SIZE = 28;
   const MAX_VERTICAL_DRIFT = 60;
+  const isFramed = window.parent && window.parent !== window;
 
   const readJson = (key) => {
     try {
@@ -37,11 +38,19 @@
 
   const isAdminInternalUrl = (url) =>
     url.origin === window.location.origin
-      && url.pathname.includes("/admin-boutique/")
-      && url.pathname !== window.location.pathname + window.location.search;
+      && /\/admin(?:-[a-z]+)?\.html$/.test(url.pathname)
+      && url.pathname + url.search !== window.location.pathname + window.location.search;
 
   const navigateWithTransition = (href, { forceRootReturn = false } = {}) => {
     if (!href || document.documentElement.classList.contains("admin-is-leaving")) return;
+    if (isFramed) {
+      window.parent.postMessage({
+        type: "kaleido-admin:navigate",
+        href,
+        rootReturn: forceRootReturn,
+      }, "*");
+      return;
+    }
     if (forceRootReturn) writeAdminReturn();
     document.documentElement.classList.add("admin-is-leaving");
     window.setTimeout(() => {
@@ -107,7 +116,7 @@
       dragging = true;
       cancelled = false;
       const shell = page();
-      if (shell) shell.style.transition = "none";
+      if (!isFramed && shell) shell.style.transition = "none";
     }, { passive: true });
 
     window.addEventListener("touchmove", (event) => {
@@ -123,9 +132,12 @@
       if (dx <= 0) return;
       progress = Math.min(dx, 132);
       const shell = page();
-      if (shell) {
+      if (!isFramed && shell) {
         shell.style.transform = `translate3d(${progress}px, 0, 0)`;
         shell.style.boxShadow = "-18px 0 34px rgba(16, 39, 68, 0.14)";
+      }
+      if (isFramed) {
+        window.parent.postMessage({ type: "kaleido-admin:swipe-progress", progress }, "*");
       }
     }, { passive: true });
 
@@ -134,6 +146,11 @@
       const shell = page();
       const shouldGoBack = !cancelled && progress >= COMPLETE_DISTANCE;
       if (!shouldGoBack) {
+        if (isFramed) {
+          window.parent.postMessage({ type: "kaleido-admin:swipe-cancel" }, "*");
+          reset();
+          return;
+        }
         if (shell) {
           shell.style.transition = "transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease";
           shell.style.transform = "";
@@ -143,6 +160,11 @@
         return;
       }
       const target = preferredBackHref();
+      if (isFramed) {
+        window.parent.postMessage({ type: "kaleido-admin:swipe-complete" }, "*");
+        reset();
+        return;
+      }
       if (shell) {
         shell.style.transition = "transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1)";
         shell.style.transform = "translate3d(100%, 0, 0)";

@@ -61,7 +61,7 @@ export default function HomeView({
         } catch {
           // Le retour admin est un confort; l'ouverture du module reste prioritaire.
         }
-        window.location.href = "/admin-boutique/admin.html";
+        window.location.href = "/admin-boutique/admin-shell.html";
       }
     : null;
 

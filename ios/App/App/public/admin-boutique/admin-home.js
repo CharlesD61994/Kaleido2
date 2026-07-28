@@ -102,6 +102,10 @@ const renderDashboard = () => {
 renderDashboard();
 publishStorefrontButton?.addEventListener("click", publishStorefront);
 adminBackButton?.addEventListener("click", () => {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "kaleido-admin:navigate", href: "/", rootReturn: true }, "*");
+    return;
+  }
   try {
     const existingReturn = JSON.parse(window.localStorage.getItem("kaleido_admin_return_state") || "null");
     const fallbackResume = JSON.parse(window.localStorage.getItem("kaleido_resume_state") || "null");
