@@ -13,8 +13,8 @@
   top: 0;
   z-index: 5;
   height: auto;
-  min-height: calc(env(safe-area-inset-top, 0px) + 84px);
-  padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px 12px 22px;
+  min-height: calc(env(safe-area-inset-top, 0px) + 64px);
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px 22px;
   gap: 12px;
 }
 
@@ -46,6 +46,24 @@
 
 .admin-root-back + .brand {
   min-width: 0;
+}
+
+.admin-preview-storefront {
+  min-height: 100dvh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+.admin-preview-frame {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: #F7F4FB;
 }
 
 .admin-storefront input,
