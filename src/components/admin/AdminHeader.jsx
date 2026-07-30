@@ -11,16 +11,22 @@ export default function AdminHeader({
         type="button"
         aria-label="Retour"
         data-kaleido-back-button="true"
-        onClick={onBack}
+        data-kaleido-admin-back-button="true"
+        onClick={(event) => {
+          event.stopPropagation();
+          onBack?.();
+        }}
         className="admin-react-back"
       >
         {"←"}
       </button>
       <div className="admin-react-brand">
-        <img
-          src="/admin-boutique/assets/kaleido-logo.jpg"
-          alt=""
-        />
+        <span className="admin-react-brand-logo" aria-hidden="true">
+          <img
+            src="/admin-boutique/assets/kaleido-logo.jpg"
+            alt=""
+          />
+        </span>
         <strong>{title}</strong>
       </div>
       <div className="admin-react-header-action">{action}</div>

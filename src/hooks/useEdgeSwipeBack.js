@@ -53,8 +53,15 @@ export default function useEdgeSwipeBack({
     };
 
     const findVisibleBackButton = () => {
+      const currentAdminButton = document.querySelector(
+        '[data-kaleido-admin-route-layer="current"] [data-kaleido-admin-back-button="true"]'
+      );
+      if (currentAdminButton) return currentAdminButton;
+
       const buttons = Array.from(document.querySelectorAll('[data-kaleido-back-button="true"]'));
       return buttons.find((btn) => {
+        const adminLayer = btn.closest("[data-kaleido-admin-route-layer]");
+        if (adminLayer?.getAttribute("data-kaleido-admin-route-layer") === "previous") return false;
         const style = window.getComputedStyle(btn);
         const rect = btn.getBoundingClientRect();
         return style.display !== "none"

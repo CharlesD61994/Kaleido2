@@ -77,7 +77,11 @@ export default function useBrowserBackGuard({
         setActiveLibraryFolderId: setFolderId,
       } = stateRef.current;
 
-      if (view === VIEWS.CLIENT_PAGE) {
+      if (view === VIEWS.BOUTIQUE_ADMIN) {
+        document.querySelector(
+          '[data-kaleido-admin-route-layer="current"] [data-kaleido-admin-back-button="true"]'
+        )?.click();
+      } else if (view === VIEWS.CLIENT_PAGE) {
         backFromClientPage();
       } else if (view === VIEWS.PATRON_EDITOR || view === VIEWS.PDF_PATRON_IMPORT || view === VIEWS.PDF_PATRON_EDIT) {
         goLibrary();

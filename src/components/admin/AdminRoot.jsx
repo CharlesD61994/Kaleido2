@@ -69,6 +69,7 @@ export default function AdminRoot({
             <div
               key={route.id}
               aria-hidden={!isCurrent}
+              data-kaleido-admin-route-layer={isCurrent ? "current" : "previous"}
               style={{
                 position: "absolute",
                 inset: 0,

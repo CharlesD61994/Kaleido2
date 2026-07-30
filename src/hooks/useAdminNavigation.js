@@ -17,10 +17,10 @@ export default function useAdminNavigation(initialRoute = ADMIN_ROUTES.HOME) {
   }, []);
 
   const goBack = useCallback(() => {
-    if (stack.length <= 1) return false;
-    setStack((current) => current.slice(0, -1));
-    return true;
-  }, [stack.length]);
+    setStack((current) => (
+      current.length > 1 ? current.slice(0, -1) : current
+    ));
+  }, []);
 
   const reset = useCallback((name = initialRoute, params = {}) => {
     setStack([createAdminRoute(name, params)]);
