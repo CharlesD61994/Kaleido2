@@ -1442,62 +1442,78 @@ document.addEventListener("keydown", (event) => {
 
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  syncSelectedColors();
-  const formData = new FormData(form);
-  const currentDrafts = readDrafts();
-  const previousDraft = editingProductId ? currentDrafts.find((draft) => draft.id === editingProductId) : null;
-  const selectedProductFiles = Array.from(form.elements.productPhotos?.files || []);
-  const selectedProductPhotos = selectedProductFiles.length
-    ? await Promise.all(selectedProductFiles.map(readFileAsProductPhoto))
-    : (previousDraft?.productPhotos || []).map(normalizeProductPhoto);
-  const draft = {
-    id: previousDraft?.id || crypto.randomUUID(),
-    name: formData.get("name")?.toString().trim() || "Produit sans nom",
-    category: formData.get("category")?.toString() || "Catalogue",
-    price: formData.get("price")?.toString().trim(),
-    description: formData.get("description")?.toString().trim(),
-    shopify: formData.get("shopify")?.toString().trim(),
-    options: getSelectedOptions(),
-    optionChoices: Object.fromEntries(
-      choiceSectionsConfig.map((section) => [section.name, selectedChoicesBySection[section.name] || []]),
-    ),
-    productPhotos: selectedProductPhotos,
-    colorPhotos: readCustomColors()
-      .filter((color) => getColorPhotos(color).length > 0)
-      .map((color) => ({ label: color.label, value: color.value, photos: getStoredColorPhotos(color) })),
-    colors: {
-      main: selectedColorsBySection.mainColors,
-      accent: selectedColorsBySection.accentColors,
-    },
-    status: previousDraft?.status || "draft",
-    inCatalog: previousDraft?.inCatalog ?? false,
-    createdAt: previousDraft?.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  const saved = saveDrafts([draft, ...currentDrafts.filter((item) => item.id !== draft.id)]);
-
-  if (!saved) {
-    if (saveProductButton) {
-      saveProductButton.textContent = "Enregistrement impossible";
-      saveProductButton.disabled = false;
-    }
-    alert(
-      "Le navigateur refuse d'enregistrer ce produit. Essaie de retirer des photos trop lourdes ou de vider les anciens tests.",
-    );
-    return;
-  }
-
-  renderDrafts();
+  if (saveProductButton?.disabled) return;
 
   if (saveProductButton) {
-    saveProductButton.textContent = "Produit enregistré";
+    saveProductButton.textContent = "Enregistrement...";
     saveProductButton.disabled = true;
   }
 
-  window.setTimeout(() => {
-    window.location.href = "./admin-produits.html";
-  }, 450);
+  try {
+    syncSelectedColors();
+    const formData = new FormData(form);
+    const currentDrafts = readDrafts();
+    const previousDraft = editingProductId
+      ? currentDrafts.find((draft) => String(draft.id) === String(editingProductId))
+      : null;
+    const selectedProductFiles = Array.from(form.elements.productPhotos?.files || []);
+    const selectedProductPhotos = selectedProductFiles.length
+      ? await Promise.all(selectedProductFiles.map(readFileAsProductPhoto))
+      : (previousDraft?.productPhotos || savedProductPhotoNames || []).map(normalizeProductPhoto);
+    const draft = {
+      id: previousDraft?.id || crypto.randomUUID(),
+      name: formData.get("name")?.toString().trim() || "Produit sans nom",
+      category: formData.get("category")?.toString() || "Catalogue",
+      price: formData.get("price")?.toString().trim(),
+      description: formData.get("description")?.toString().trim(),
+      shopify: formData.get("shopify")?.toString().trim(),
+      options: getSelectedOptions(),
+      optionChoices: Object.fromEntries(
+        choiceSectionsConfig.map((section) => [section.name, selectedChoicesBySection[section.name] || []]),
+      ),
+      productPhotos: selectedProductPhotos,
+      colorPhotos: readCustomColors()
+        .filter((color) => getColorPhotos(color).length > 0)
+        .map((color) => ({ label: color.label, value: color.value, photos: getStoredColorPhotos(color) })),
+      colors: {
+        main: selectedColorsBySection.mainColors,
+        accent: selectedColorsBySection.accentColors,
+      },
+      status: previousDraft?.status || "draft",
+      inCatalog: previousDraft?.inCatalog ?? false,
+      createdAt: previousDraft?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const nextDrafts = [draft, ...currentDrafts.filter((item) => String(item.id) !== String(draft.id))];
+    if (!saveDrafts(nextDrafts)) {
+      throw new Error("Le stockage local refuse les données du produit.");
+    }
+
+    if (saveProductButton) saveProductButton.textContent = "Produit enregistré";
+
+    window.setTimeout(() => {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(
+          {
+            type: "kaleido-admin:navigate",
+            href: new URL("./admin-produits.html", window.location.href).href,
+            replace: true,
+          },
+          "*",
+        );
+        return;
+      }
+      window.location.href = "./admin-produits.html";
+    }, 180);
+  } catch (error) {
+    console.error("[Kaleido admin] enregistrement du produit impossible", error);
+    if (saveProductButton) {
+      saveProductButton.textContent = "Réessayer l'enregistrement";
+      saveProductButton.disabled = false;
+    }
+    alert(`Impossible d'enregistrer le produit. ${error?.message || "Une erreur inconnue est survenue."}`);
+  }
 });
 
 form?.addEventListener("reset", () => {
