@@ -13,6 +13,45 @@ export default function Icon({ name, size = 20, stroke = 1.9, color = "currentCo
   };
 
   switch (name) {
+    case "plus":
+      return (
+        <svg {...common}>
+          <path d="M12 5v14" />
+          <path d="M5 12h14" />
+        </svg>
+      );
+    case "home":
+      return (
+        <svg {...common}>
+          <path d="m4 11 8-7 8 7" />
+          <path d="M6.5 10v10h11V10" />
+          <path d="M10 20v-6h4v6" />
+        </svg>
+      );
+    case "package":
+      return (
+        <svg {...common}>
+          <path d="m4.5 7.5 7.5-4 7.5 4-7.5 4-7.5-4Z" />
+          <path d="M4.5 7.5v9L12 21l7.5-4.5v-9" />
+          <path d="M12 11.5V21" />
+        </svg>
+      );
+    case "storefront":
+      return (
+        <svg {...common}>
+          <path d="M4 9.5h16" />
+          <path d="m5 4-2 5.5a2.5 2.5 0 0 0 4.5 1.5 2.5 2.5 0 0 0 4.5 0 2.5 2.5 0 0 0 4.5 0A2.5 2.5 0 0 0 21 9.5L19 4Z" />
+          <path d="M5 12v8h14v-8" />
+          <path d="M9 20v-5h6v5" />
+        </svg>
+      );
+    case "clock":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 7.5V12l3 2" />
+        </svg>
+      );
     case "admin":
       return (
         <svg {...common}>

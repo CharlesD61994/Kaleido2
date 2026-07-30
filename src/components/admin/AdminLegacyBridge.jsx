@@ -1,10 +1,11 @@
-import React from "react";
+import React, { forwardRef } from "react";
 
-export default function AdminLegacyBridge({ isLoaded, onLoad }) {
+const AdminLegacyBridge = forwardRef(function AdminLegacyBridge({ onLoad, src }, ref) {
   return (
     <iframe
+      ref={ref}
       title="Admin boutique Kaleido"
-      src="/admin-boutique/admin-shell.html"
+      src={`/admin-boutique/${src}`}
       onLoad={onLoad}
       style={{
         width: "100%",
@@ -12,9 +13,10 @@ export default function AdminLegacyBridge({ isLoaded, onLoad }) {
         border: 0,
         display: "block",
         background: "var(--k-bg)",
-        opacity: isLoaded ? 1 : 0,
-        transition: "opacity 140ms ease",
+        opacity: 1,
       }}
     />
   );
-}
+});
+
+export default AdminLegacyBridge;

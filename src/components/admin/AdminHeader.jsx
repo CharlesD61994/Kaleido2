@@ -12,7 +12,7 @@ export default function AdminHeader({
         top: 0,
         zIndex: 30,
         display: "grid",
-        gridTemplateColumns: "40px minmax(0, 1fr) 40px",
+        gridTemplateColumns: "40px minmax(0, 1fr) auto",
         alignItems: "center",
         gap: 10,
         minHeight: 58,
@@ -44,20 +44,34 @@ export default function AdminHeader({
       >
         {"←"}
       </button>
-      <strong
+      <div
         style={{
           minWidth: 0,
-          overflow: "hidden",
-          color: "var(--k-text)",
-          fontFamily: "'Syne', sans-serif",
-          fontSize: 18,
-          textAlign: "center",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 9,
         }}
       >
-        {title}
-      </strong>
+        <img
+          src="/admin-boutique/assets/kaleido-logo.jpg"
+          alt=""
+          style={{ width: 31, height: 31, borderRadius: "50%", objectFit: "cover" }}
+        />
+        <strong
+          style={{
+            minWidth: 0,
+            overflow: "hidden",
+            color: "var(--k-text)",
+            fontFamily: "'Syne', sans-serif",
+            fontSize: 18,
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {title}
+        </strong>
+      </div>
       <div style={{ display: "grid", placeItems: "center" }}>{action}</div>
     </header>
   );
