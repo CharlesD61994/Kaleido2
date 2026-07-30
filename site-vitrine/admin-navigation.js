@@ -4,6 +4,7 @@
   const COMPLETE_DISTANCE = 72;
   const EDGE_SIZE = 28;
   const MAX_VERTICAL_DRIFT = 60;
+  const EDITING_PRODUCT_KEY = "kaleido-admin-editing-product-id";
   const isFramed = window.parent && window.parent !== window;
 
   const readJson = (key) => {
@@ -83,6 +84,11 @@
       if (!goesToAppRoot && !isAdminInternalUrl(url)) return;
 
       event.preventDefault();
+      if (/\/admin-produit\.html$/.test(url.pathname)) {
+        const productId = url.searchParams.get("id");
+        if (productId) window.sessionStorage.setItem(EDITING_PRODUCT_KEY, productId);
+        else window.sessionStorage.removeItem(EDITING_PRODUCT_KEY);
+      }
       if (isFramed && isBackControl && !forceRootReturn) {
         window.parent.postMessage({ type: "kaleido-admin:back" }, "*");
         return;

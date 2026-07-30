@@ -76,7 +76,12 @@ const colorPageKicker = document.querySelector("#colorPageKicker");
 const colorPageTitle = document.querySelector("#colorPageTitle");
 const colorPageDescription = document.querySelector("#colorPageDescription");
 const colorPageContent = document.querySelector("#colorPageContent");
-const editingProductId = new URLSearchParams(window.location.search).get("id");
+const editingProductKey = "kaleido-admin-editing-product-id";
+const editingProductId =
+  new URLSearchParams(window.location.search).get("id")
+  || window.sessionStorage.getItem(editingProductKey);
+
+if (editingProductId) window.sessionStorage.setItem(editingProductKey, editingProductId);
 
 let activeColorMenuId = null;
 let selectedColorsBySection = { mainColors: [], accentColors: [] };
@@ -1497,6 +1502,7 @@ form?.addEventListener("submit", async (event) => {
     if (saveProductButton) saveProductButton.textContent = "Produit enregistré";
 
     window.setTimeout(() => {
+      window.sessionStorage.removeItem(editingProductKey);
       if (window.parent && window.parent !== window) {
         window.parent.postMessage(
           {
