@@ -78,10 +78,15 @@
       const url = new URL(href, window.location.href);
       const goesToAppRoot = url.origin === window.location.origin && url.pathname === "/";
       const forceRootReturn = Boolean(link.closest("#adminBackButton"));
+      const isBackControl = Boolean(link.closest(".admin-header-back"));
 
       if (!goesToAppRoot && !isAdminInternalUrl(url)) return;
 
       event.preventDefault();
+      if (isFramed && isBackControl && !forceRootReturn) {
+        window.parent.postMessage({ type: "kaleido-admin:back" }, "*");
+        return;
+      }
       navigateWithTransition(url.href, { forceRootReturn });
     });
   };

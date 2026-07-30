@@ -800,7 +800,7 @@ const renderDrafts = () => {
 
 const loadEditingProduct = () => {
   if (!form || !editingProductId) return;
-  const product = readDrafts().find((draft) => draft.id === editingProductId);
+  const product = readDrafts().find((draft) => String(draft.id) === String(editingProductId));
   if (!product) return;
 
   form.elements.name.value = product.name || "";
@@ -809,7 +809,16 @@ const loadEditingProduct = () => {
   form.elements.description.value = product.description || "";
   form.elements.shopify.value = product.shopify || "";
   savedProductPhotoNames = (product.productPhotos || []).map(normalizeProductPhoto);
-  selectedChoicesBySection = product.optionChoices || {};
+  selectedChoicesBySection = Object.fromEntries(
+    choiceSectionsConfig.map((section) => [
+      section.name,
+      [...(product.optionChoices?.[section.name] || [])],
+    ]),
+  );
+  selectedColorsBySection = {
+    mainColors: [...(product.colors?.main || [])],
+    accentColors: [...(product.colors?.accent || [])],
+  };
 
   Array.from(optionSelector?.querySelectorAll("input[name='options']") || []).forEach((input) => {
     input.checked = (product.options || []).includes(input.value);
@@ -819,8 +828,10 @@ const loadEditingProduct = () => {
   document.querySelector("#admin-title")?.replaceChildren("Modifier le produit");
   document.querySelector("#builder-title")?.replaceChildren("Produit boutique");
   syncSelectedChoices();
-  syncSelectedColors();
   renderColorSections();
+  renderProductPhotoList();
+  renderPreviewProductImage();
+  renderPreviewPhotoStrip();
   updatePreview();
 };
 
