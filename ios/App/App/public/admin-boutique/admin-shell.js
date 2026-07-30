@@ -55,7 +55,7 @@
       const isTop = index === pages.length - 1;
       setPageState(page, {
         active: isTop,
-        transform: isTop ? "" : "translate3d(-14%, 0, 0)",
+        transform: "",
       });
     });
   };
@@ -109,7 +109,7 @@
           outgoing.frame.classList.remove("is-active");
           outgoing.frame.style.pointerEvents = "none";
           outgoing.frame.style.transition = "transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 220ms ease";
-          outgoing.frame.style.transform = "translate3d(-14%, 0, 0)";
+          outgoing.frame.style.transform = "";
           outgoing.frame.style.opacity = "0.98";
         }
       });
@@ -139,14 +139,13 @@
 
     setPageState(incoming, {
       active: false,
-      transform: "translate3d(-14%, 0, 0)",
-      transition: "transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+      transform: "",
+      transition: "none",
     });
     outgoing.frame.style.pointerEvents = "none";
     outgoing.frame.style.transition = "transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 190ms ease";
     outgoing.frame.style.transform = "translate3d(100%, 0, 0)";
     outgoing.frame.style.boxShadow = "-18px 0 34px rgba(16, 39, 68, 0.14)";
-    incoming.frame.style.transform = "translate3d(0, 0, 0)";
 
     window.setTimeout(() => {
       pages.pop();
@@ -166,8 +165,8 @@
     outgoing.frame.style.transform = "";
     outgoing.frame.style.boxShadow = "";
     if (incoming) {
-      incoming.frame.style.transition = "transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1)";
-      incoming.frame.style.transform = "translate3d(-14%, 0, 0)";
+      incoming.frame.style.transition = "none";
+      incoming.frame.style.transform = "";
     }
     resetTimer = window.setTimeout(restoreStack, 190);
   };
@@ -218,7 +217,7 @@
       page.frame.style.boxShadow = "-18px 0 34px rgba(16, 39, 68, 0.14)";
       if (incoming) {
         incoming.frame.style.transition = "none";
-        incoming.frame.style.transform = `translate3d(${Math.max(-14, -14 + (progress / 132) * 14)}%, 0, 0)`;
+        incoming.frame.style.transform = "";
       }
       return;
     }

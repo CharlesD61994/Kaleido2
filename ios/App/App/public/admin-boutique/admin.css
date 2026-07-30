@@ -46,6 +46,10 @@ html.admin-is-leaving .admin-storefront {
   transform: translate3d(100%, 0, 0);
   will-change: transform;
   pointer-events: none;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: flat;
+  contain: strict;
 }
 
 .admin-shell-frame.is-active {
