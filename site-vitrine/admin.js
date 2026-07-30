@@ -795,6 +795,7 @@ const closeProductPreviewPage = () => {
 };
 
 const renderDrafts = () => {
+  if (!draftList) return;
   const drafts = readDrafts();
 
   if (drafts.length === 0) {

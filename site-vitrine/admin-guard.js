@@ -1,6 +1,7 @@
 (() => {
   const isInstalledApp = window.location.protocol === "capacitor:";
-  if (isInstalledApp) return;
+  const isLocalDevelopment = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  if (isInstalledApp || isLocalDevelopment) return;
 
   const renderBlocked = () => {
     document.body.innerHTML = `
