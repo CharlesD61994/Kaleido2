@@ -77,9 +77,28 @@ const colorPageTitle = document.querySelector("#colorPageTitle");
 const colorPageDescription = document.querySelector("#colorPageDescription");
 const colorPageContent = document.querySelector("#colorPageContent");
 const editingProductKey = "kaleido-admin-editing-product-id";
+const editingProductDataKey = "kaleido-admin-editing-product";
 const editingProductId =
   new URLSearchParams(window.location.search).get("id")
   || window.sessionStorage.getItem(editingProductKey);
+const readEditingProductSnapshot = () => {
+  try {
+    const parentSnapshot =
+      window.parent && window.parent !== window
+        ? window.parent.KaleidoAdminEditingProductSnapshot
+        : null;
+    if (parentSnapshot && typeof parentSnapshot === "object") return parentSnapshot;
+  } catch {
+    // Le stockage de session sert de repli si le parent n'est pas accessible.
+  }
+
+  try {
+    return JSON.parse(window.sessionStorage.getItem(editingProductDataKey) || "null");
+  } catch {
+    return null;
+  }
+};
+const editingProductSnapshot = readEditingProductSnapshot();
 
 if (editingProductId) window.sessionStorage.setItem(editingProductKey, editingProductId);
 
@@ -808,9 +827,21 @@ const renderDrafts = () => {
 };
 
 const loadEditingProduct = () => {
-  if (!form || !editingProductId) return;
-  const product = readDrafts().find((draft) => String(draft.id) === String(editingProductId));
-  if (!product) return;
+  if (!form) return;
+  const product =
+    (editingProductId
+      ? readDrafts().find((draft) => String(draft.id) === String(editingProductId))
+      : null)
+    || (
+      editingProductSnapshot
+      && (!editingProductId || String(editingProductSnapshot.id) === String(editingProductId))
+        ? editingProductSnapshot
+        : null
+    );
+  if (!product) {
+    console.error("[Kaleido admin] produit à modifier introuvable", { editingProductId });
+    return;
+  }
 
   form.elements.name.value = product.name || "";
   form.elements.category.value = product.category || form.elements.category.value;
@@ -1462,9 +1493,16 @@ form?.addEventListener("submit", async (event) => {
     syncSelectedColors();
     const formData = new FormData(form);
     const currentDrafts = readDrafts();
-    const previousDraft = editingProductId
-      ? currentDrafts.find((draft) => String(draft.id) === String(editingProductId))
-      : null;
+    const previousDraft =
+      (editingProductId
+        ? currentDrafts.find((draft) => String(draft.id) === String(editingProductId))
+        : null)
+      || (
+        editingProductSnapshot
+        && (!editingProductId || String(editingProductSnapshot.id) === String(editingProductId))
+          ? editingProductSnapshot
+          : null
+      );
     const selectedProductFiles = Array.from(form.elements.productPhotos?.files || []);
     const selectedProductPhotos = selectedProductFiles.length
       ? await Promise.all(selectedProductFiles.map(readFileAsProductPhoto))
@@ -1503,6 +1541,14 @@ form?.addEventListener("submit", async (event) => {
 
     window.setTimeout(() => {
       window.sessionStorage.removeItem(editingProductKey);
+      window.sessionStorage.removeItem(editingProductDataKey);
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.KaleidoAdminEditingProductSnapshot = null;
+        }
+      } catch {
+        // Le produit est déjà enregistré; aucun autre nettoyage n'est requis.
+      }
       if (window.parent && window.parent !== window) {
         window.parent.postMessage(
           {

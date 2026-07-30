@@ -206,6 +206,7 @@ const renderProductCard = (product) => {
         isProductReady(product) ? "is-ready" : "is-draft"
       }"
       href="./admin-produit.html?id=${encodeURIComponent(product.id)}"
+      data-product-id="${escapeHtml(product.id)}"
       style="--product-color:${primaryColor}; --product-accent:${accentColor}"
       aria-label="Modifier ${escapeHtml(product.name || "Produit sans nom")}"
     >
@@ -328,6 +329,7 @@ productFilters?.addEventListener("click", (event) => {
 });
 
 productsGrid?.addEventListener("click", (event) => {
+  const productCard = event.target.closest(".admin-product-library-card[data-product-id]");
   const menuButton = event.target.closest("[data-product-menu]");
   const colorButton = event.target.closest("[data-card-color]");
   const catalogButton = event.target.closest("[data-catalog-product]");
@@ -349,6 +351,31 @@ productsGrid?.addEventListener("click", (event) => {
   ) {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  if (
+    productCard
+    && !menuButton
+    && !colorButton
+    && !catalogButton
+    && !finalizeButton
+    && !duplicateButton
+    && !deleteButton
+    && !closeActionButton
+    && !confirmActionButton
+  ) {
+    const product = readProducts().find(
+      (item) => String(item.id) === String(productCard.dataset.productId),
+    );
+    if (product) {
+      window.KaleidoAdminEditingProductSnapshot = product;
+      try {
+        window.sessionStorage.setItem("kaleido-admin-editing-product-id", String(product.id));
+        window.sessionStorage.setItem("kaleido-admin-editing-product", JSON.stringify(product));
+      } catch {
+        // Le conteneur admin transmet aussi directement le produit à l'éditeur.
+      }
+    }
   }
 
   if (closeActionButton) {

@@ -205,6 +205,9 @@
         finishToApp();
         return;
       }
+      if (Object.prototype.hasOwnProperty.call(data, "product")) {
+        window.KaleidoAdminEditingProductSnapshot = data.product || null;
+      }
       animateTo(data.href, { direction: data.direction || "forward", replace: Boolean(data.replace) });
     }
     if (data.type === "kaleido-admin:back") goBack();
