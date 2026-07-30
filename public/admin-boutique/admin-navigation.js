@@ -150,7 +150,7 @@
       const touch = event.touches[0];
       if (touch.clientX > EDGE_SIZE) return;
       if (event.target.closest("input, textarea, select, button, iframe, [data-admin-no-swipe='true']")) return;
-      startX = touch.clientX;
+      startX = touch.screenX;
       startY = touch.clientY;
       dragging = true;
       cancelled = false;
@@ -162,7 +162,7 @@
     window.addEventListener("touchmove", (event) => {
       if (!dragging || event.touches.length !== 1) return;
       const touch = event.touches[0];
-      const dx = touch.clientX - startX;
+      const dx = touch.screenX - startX;
       const dy = Math.abs(touch.clientY - startY);
       if (dy > MAX_VERTICAL_DRIFT) {
         cancelSwipe();
