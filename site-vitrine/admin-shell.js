@@ -10,6 +10,7 @@
   let preparedBackHref = "";
   let resetTimer = null;
   let navigationWatchdog = null;
+  let preloadTimer = null;
 
   const readJson = (key) => {
     try {
@@ -42,9 +43,25 @@
   const isEmbeddedInApp = () => window.parent && window.parent !== window;
 
   const setFrameInteractivity = (enabled) => {
-    [activeFrame, nextFrame].forEach((frame) => {
-      if (frame) frame.style.pointerEvents = enabled ? "" : "none";
-    });
+    if (activeFrame) activeFrame.style.pointerEvents = enabled ? "auto" : "none";
+    if (nextFrame) nextFrame.style.pointerEvents = "none";
+  };
+
+  const clearResetTimer = () => {
+    window.clearTimeout(resetTimer);
+    resetTimer = null;
+  };
+
+  const activateCurrentFrame = () => {
+    if (activeFrame) {
+      activeFrame.classList.remove("is-preparing");
+      activeFrame.classList.add("is-active");
+      activeFrame.style.pointerEvents = "auto";
+    }
+    if (nextFrame) {
+      nextFrame.classList.remove("is-active", "is-preparing");
+      nextFrame.style.pointerEvents = "none";
+    }
   };
 
   const clearNavigationWatchdog = () => {
@@ -100,8 +117,20 @@
     return targetHref;
   };
 
+  const preloadBackFrame = () => {
+    if (isNavigating || stack.length <= 1) return;
+    prepareBackFrame();
+    activateCurrentFrame();
+  };
+
+  const scheduleBackPreload = () => {
+    window.clearTimeout(preloadTimer);
+    preloadTimer = window.setTimeout(preloadBackFrame, 280);
+  };
+
   const resetSwipe = () => {
     if (!activeFrame) return;
+    const swipedFrame = activeFrame;
     activeFrame.style.transition = "transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease";
     activeFrame.style.transform = "";
     activeFrame.style.boxShadow = "";
@@ -111,11 +140,11 @@
       nextFrame.style.transform = "translate3d(-14%, 0, 0)";
       window.setTimeout(cleanNextFrame, 190);
     }
-    window.clearTimeout(resetTimer);
+    clearResetTimer();
     resetTimer = window.setTimeout(() => {
-      activeFrame.style.transition = "";
-      activeFrame.style.boxShadow = "";
-      if (!isNavigating) setFrameInteractivity(true);
+      swipedFrame.style.transition = "";
+      swipedFrame.style.boxShadow = "";
+      if (!isNavigating) activateCurrentFrame();
     }, 190);
   };
 
@@ -133,6 +162,8 @@
 
   const finishPreparedBack = () => {
     if (isNavigating) return;
+    clearResetTimer();
+    window.clearTimeout(preloadTimer);
     if (!activeFrame || !nextFrame || stack.length <= 1) {
       finishToApp();
       return;
@@ -162,7 +193,8 @@
       currentHref = targetHref;
       isNavigating = false;
       clearNavigationWatchdog();
-      setFrameInteractivity(true);
+      activateCurrentFrame();
+      scheduleBackPreload();
     }, 205);
   };
 
@@ -173,6 +205,8 @@
     }
     const targetHref = normalizeHref(href);
     if (!activeFrame || !nextFrame || targetHref === currentHref || isNavigating) return;
+    clearResetTimer();
+    window.clearTimeout(preloadTimer);
     isNavigating = true;
     armNavigationWatchdog();
     setFrameInteractivity(false);
@@ -215,7 +249,8 @@
         if (replace) stack[stack.length - 1] = targetHref;
         isNavigating = false;
         clearNavigationWatchdog();
-        setFrameInteractivity(true);
+        activateCurrentFrame();
+        scheduleBackPreload();
       }, 245);
     };
   };
@@ -246,6 +281,7 @@
     if (data.type === "kaleido-admin:back") goBack();
     if (data.type === "kaleido-admin:swipe-progress" && activeFrame) {
       if (isNavigating) return;
+      clearResetTimer();
       const progress = Math.max(0, Math.min(Number(data.progress) || 0, 132));
       if (stack.length <= 1 && isEmbeddedInApp()) {
         window.parent.postMessage({ type: "kaleido-admin-root:swipe-progress", progress: progress / 132 }, "*");
