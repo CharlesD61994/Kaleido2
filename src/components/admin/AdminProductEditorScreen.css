@@ -474,6 +474,12 @@
   line-height: 1.05;
 }
 
+.admin-editor-subpage .admin-react-brand img {
+  box-shadow:
+    0 0 18px rgba(232, 75, 148, 0.38),
+    0 0 24px rgba(48, 199, 201, 0.32);
+}
+
 .admin-editor-subpage-main::-webkit-scrollbar,
 .admin-editor-preview-page::-webkit-scrollbar {
   display: none;
@@ -492,8 +498,9 @@
 
 .admin-editor-section-intro small {
   color: var(--k-text-soft);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
+  line-height: 1.4;
 }
 
 .admin-editor-add-color {
@@ -501,7 +508,7 @@
   margin-bottom: 14px;
   grid-template-columns: auto auto;
   justify-content: center;
-  font: 900 14px "DM Sans", system-ui, sans-serif;
+  font: 900 16px "DM Sans", system-ui, sans-serif;
 }
 
 .admin-editor-color-list {
@@ -521,6 +528,7 @@
   border-radius: 16px;
   color: var(--k-text);
   background: var(--k-surface);
+  font-family: "DM Sans", system-ui, sans-serif;
   text-align: left;
 }
 
@@ -543,14 +551,15 @@
 }
 
 .admin-editor-color-list strong {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .admin-editor-color-list small,
 .admin-editor-photo-manage small {
   color: var(--k-text-soft);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
+  line-height: 1.35;
 }
 
 .admin-editor-color-list b,
@@ -561,10 +570,13 @@
 
 .admin-editor-color-list > p,
 .admin-editor-color-photo-grid > p {
+  grid-column: 1 / -1;
+  width: 100%;
   margin: 8px 0;
   color: var(--k-text-soft);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
+  line-height: 1.45;
   text-align: center;
 }
 
@@ -580,6 +592,10 @@
   width: 100%;
   min-width: 0;
   max-width: 100%;
+}
+
+.admin-editor-color-editor > label {
+  font-size: 15px;
 }
 
 .admin-editor-color-picker {
@@ -612,7 +628,7 @@
 .admin-editor-color-picker span {
   color: var(--k-text-soft);
   font-family: ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -620,10 +636,33 @@
   margin-top: 2px;
 }
 
+.admin-editor-photo-manage > span {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.admin-editor-subpage .admin-editor-photo-drop strong {
+  font-size: 16px;
+}
+
+.admin-editor-subpage .admin-editor-photo-drop small {
+  max-width: 270px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.admin-editor-subpage .admin-editor-form-actions button {
+  font-size: 15px;
+}
+
 .admin-editor-color-photo-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.admin-editor-subpage .admin-editor-color-photo-grid article > span {
+  font-size: 12px;
 }
 
 .admin-editor-preview-page {
