@@ -44,6 +44,7 @@ const readJson = (key, fallback) => {
 
 const writeJson = (key, value) => {
   localStorage.setItem(key, JSON.stringify(value));
+  if (key === homeConfigKey) window.KaleidoStorefrontCloud?.markLocalDocumentUpdated?.("home-config");
 };
 
 const slugifyCategory = (value) =>

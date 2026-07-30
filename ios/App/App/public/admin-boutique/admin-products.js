@@ -47,6 +47,7 @@ const readProducts = () => {
 
 const saveProducts = (products) => {
   localStorage.setItem(draftsKey, JSON.stringify(products));
+  window.KaleidoStorefrontCloud?.markLocalDocumentUpdated?.("products");
 };
 
 const setPublishState = (button, state, label) => {

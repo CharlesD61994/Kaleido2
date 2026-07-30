@@ -2,6 +2,7 @@
   const config = window.KALEIDO_STOREFRONT_CONFIG || {};
   const tableName = "kaleido_storefront_documents";
   const publishedAtKey = "kaleido-storefront-last-published-at";
+  const localUpdatedPrefix = "kaleido-storefront-local-updated:";
 
   const normalizeUrl = (value) => String(value || "").replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
   const supabaseUrl = normalizeUrl(config.supabaseUrl);
@@ -27,6 +28,20 @@
 
   const writeLocalJson = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
+  };
+
+  const markLocalDocumentUpdated = (docKey, updatedAt = new Date().toISOString()) => {
+    localStorage.setItem(`${localUpdatedPrefix}${docKey}`, updatedAt);
+    return updatedAt;
+  };
+
+  const shouldApplyCloudDocument = (docKey, document) => {
+    if (!document?.payload) return false;
+    const localUpdatedAt = Date.parse(localStorage.getItem(`${localUpdatedPrefix}${docKey}`) || "");
+    const cloudUpdatedAt = Date.parse(document.updatedAt || "");
+    if (!Number.isFinite(localUpdatedAt)) return true;
+    if (!Number.isFinite(cloudUpdatedAt)) return false;
+    return cloudUpdatedAt > localUpdatedAt;
   };
 
   const readDocuments = async (docKeys) => {
@@ -68,6 +83,7 @@
       return { ok: false, reason: `http-${response.status}` };
     }
     localStorage.setItem(publishedAtKey, now);
+    Object.keys(documents).forEach((docKey) => markLocalDocumentUpdated(docKey, now));
     return { ok: true, updatedAt: now, rows: await response.json() };
   };
 
@@ -76,8 +92,14 @@
     if (!result.ok) return result;
     const productsDoc = result.documents.products;
     const homeDoc = result.documents["home-config"];
-    if (productsKey && productsDoc?.payload) writeLocalJson(productsKey, productsDoc.payload);
-    if (homeConfigKey && homeDoc?.payload) writeLocalJson(homeConfigKey, homeDoc.payload);
+    if (productsKey && shouldApplyCloudDocument("products", productsDoc)) {
+      writeLocalJson(productsKey, productsDoc.payload);
+      markLocalDocumentUpdated("products", productsDoc.updatedAt);
+    }
+    if (homeConfigKey && shouldApplyCloudDocument("home-config", homeDoc)) {
+      writeLocalJson(homeConfigKey, homeDoc.payload);
+      markLocalDocumentUpdated("home-config", homeDoc.updatedAt);
+    }
     return result;
   };
 
@@ -92,6 +114,7 @@
 
   window.KaleidoStorefrontCloud = {
     isConfigured,
+    markLocalDocumentUpdated,
     readDocuments,
     publishDocuments,
     hydrateLocalFromCloud,

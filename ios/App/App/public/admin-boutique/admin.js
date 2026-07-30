@@ -121,7 +121,11 @@ const writeJson = (key, value) => {
 };
 
 const readDrafts = () => readJson(draftsKey, []);
-const saveDrafts = (drafts) => writeJson(draftsKey, drafts);
+const saveDrafts = (drafts) => {
+  const saved = writeJson(draftsKey, drafts);
+  if (saved) window.KaleidoStorefrontCloud?.markLocalDocumentUpdated?.("products");
+  return saved;
+};
 const normalizeColorPhoto = (photo) =>
   typeof photo === "string" ? { id: crypto.randomUUID(), name: photo, url: "" } : photo;
 const normalizeProductPhoto = (photo) =>
