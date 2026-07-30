@@ -5,6 +5,7 @@ import AdminHomeScreen from "./AdminHomeScreen";
 import AdminLegacyBridge from "./AdminLegacyBridge";
 import { AdminNavigationProvider } from "./AdminNavigationContext";
 import AdminPreviewScreen from "./AdminPreviewScreen";
+import AdminProductEditorScreen from "./AdminProductEditorScreen";
 import AdminProductsScreen from "./AdminProductsScreen";
 
 export default function AdminRoot({
@@ -51,8 +52,8 @@ export default function AdminRoot({
         if (Object.prototype.hasOwnProperty.call(data, "product")) {
           window.KaleidoAdminEditingProductSnapshot = data.product || null;
         }
-        const targetUrl = new URL(data.href || "admin.html", window.location.href);
-        const src = `${targetUrl.pathname.split("/").pop() || "admin.html"}${targetUrl.search}`;
+        const targetUrl = new URL(data.href || "admin-vitrine.html", window.location.href);
+        const src = `${targetUrl.pathname.split("/").pop() || "admin-vitrine.html"}${targetUrl.search}`;
         navigation.navigate(ADMIN_ROUTES.LEGACY, { src });
         return;
       }
@@ -93,13 +94,21 @@ export default function AdminRoot({
     if (route.name === ADMIN_ROUTES.PRODUCTS) {
       return <AdminProductsScreen navigation={navigation} />;
     }
+    if (route.name === ADMIN_ROUTES.PRODUCT_EDITOR) {
+      return (
+        <AdminProductEditorScreen
+          navigation={navigation}
+          productId={route.params.productId || null}
+        />
+      );
+    }
     return (
       <AdminLegacyBridge
         ref={(node) => {
           if (node) frameRefs.current.set(route.id, node);
           else frameRefs.current.delete(route.id);
         }}
-        src={route.params.src || "admin.html"}
+        src={route.params.src || "admin-vitrine.html"}
       />
     );
   };

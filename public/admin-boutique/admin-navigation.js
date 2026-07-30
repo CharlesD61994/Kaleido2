@@ -5,8 +5,6 @@
   const EDGE_SIZE = 28;
   const MAX_VERTICAL_DRIFT = 60;
   const HORIZONTAL_LOCK_DISTANCE = 8;
-  const EDITING_PRODUCT_KEY = "kaleido-admin-editing-product-id";
-  const EDITING_PRODUCT_DATA_KEY = "kaleido-admin-editing-product";
   const isFramed = window.parent && window.parent !== window;
 
   const readJson = (key) => {
@@ -67,7 +65,7 @@
     if (rootBack) return { href: "/", forceRootReturn: true };
     const back = document.querySelector(".admin-header-back[href]");
     if (back) return { href: back.getAttribute("href"), forceRootReturn: false };
-    return { href: "./admin.html", forceRootReturn: false };
+    return { href: "/", forceRootReturn: true };
   };
 
   const bindLinks = () => {
@@ -83,34 +81,14 @@
       const goesToAppRoot = url.origin === window.location.origin && url.pathname === "/";
       const forceRootReturn = Boolean(link.closest("#adminBackButton"));
       const isBackControl = Boolean(link.closest(".admin-header-back"));
-      let editingProduct = null;
-
       if (!goesToAppRoot && !isAdminInternalUrl(url)) return;
 
       event.preventDefault();
-      if (/\/admin-produit\.html$/.test(url.pathname)) {
-        const productId = url.searchParams.get("id");
-        if (productId) {
-          editingProduct = window.KaleidoAdminEditingProductSnapshot || null;
-          window.sessionStorage.setItem(EDITING_PRODUCT_KEY, productId);
-          if (editingProduct) {
-            try {
-              window.sessionStorage.setItem(EDITING_PRODUCT_DATA_KEY, JSON.stringify(editingProduct));
-            } catch {
-              // La copie directe vers le conteneur demeure disponible.
-            }
-          }
-        } else {
-          window.KaleidoAdminEditingProductSnapshot = null;
-          window.sessionStorage.removeItem(EDITING_PRODUCT_KEY);
-          window.sessionStorage.removeItem(EDITING_PRODUCT_DATA_KEY);
-        }
-      }
       if (isFramed && isBackControl && !forceRootReturn) {
         window.parent.postMessage({ type: "kaleido-admin:back" }, "*");
         return;
       }
-      navigateWithTransition(url.href, { forceRootReturn, product: editingProduct });
+      navigateWithTransition(url.href, { forceRootReturn });
     });
   };
 

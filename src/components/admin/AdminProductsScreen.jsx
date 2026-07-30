@@ -293,15 +293,8 @@ export default function AdminProductsScreen({ navigation }) {
   };
 
   const editProduct = (product) => {
-    window.KaleidoAdminEditingProductSnapshot = product;
-    try {
-      window.sessionStorage.setItem("kaleido-admin-editing-product-id", String(product.id));
-      window.sessionStorage.setItem("kaleido-admin-editing-product", JSON.stringify(product));
-    } catch {
-      // Le produit est aussi transmis directement au pont de l'éditeur.
-    }
-    navigation.navigate(ADMIN_ROUTES.LEGACY, {
-      src: `admin-produit.html?id=${encodeURIComponent(product.id)}`,
+    navigation.navigate(ADMIN_ROUTES.PRODUCT_EDITOR, {
+      productId: String(product.id),
     });
   };
 
@@ -409,7 +402,7 @@ export default function AdminProductsScreen({ navigation }) {
               {!products.length && (
                 <button
                   type="button"
-                  onClick={() => navigation.navigate(ADMIN_ROUTES.LEGACY, { src: "admin-produit.html" })}
+                  onClick={() => navigation.navigate(ADMIN_ROUTES.PRODUCT_EDITOR)}
                 >
                   Créer un produit
                 </button>

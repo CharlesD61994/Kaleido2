@@ -10,7 +10,7 @@ const modules = [
     description: "Préparer une fiche avec photos, options, couleurs et aperçu client.",
     color: "#F05B4F",
     icon: "plus",
-    src: "admin-produit.html",
+    route: ADMIN_ROUTES.PRODUCT_EDITOR,
   },
   {
     title: "Vitrine",
