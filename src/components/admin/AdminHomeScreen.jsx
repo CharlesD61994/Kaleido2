@@ -17,14 +17,14 @@ const modules = [
     description: "Visualiser le site boutique comme les clients le verront.",
     color: "#7C3AED",
     icon: "home",
-    src: "admin-preview.html",
+    route: ADMIN_ROUTES.PREVIEW,
   },
   {
     title: "Produits",
     description: "Revoir les brouillons locaux et les fiches préparées.",
     color: "#30C7C9",
     icon: "package",
-    src: "admin-produits.html",
+    route: ADMIN_ROUTES.PRODUCTS,
   },
   {
     title: "Accueil boutique",
@@ -150,7 +150,10 @@ export default function AdminHomeScreen({ navigation, onExit }) {
               key={module.title}
               type="button"
               disabled={module.disabled}
-              onClick={() => navigation.navigate(ADMIN_ROUTES.LEGACY, { src: module.src })}
+              onClick={() => navigation.navigate(
+                module.route || ADMIN_ROUTES.LEGACY,
+                module.route ? {} : { src: module.src },
+              )}
               className="admin-react-module"
               style={{
                 "--module-color": module.color,

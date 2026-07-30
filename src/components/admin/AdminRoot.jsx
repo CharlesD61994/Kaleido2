@@ -4,6 +4,8 @@ import useAdminNavigation from "../../hooks/useAdminNavigation";
 import AdminHomeScreen from "./AdminHomeScreen";
 import AdminLegacyBridge from "./AdminLegacyBridge";
 import { AdminNavigationProvider } from "./AdminNavigationContext";
+import AdminPreviewScreen from "./AdminPreviewScreen";
+import AdminProductsScreen from "./AdminProductsScreen";
 
 export default function AdminRoot({
   isActive,
@@ -84,6 +86,12 @@ export default function AdminRoot({
   const renderRoute = (route) => {
     if (route.name === ADMIN_ROUTES.HOME) {
       return <AdminHomeScreen navigation={navigation} onExit={onExit} />;
+    }
+    if (route.name === ADMIN_ROUTES.PREVIEW) {
+      return <AdminPreviewScreen navigation={navigation} />;
+    }
+    if (route.name === ADMIN_ROUTES.PRODUCTS) {
+      return <AdminProductsScreen navigation={navigation} />;
     }
     return (
       <AdminLegacyBridge
