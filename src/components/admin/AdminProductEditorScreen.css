@@ -446,10 +446,6 @@
   position: absolute;
   inset: 0;
   z-index: 70;
-  display: flex;
-  flex-direction: column;
-  width: min(100%, 430px);
-  margin: 0 auto;
   color: var(--k-text);
   background: var(--k-bg);
 }
@@ -463,6 +459,19 @@
   padding: 18px 22px calc(env(safe-area-inset-bottom, 0px) + 34px);
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+}
+
+.admin-editor-subpage .admin-react-header {
+  flex: 0 0 auto;
+}
+
+.admin-editor-subpage .admin-react-brand {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.admin-editor-subpage .admin-react-brand strong {
+  line-height: 1.05;
 }
 
 .admin-editor-subpage-main::-webkit-scrollbar,
@@ -560,8 +569,17 @@
 }
 
 .admin-editor-color-editor {
+  width: 100%;
+  min-width: 0;
   display: grid;
   gap: 16px;
+}
+
+.admin-editor-color-editor > label,
+.admin-editor-color-editor > label > input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .admin-editor-color-picker {
@@ -765,5 +783,14 @@
 
   .admin-editor-two-columns {
     grid-template-columns: 1fr;
+  }
+
+  .admin-editor-subpage-main {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .admin-editor-subpage .admin-react-brand strong {
+    font-size: 17px;
   }
 }

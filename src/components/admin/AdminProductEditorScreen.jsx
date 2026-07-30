@@ -240,6 +240,13 @@ function ColorManager({
   const [value, setValue] = useState("#f05b4f");
   const fileInputRef = useRef(null);
   const activeColor = colors.find((color) => color.id === activeId);
+  const pageTitle = view === "list"
+    ? title
+    : view === "photos"
+      ? "Photos de la couleur"
+      : activeColor
+        ? "Modifier la couleur"
+        : "Ajouter une couleur";
 
   const returnToList = () => {
     setView("list");
@@ -285,12 +292,12 @@ function ColorManager({
   };
 
   return (
-    <section className="admin-editor-subpage">
+    <section className="admin-react-page admin-editor-subpage">
       <AdminHeader
         onBack={view === "list" ? onBack : returnToList}
-        title={view === "list" ? title : view === "edit" ? "Modifier la couleur" : "Photos de couleur"}
+        title={pageTitle}
       />
-      <main className="admin-editor-subpage-main">
+      <main className="admin-react-main admin-editor-subpage-main">
         {view === "list" && (
           <>
             <header className="admin-editor-section-intro">
@@ -415,9 +422,9 @@ function ProductPreviewPage({ editor, onBack }) {
   }));
 
   return (
-    <section className="admin-editor-subpage">
+    <section className="admin-react-page admin-editor-subpage">
       <AdminHeader onBack={onBack} title="Aperçu client" />
-      <main className="admin-editor-preview-page">
+      <main className="admin-react-main admin-editor-preview-page">
         <div className="admin-editor-preview-hero">
           {cover ? <img src={cover.url} alt={cover.name} /> : <span>Photo du produit</span>}
         </div>
