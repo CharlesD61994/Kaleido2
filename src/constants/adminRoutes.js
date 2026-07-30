@@ -4,7 +4,6 @@ export const ADMIN_ROUTES = Object.freeze({
   PRODUCTS: "admin_products",
   STOREFRONT: "admin_storefront",
   PRODUCT_EDITOR: "admin_product_editor",
-  LEGACY: "admin_legacy",
 });
 
 export const createAdminRoute = (name, params = {}) => ({

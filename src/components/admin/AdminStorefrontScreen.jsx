@@ -1,0 +1,750 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  readStorefrontHomeConfig,
+  readStorefrontProducts,
+  STOREFRONT_HOME_CONFIG_CHANGED_EVENT,
+  STOREFRONT_HOME_CONFIG_KEY,
+  STOREFRONT_PRODUCTS_CHANGED_EVENT,
+  STOREFRONT_PRODUCTS_KEY,
+  writeStorefrontHomeConfig,
+} from "../../services/storefrontAdminStore";
+import AdminLayout from "./AdminLayout";
+import "./AdminStorefrontScreen.css";
+
+const DEFAULT_CATEGORIES = [
+  { id: "vetements", label: "Vêtements", color: "#7c3aed", icon: "♢" },
+  { id: "peluches", label: "Peluches crochetées", color: "#e84b94", icon: "●" },
+  { id: "pantoufles", label: "Pantoufles", color: "#30c7c9", icon: "◒" },
+  { id: "porte-cles", label: "Porte-clés", color: "#f4831f", icon: "◇" },
+  { id: "couvertures", label: "Couvertures", color: "#8bbf3f", icon: "▧" },
+];
+const CATEGORY_ICONS = ["✦", "◌", "●", "◒", "◇", "▧", "♢"];
+const CROP_SIZE = 260;
+const SWIPE_WIDTH = 144;
+
+const slugify = (value) =>
+  String(value || "categorie")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 34) || "categorie";
+
+const customCategoriesFrom = (raw) => (
+  Array.isArray(raw?.customCategories)
+    ? raw.customCategories
+      .filter((category) => category?.id && category?.label)
+      .map((category, index) => ({
+        id: String(category.id),
+        label: String(category.label),
+        color: category.color || "#30c7c9",
+        icon: category.icon || CATEGORY_ICONS[index % CATEGORY_ICONS.length],
+        custom: true,
+      }))
+    : []
+);
+
+const normalizePhoto = (photo) => {
+  const src = photo?.src || photo?.original || photo?.url || photo?.preview;
+  if (!src) return null;
+  return {
+    name: photo.name || "",
+    src,
+    original: photo.original || src,
+    preview: photo.preview || photo.url || src,
+    x: Number(photo.x ?? photo.pos?.x) || 0,
+    y: Number(photo.y ?? photo.pos?.y) || 0,
+    scale: Math.max(0.2, Math.min(5, Number(photo.scale) || 1)),
+    naturalWidth: Number(photo.naturalWidth) || 0,
+    naturalHeight: Number(photo.naturalHeight) || 0,
+  };
+};
+
+const allCategoriesFrom = (raw) => {
+  const custom = customCategoriesFrom(raw);
+  const photos = raw?.categoryPhotos || {};
+  const colors = raw?.categoryColors || {};
+  return [...DEFAULT_CATEGORIES, ...custom].map((category) => ({
+    ...category,
+    color: colors[category.id] || category.color,
+    photo: normalizePhoto(photos[category.id]),
+  }));
+};
+
+const cleanConfig = (raw) => {
+  const categories = allCategoriesFrom(raw);
+  const selected = Array.isArray(raw?.categories)
+    ? raw.categories.filter((id) => categories.some((category) => category.id === id))
+    : categories.map((category) => category.id);
+  return {
+    categories: selected.length ? selected : categories.map((category) => category.id),
+    customCategories: customCategoriesFrom(raw),
+    categoryColors: raw?.categoryColors || {},
+    categoryPhotos: raw?.categoryPhotos || {},
+    featuredProductIds: Array.isArray(raw?.featuredProductIds)
+      ? raw.featuredProductIds.map(String)
+      : [],
+  };
+};
+
+const moveItem = (items, index, direction) => {
+  const destination = index + direction;
+  if (index < 0 || destination < 0 || destination >= items.length) return items;
+  const next = [...items];
+  const [item] = next.splice(index, 1);
+  next.splice(destination, 0, item);
+  return next;
+};
+
+const normalizeProductPhoto = (photo) => (
+  typeof photo === "string" ? { id: "", name: photo, url: "" } : photo
+);
+const productCover = (product) => (
+  (product.productPhotos || []).map(normalizeProductPhoto).find((photo) => photo?.url)
+);
+const productColors = (product) => (
+  [...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])])]
+);
+const isCatalogProduct = (product) => product.status === "ready" && product.inCatalog !== false;
+
+const categoryIcon = (category) => {
+  const value = String(category || "").toLowerCase();
+  if (value.includes("pantoufle")) return "◒";
+  if (value.includes("porte")) return "◇";
+  if (value.includes("couverture")) return "▧";
+  if (value.includes("vêtement") || value.includes("vetement")) return "♢";
+  if (value.includes("ami") || value.includes("peluche")) return "●";
+  return "✦";
+};
+
+function ProductCard({ index, onAdd, onMove, onRemove, product, total }) {
+  const cover = productCover(product);
+  const colors = productColors(product);
+  const visibleColors = colors.slice(0, 4);
+  const primary = product.cardColor || colors[0] || "#30c7c9";
+  const accent = colors[1] || "#e84b94";
+  const isSelected = Number.isInteger(index);
+
+  return (
+    <article
+      className="admin-storefront-product-card"
+      style={{ "--product-color": primary, "--product-accent": accent }}
+    >
+      <div className="admin-storefront-product-image">
+        {cover?.url
+          ? <img src={cover.url} alt={cover.name || product.name || "Produit"} />
+          : <span aria-hidden="true">{categoryIcon(product.category)}</span>}
+      </div>
+      <div className="admin-storefront-product-info">
+        <small>{isSelected ? `#${index + 1}` : "CATALOGUE"}</small>
+        <strong>{product.name || "Produit sans nom"}</strong>
+        <p>À partir de <b>{product.price || "prix à définir"}</b></p>
+        <div className="admin-storefront-swatches" aria-label="Couleurs offertes">
+          {(visibleColors.length ? visibleColors : ["#f05b4f", "#30c7c9"]).map((color) => (
+            <i key={color} style={{ "--swatch": color }} />
+          ))}
+          {colors.length > 4 && <em>+{colors.length - 4}</em>}
+        </div>
+      </div>
+      <div className="admin-storefront-product-actions">
+        {isSelected ? (
+          <>
+            <button type="button" onClick={() => onMove(-1)} disabled={index === 0} aria-label="Monter">↑</button>
+            <button type="button" onClick={() => onMove(1)} disabled={index === total - 1} aria-label="Descendre">↓</button>
+            <button type="button" className="danger" onClick={onRemove}>Retirer</button>
+          </>
+        ) : (
+          <button type="button" className="primary" onClick={onAdd}>Ajouter</button>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function CategoryCard({
+  category,
+  config,
+  index,
+  onColor,
+  onMove,
+  onOpenPhoto,
+  onRemove,
+  onToggle,
+  open,
+  setOpen,
+}) {
+  const drag = useRef(null);
+  const suppressClickUntil = useRef(0);
+  const [offset, setOffset] = useState(0);
+  const selected = config.categories.includes(category.id);
+  const selectedIndex = config.categories.indexOf(category.id);
+
+  useEffect(() => {
+    if (!open) setOffset(0);
+  }, [open]);
+
+  const onPointerDown = (event) => {
+    if (event.target.closest("input, label")) return;
+    drag.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      base: open ? SWIPE_WIDTH : 0,
+      horizontal: false,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const onPointerMove = (event) => {
+    const current = drag.current;
+    if (!current || current.pointerId !== event.pointerId) return;
+    const dx = event.clientX - current.startX;
+    const dy = event.clientY - current.startY;
+    if (!current.horizontal && Math.abs(dx) > 7 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      current.horizontal = true;
+    }
+    if (!current.horizontal) return;
+    event.preventDefault();
+    setOffset(Math.max(0, Math.min(SWIPE_WIDTH, current.base - dx)));
+  };
+
+  const endPointer = (event) => {
+    const current = drag.current;
+    if (!current || current.pointerId !== event.pointerId) return;
+    const dx = event.clientX - current.startX;
+    if (current.horizontal) setOpen(dx < -34 || (open && dx < 34) ? category.id : null);
+    if (current.horizontal) suppressClickUntil.current = performance.now() + 350;
+    setOffset(0);
+    drag.current = null;
+  };
+
+  const effectiveOffset = offset || (open ? SWIPE_WIDTH : 0);
+  const ratio = effectiveOffset / SWIPE_WIDTH;
+
+  return (
+    <article
+      className={`admin-storefront-category-shell${open ? " is-open" : ""}${offset ? " is-dragging" : ""}`}
+      style={{
+        "--category-color": category.color,
+        "--swipe": `${effectiveOffset}px`,
+        "--action-opacity": ratio,
+        "--action-shift": `${Math.round(12 * (1 - ratio))}px`,
+      }}
+    >
+      <div className="admin-storefront-category-actions">
+        <label>
+          <i style={{ "--swatch": category.color }} />
+          <span>Couleur</span>
+          <input
+            type="color"
+            value={category.color}
+            onChange={(event) => onColor(event.target.value)}
+            aria-label={`Changer la couleur de ${category.label}`}
+          />
+        </label>
+        <button type="button" className="danger" onClick={onRemove}>Retirer</button>
+      </div>
+      <div
+        className="admin-storefront-category-card"
+        onClickCapture={(event) => {
+          if (performance.now() >= suppressClickUntil.current) return;
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endPointer}
+        onPointerCancel={endPointer}
+      >
+        <div className="admin-storefront-category-main">
+          <button
+            type="button"
+            className="admin-storefront-category-photo"
+            onClick={onOpenPhoto}
+            aria-label={`Modifier la photo de ${category.label}`}
+          >
+            {category.photo?.preview
+              ? <img src={category.photo.preview} alt={category.photo.name || category.label} />
+              : <span aria-hidden="true">{category.icon}</span>}
+          </button>
+          <button type="button" className="admin-storefront-category-text" onClick={onToggle}>
+            <strong>{category.label}</strong>
+            <small>{selected ? `Position ${selectedIndex + 1}` : "Masquée"}</small>
+          </button>
+        </div>
+        <div className="admin-storefront-order-actions">
+          <button type="button" onClick={() => onMove(-1)} disabled={!selected || selectedIndex === 0}>↑</button>
+          <button
+            type="button"
+            onClick={() => onMove(1)}
+            disabled={!selected || selectedIndex === config.categories.length - 1}
+          >
+            ↓
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Modal({ children, className = "", onClose }) {
+  return (
+    <div className="admin-storefront-modal-backdrop" onPointerDown={(event) => {
+      if (event.target === event.currentTarget) onClose();
+    }}>
+      <section className={`admin-storefront-modal ${className}`} role="dialog" aria-modal="true">
+        <button type="button" className="admin-storefront-modal-close" onClick={onClose} aria-label="Fermer">×</button>
+        {children}
+      </section>
+    </div>
+  );
+}
+
+function CategoryPhotoModal({ category, onClose, onSave }) {
+  const [draft, setDraft] = useState(() => normalizePhoto(category.photo));
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const inputRef = useRef(null);
+  const imageRef = useRef(null);
+  const pointers = useRef(new Map());
+  const gesture = useRef(null);
+  const current = useRef(draft);
+  current.current = draft;
+
+  const loadFile = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = String(reader.result || "");
+      const image = new Image();
+      image.onload = () => setDraft({
+        name: file.name,
+        src,
+        original: src,
+        preview: src,
+        x: 0,
+        y: 0,
+        scale: 1,
+        naturalWidth: image.naturalWidth || 0,
+        naturalHeight: image.naturalHeight || 0,
+      });
+      image.onerror = () => setDraft({
+        name: file.name,
+        src,
+        original: src,
+        preview: src,
+        x: 0,
+        y: 0,
+        scale: 1,
+        naturalWidth: 0,
+        naturalHeight: 0,
+      });
+      image.src = src;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const beginGesture = (event) => {
+    if (!draft?.src) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const points = [...pointers.current.values()];
+    if (points.length === 1) {
+      gesture.current = { mode: "pan", start: points[0], x: draft.x, y: draft.y };
+    } else if (points.length === 2) {
+      gesture.current = {
+        mode: "pinch",
+        distance: Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y),
+        scale: draft.scale,
+      };
+    }
+  };
+
+  const moveGesture = (event) => {
+    if (!pointers.current.has(event.pointerId) || !current.current?.src) return;
+    event.preventDefault();
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const points = [...pointers.current.values()];
+    const state = gesture.current;
+    if (points.length === 1 && state?.mode === "pan") {
+      setDraft((photo) => ({
+        ...photo,
+        x: state.x + points[0].x - state.start.x,
+        y: state.y + points[0].y - state.start.y,
+      }));
+    } else if (points.length === 2 && state?.mode === "pinch") {
+      const distance = Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y);
+      setDraft((photo) => ({
+        ...photo,
+        scale: Math.max(0.2, Math.min(5, state.scale * (distance / Math.max(1, state.distance)))),
+      }));
+    }
+  };
+
+  const endGesture = (event) => {
+    pointers.current.delete(event.pointerId);
+    const points = [...pointers.current.values()];
+    if (points.length === 1 && current.current) {
+      gesture.current = {
+        mode: "pan",
+        start: points[0],
+        x: current.current.x,
+        y: current.current.y,
+      };
+    } else if (!points.length) {
+      gesture.current = null;
+    }
+  };
+
+  const buildPreview = () => {
+    if (!draft?.src || !imageRef.current) return draft;
+    const image = imageRef.current;
+    const output = 164;
+    const canvas = document.createElement("canvas");
+    canvas.width = output;
+    canvas.height = output;
+    const context = canvas.getContext("2d");
+    if (!context) return draft;
+    const width = draft.naturalWidth || image.naturalWidth;
+    const height = draft.naturalHeight || image.naturalHeight;
+    const baseScale = Math.max(CROP_SIZE / width, CROP_SIZE / height);
+    const finalScale = baseScale * draft.scale;
+    const drawnWidth = width * finalScale * (output / CROP_SIZE);
+    const drawnHeight = height * finalScale * (output / CROP_SIZE);
+    context.drawImage(
+      image,
+      (output - drawnWidth) / 2 + draft.x * (output / CROP_SIZE),
+      (output - drawnHeight) / 2 + draft.y * (output / CROP_SIZE),
+      drawnWidth,
+      drawnHeight,
+    );
+    return { ...draft, preview: canvas.toDataURL("image/jpeg", 0.86) };
+  };
+
+  const naturalWidth = draft?.naturalWidth || CROP_SIZE;
+  const naturalHeight = draft?.naturalHeight || CROP_SIZE;
+  const baseScale = Math.max(CROP_SIZE / naturalWidth, CROP_SIZE / naturalHeight);
+
+  return (
+    <Modal className="admin-storefront-photo-modal" onClose={onClose}>
+      <span>{category.label}</span>
+      <h2>Photo de catégorie</h2>
+      <div
+        className="admin-storefront-photo-crop"
+        style={{ "--category-color": category.color }}
+        onPointerDown={beginGesture}
+        onPointerMove={moveGesture}
+        onPointerUp={endGesture}
+        onPointerCancel={endGesture}
+      >
+        {draft?.src ? (
+          <img
+            ref={imageRef}
+            src={draft.src}
+            alt={draft.name || category.label}
+            draggable={false}
+            style={{
+              width: `${naturalWidth * baseScale}px`,
+              height: `${naturalHeight * baseScale}px`,
+              transform: `translate(calc(-50% + ${draft.x}px), calc(-50% + ${draft.y}px)) scale(${draft.scale})`,
+            }}
+          />
+        ) : <strong aria-hidden="true">{category.icon}</strong>}
+      </div>
+      <p className="admin-storefront-photo-hint">
+        {draft?.src ? "Glisse et pince la photo pour la cadrer." : "Importe une photo pour la cadrer."}
+      </p>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(event) => loadFile(event.target.files?.[0])}
+      />
+      <div className="admin-storefront-photo-actions">
+        <button type="button" className="primary" onClick={() => inputRef.current?.click()}>
+          {draft?.src ? "Remplacer" : "Importer"}
+        </button>
+        <button type="button" className="danger" disabled={!draft?.src} onClick={() => setConfirmDelete(true)}>
+          Supprimer
+        </button>
+        <button type="button" className="confirm" onClick={() => onSave(buildPreview())}>Confirmer</button>
+      </div>
+      {confirmDelete && (
+        <div className="admin-storefront-delete-confirm">
+          <section>
+            <button type="button" onClick={() => setConfirmDelete(false)} aria-label="Fermer">×</button>
+            <span>{category.label}</span>
+            <h3>Supprimer la photo?</h3>
+            <p>La catégorie reviendra à son icône de base.</p>
+            <div>
+              <button type="button" onClick={() => setConfirmDelete(false)}>Annuler</button>
+              <button type="button" onClick={() => {
+                setDraft(null);
+                setConfirmDelete(false);
+              }}>Supprimer</button>
+            </div>
+          </section>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+export default function AdminStorefrontScreen({ navigation }) {
+  const [config, setConfig] = useState(() => cleanConfig(readStorefrontHomeConfig()));
+  const [products, setProducts] = useState(readStorefrontProducts);
+  const [openActions, setOpenActions] = useState(null);
+  const [categoryModal, setCategoryModal] = useState(false);
+  const [photoCategoryId, setPhotoCategoryId] = useState(null);
+  const [productPicker, setProductPicker] = useState(false);
+  const [newCategory, setNewCategory] = useState({ label: "", color: "#30c7c9" });
+
+  useEffect(() => {
+    const refreshProducts = () => setProducts(readStorefrontProducts());
+    const refreshConfig = () => setConfig(cleanConfig(readStorefrontHomeConfig()));
+    const refreshStorage = (event) => {
+      if (!event.key || event.key === STOREFRONT_PRODUCTS_KEY) refreshProducts();
+      if (!event.key || event.key === STOREFRONT_HOME_CONFIG_KEY) refreshConfig();
+    };
+    window.addEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshProducts);
+    window.addEventListener(STOREFRONT_HOME_CONFIG_CHANGED_EVENT, refreshConfig);
+    window.addEventListener("storage", refreshStorage);
+    return () => {
+      window.removeEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshProducts);
+      window.removeEventListener(STOREFRONT_HOME_CONFIG_CHANGED_EVENT, refreshConfig);
+      window.removeEventListener("storage", refreshStorage);
+    };
+  }, []);
+
+  const saveConfig = (next) => {
+    const cleaned = cleanConfig(next);
+    setConfig(cleaned);
+    writeStorefrontHomeConfig(cleaned);
+  };
+
+  const categories = useMemo(() => {
+    const all = allCategoriesFrom(config);
+    const orderedIds = [
+      ...config.categories,
+      ...all.map((category) => category.id).filter((id) => !config.categories.includes(id)),
+    ];
+    return orderedIds.map((id) => all.find((category) => category.id === id)).filter(Boolean);
+  }, [config]);
+
+  const catalog = useMemo(() => products.filter(isCatalogProduct), [products]);
+  const selected = useMemo(() => (
+    config.featuredProductIds
+      .map((id) => catalog.find((product) => String(product.id) === String(id)))
+      .filter(Boolean)
+  ), [catalog, config.featuredProductIds]);
+  const selectedIds = new Set(selected.map((product) => String(product.id)));
+  const available = catalog.filter((product) => !selectedIds.has(String(product.id)));
+  const activePhotoCategory = categories.find((category) => category.id === photoCategoryId);
+
+  useEffect(() => {
+    const cleanedIds = selected.map((product) => String(product.id));
+    if (cleanedIds.length !== config.featuredProductIds.length) {
+      saveConfig({ ...config, featuredProductIds: cleanedIds });
+    }
+  }, [catalog.length]);
+
+  const addCategory = (event) => {
+    event.preventDefault();
+    const label = newCategory.label.trim();
+    if (!label) return;
+    const existing = new Set(categories.map((category) => category.id));
+    const base = slugify(label);
+    let id = base;
+    let suffix = 2;
+    while (existing.has(id)) {
+      id = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    const custom = {
+      id,
+      label,
+      color: newCategory.color,
+      icon: CATEGORY_ICONS[config.customCategories.length % CATEGORY_ICONS.length],
+      custom: true,
+    };
+    saveConfig({
+      ...config,
+      categories: [...config.categories, id],
+      customCategories: [...config.customCategories, custom],
+    });
+    setCategoryModal(false);
+    setNewCategory({ label: "", color: "#30c7c9" });
+  };
+
+  const removeCategory = (category) => {
+    if (category.custom && !window.confirm(`Retirer la catégorie « ${category.label} » ?`)) return;
+    const nextPhotos = { ...config.categoryPhotos };
+    delete nextPhotos[category.id];
+    saveConfig({
+      ...config,
+      categories: config.categories.filter((id) => id !== category.id),
+      categoryPhotos: category.custom ? nextPhotos : config.categoryPhotos,
+      customCategories: category.custom
+        ? config.customCategories.filter((item) => item.id !== category.id)
+        : config.customCategories,
+    });
+    setOpenActions(null);
+  };
+
+  return (
+    <AdminLayout onBack={navigation.goBack} title="Accueil boutique">
+      <div className="admin-storefront-content" onPointerDown={(event) => {
+        if (openActions && !event.target.closest(".admin-storefront-category-shell")) setOpenActions(null);
+      }}>
+        <section className="admin-storefront-section">
+          <header>
+            <h2>Catégories affichées</h2>
+            <p>Choisir et organiser le carrousel</p>
+          </header>
+          <div className="admin-storefront-category-list">
+            {categories.map((category, index) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                config={config}
+                index={index}
+                open={openActions === category.id}
+                setOpen={setOpenActions}
+                onOpenPhoto={() => setPhotoCategoryId(category.id)}
+                onToggle={() => saveConfig({
+                  ...config,
+                  categories: config.categories.includes(category.id)
+                    ? config.categories.filter((id) => id !== category.id)
+                    : [...config.categories, category.id],
+                })}
+                onMove={(direction) => saveConfig({
+                  ...config,
+                  categories: moveItem(config.categories, config.categories.indexOf(category.id), direction),
+                })}
+                onColor={(color) => saveConfig({
+                  ...config,
+                  categoryColors: { ...config.categoryColors, [category.id]: color },
+                  customCategories: config.customCategories.map((item) => (
+                    item.id === category.id ? { ...item, color } : item
+                  )),
+                })}
+                onRemove={() => removeCategory(category)}
+              />
+            ))}
+            <button
+              type="button"
+              className="admin-storefront-add-category"
+              onClick={() => setCategoryModal(true)}
+            >
+              <strong>Ajouter une catégorie</strong>
+              <small>Créer une nouvelle entrée</small>
+            </button>
+          </div>
+        </section>
+
+        <section className="admin-storefront-section">
+          <header>
+            <h2>Nos populaires</h2>
+            <p>Cartes visibles sur la première page</p>
+          </header>
+          <div className="admin-storefront-product-list">
+            <button
+              type="button"
+              className={`admin-storefront-add-product${selected.length ? " has-products" : ""}`}
+              onClick={() => setProductPicker(true)}
+            >
+              {selected.length ? "Ajouter des produits" : "Ajouter un produit"}
+            </button>
+            {selected.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                index={index}
+                total={selected.length}
+                onMove={(direction) => saveConfig({
+                  ...config,
+                  featuredProductIds: moveItem(config.featuredProductIds, index, direction),
+                })}
+                onRemove={() => saveConfig({
+                  ...config,
+                  featuredProductIds: config.featuredProductIds.filter((id) => id !== String(product.id)),
+                })}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {categoryModal && (
+        <Modal className="admin-storefront-category-modal" onClose={() => setCategoryModal(false)}>
+          <span>Catégorie</span>
+          <h2>Ajouter une catégorie</h2>
+          <form onSubmit={addCategory}>
+            <label>
+              <span>Nouvelle catégorie</span>
+              <input
+                autoFocus
+                type="text"
+                value={newCategory.label}
+                placeholder="Ex: Bonnets"
+                onChange={(event) => setNewCategory((current) => ({ ...current, label: event.target.value }))}
+              />
+            </label>
+            <label>
+              <span>Couleur</span>
+              <input
+                type="color"
+                value={newCategory.color}
+                onChange={(event) => setNewCategory((current) => ({ ...current, color: event.target.value }))}
+              />
+            </label>
+            <button type="submit">Ajouter</button>
+          </form>
+        </Modal>
+      )}
+
+      {activePhotoCategory && (
+        <CategoryPhotoModal
+          category={activePhotoCategory}
+          onClose={() => setPhotoCategoryId(null)}
+          onSave={(photo) => {
+            const photos = { ...config.categoryPhotos };
+            if (photo) photos[activePhotoCategory.id] = photo;
+            else delete photos[activePhotoCategory.id];
+            saveConfig({ ...config, categoryPhotos: photos });
+            setPhotoCategoryId(null);
+          }}
+        />
+      )}
+
+      {productPicker && (
+        <Modal className="admin-storefront-picker" onClose={() => setProductPicker(false)}>
+          <span>Catalogue</span>
+          <h2>Ajouter aux populaires</h2>
+          <p>Sélectionne les produits qui doivent apparaître sur la page d’accueil.</p>
+          <div className="admin-storefront-picker-list">
+            {available.length ? available.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAdd={() => saveConfig({
+                  ...config,
+                  featuredProductIds: [...config.featuredProductIds, String(product.id)],
+                })}
+              />
+            )) : (
+              <div className="admin-storefront-empty">
+                <strong>{catalog.length ? "Tous les produits sont déjà ajoutés" : "Aucun produit au catalogue"}</strong>
+                <p>{catalog.length
+                  ? "Ferme cette fenêtre pour réorganiser les produits choisis."
+                  : "Finalise un produit dans le module Produits pour le rendre disponible ici."}</p>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
+    </AdminLayout>
+  );
+}

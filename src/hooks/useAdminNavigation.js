@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ADMIN_ROUTES, createAdminRoute } from "../constants/adminRoutes";
 
-export default function useAdminNavigation(initialRoute = ADMIN_ROUTES.LEGACY) {
+export default function useAdminNavigation(initialRoute = ADMIN_ROUTES.HOME) {
   const initialRouteRef = useRef(createAdminRoute(initialRoute));
   const [stack, setStack] = useState([initialRouteRef.current]);
 

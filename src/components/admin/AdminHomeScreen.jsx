@@ -31,7 +31,7 @@ const modules = [
     description: "Choisir les catégories et les produits affichés sur la page d'accueil.",
     color: "#E84B94",
     icon: "storefront",
-    src: "admin-vitrine.html",
+    route: ADMIN_ROUTES.STOREFRONT,
   },
   {
     title: "Commandes",
@@ -150,10 +150,7 @@ export default function AdminHomeScreen({ navigation, onExit }) {
               key={module.title}
               type="button"
               disabled={module.disabled}
-              onClick={() => navigation.navigate(
-                module.route || ADMIN_ROUTES.LEGACY,
-                module.route ? {} : { src: module.src },
-              )}
+              onClick={() => navigation.navigate(module.route)}
               className="admin-react-module"
               style={{
                 "--module-color": module.color,

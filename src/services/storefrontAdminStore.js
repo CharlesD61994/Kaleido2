@@ -8,6 +8,7 @@ const SUPABASE_URL = String(
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
   || "sb_publishable_8dNyHlIOv21aH-_NLbPhyA_e3Aj1MFg";
 const PRODUCTS_CHANGED_EVENT = "kaleido-storefront-products-changed";
+const HOME_CONFIG_CHANGED_EVENT = "kaleido-storefront-home-config-changed";
 let hydrationPromise = null;
 
 const readJson = (key, fallback) => {
@@ -29,6 +30,18 @@ export const writeStorefrontProducts = (products) => {
     detail: { products: nextProducts, updatedAt },
   }));
   return nextProducts;
+};
+
+export const readStorefrontHomeConfig = () => readJson(HOME_CONFIG_KEY, null);
+
+export const writeStorefrontHomeConfig = (config) => {
+  const updatedAt = new Date().toISOString();
+  window.localStorage.setItem(HOME_CONFIG_KEY, JSON.stringify(config));
+  window.localStorage.setItem("kaleido-storefront-local-updated:home-config", updatedAt);
+  window.dispatchEvent(new CustomEvent(HOME_CONFIG_CHANGED_EVENT, {
+    detail: { config, updatedAt },
+  }));
+  return config;
 };
 
 export const readStorefrontStats = () => {
@@ -119,6 +132,10 @@ export const hydrateStorefrontFromCloud = async () => {
           window.dispatchEvent(new CustomEvent(PRODUCTS_CHANGED_EVENT, {
             detail: { products: row.payload, updatedAt: row.updated_at },
           }));
+        } else {
+          window.dispatchEvent(new CustomEvent(HOME_CONFIG_CHANGED_EVENT, {
+            detail: { config: row.payload, updatedAt: row.updated_at },
+          }));
         }
       });
       return { ok: true };
@@ -132,3 +149,5 @@ export const hydrateStorefrontFromCloud = async () => {
 
 export const STOREFRONT_PRODUCTS_KEY = PRODUCTS_KEY;
 export const STOREFRONT_PRODUCTS_CHANGED_EVENT = PRODUCTS_CHANGED_EVENT;
+export const STOREFRONT_HOME_CONFIG_KEY = HOME_CONFIG_KEY;
+export const STOREFRONT_HOME_CONFIG_CHANGED_EVENT = HOME_CONFIG_CHANGED_EVENT;
