@@ -2117,6 +2117,11 @@ button.admin-public-link {
   width: min(100%, 380px);
 }
 
+.admin-storefront:has(.admin-vitrine-photo-backdrop) {
+  transform: none;
+  will-change: auto;
+}
+
 .admin-vitrine-photo-preview {
   position: relative;
   display: grid;
