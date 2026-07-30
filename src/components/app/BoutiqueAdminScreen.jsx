@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { VIEWS } from "../../constants/views";
+import AdminRoot from "../admin/AdminRoot";
 
 const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, Number(value) || 0));
 
@@ -94,19 +95,10 @@ export default function BoutiqueAdminScreen({
         overflow: "hidden",
       }}
     >
-      <iframe
-        title="Admin boutique Kaleido"
-        src="/admin-boutique/admin-shell.html"
-        onLoad={() => setIsLoaded(true)}
-        style={{
-          width: "100%",
-          height: "100%",
-          border: 0,
-          display: "block",
-          background: "var(--k-bg)",
-          opacity: isLoaded ? 1 : 0,
-          transition: "opacity 140ms ease",
-        }}
+      <AdminRoot
+        isActive={isActive}
+        isLegacyLoaded={isLoaded}
+        onLegacyLoad={() => setIsLoaded(true)}
       />
     </section>
   );
