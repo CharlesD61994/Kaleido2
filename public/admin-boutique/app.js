@@ -88,12 +88,13 @@ const allCategoriesFrom = (rawConfig) => {
 
 const cleanHomeConfig = (rawConfig) => {
   const allCategories = allCategoriesFrom(rawConfig);
-  const selectedCategories = Array.isArray(rawConfig?.categories)
+  const hasExplicitCategories = Array.isArray(rawConfig?.categories);
+  const selectedCategories = hasExplicitCategories
     ? rawConfig.categories.filter((id) => allCategories.some((category) => category.id === id))
     : allCategories.map((category) => category.id);
 
   return {
-    categories: selectedCategories.length ? selectedCategories : allCategories.map((category) => category.id),
+    categories: hasExplicitCategories ? selectedCategories : allCategories.map((category) => category.id),
     customCategories: customCategoriesFrom(rawConfig),
     categoryColors: rawConfig?.categoryColors || {},
     categoryPhotos: rawConfig?.categoryPhotos || {},
@@ -371,7 +372,10 @@ const renderProducts = (products, homeConfig) => {
     .filter(Boolean);
   const productsToRender = selected.length ? selected : catalogProducts.slice(0, 4);
 
-  if (!productsToRender.length) return;
+  if (!productsToRender.length) {
+    productGrid.innerHTML = "";
+    return;
+  }
   productGrid.innerHTML = productsToRender.map(renderProductCard).join("");
   bindProductCards(productsToRender);
 };
@@ -385,21 +389,38 @@ const renderStorefront = ({ products, homeConfig }) => {
 };
 
 const loadPublishedStorefront = async () => {
+  const cachedProducts = readJson(productsKey, []);
+  const cachedHomeConfig = readJson(homeConfigKey, null);
   if (!window.KaleidoStorefrontCloud?.isConfigured) {
     renderStorefront({
-      products: readJson(productsKey, []),
-      homeConfig: readJson(homeConfigKey, null),
+      products: cachedProducts,
+      homeConfig: cachedHomeConfig,
     });
     return;
   }
 
-  const result = await window.KaleidoStorefrontCloud.readDocuments(["products", "home-config"]);
-  if (!result.ok) return;
-  const products = Array.isArray(result.documents.products?.payload) ? result.documents.products.payload : [];
-  const homeConfig = result.documents["home-config"]?.payload || null;
-  localStorage.setItem(productsKey, JSON.stringify(products));
-  localStorage.setItem(homeConfigKey, JSON.stringify(homeConfig));
-  renderStorefront({ products, homeConfig });
+  try {
+    const result = await window.KaleidoStorefrontCloud.readDocuments(["products", "home-config"]);
+    if (!result.ok) {
+      renderStorefront({ products: cachedProducts, homeConfig: cachedHomeConfig });
+      return;
+    }
+    const cloudProducts = result.documents.products?.payload;
+    const cloudHomeConfig = result.documents["home-config"]?.payload;
+    const products = Array.isArray(cloudProducts) ? cloudProducts : cachedProducts;
+    const homeConfig = cloudHomeConfig && typeof cloudHomeConfig === "object" && !Array.isArray(cloudHomeConfig)
+      ? cloudHomeConfig
+      : cachedHomeConfig;
+    if (Array.isArray(cloudProducts)) {
+      localStorage.setItem(productsKey, JSON.stringify(products));
+    }
+    if (cloudHomeConfig && typeof cloudHomeConfig === "object" && !Array.isArray(cloudHomeConfig)) {
+      localStorage.setItem(homeConfigKey, JSON.stringify(homeConfig));
+    }
+    renderStorefront({ products, homeConfig });
+  } catch {
+    renderStorefront({ products: cachedProducts, homeConfig: cachedHomeConfig });
+  }
 };
 
 productBackButton?.addEventListener("click", closeProductDetail);

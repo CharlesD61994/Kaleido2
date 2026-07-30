@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ADMIN_ROUTES } from "../../constants/adminRoutes";
-import { publishStorefront, readStorefrontStats, STOREFRONT_PRODUCTS_KEY } from "../../services/storefrontAdminStore";
+import {
+  hydrateStorefrontFromCloud,
+  publishStorefront,
+  readStorefrontStats,
+  STOREFRONT_PRODUCTS_CHANGED_EVENT,
+  STOREFRONT_PRODUCTS_KEY,
+} from "../../services/storefrontAdminStore";
 import AdminLayout from "./AdminLayout";
 import "./AdminHomeScreen.css";
 
@@ -68,9 +74,14 @@ export default function AdminHomeScreen({ navigation, onExit }) {
     };
     window.addEventListener("focus", refreshStats);
     window.addEventListener("storage", onStorage);
+    window.addEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshStats);
+    hydrateStorefrontFromCloud().then((result) => {
+      if (result.ok) refreshStats();
+    });
     return () => {
       window.removeEventListener("focus", refreshStats);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshStats);
     };
   }, [refreshStats]);
 

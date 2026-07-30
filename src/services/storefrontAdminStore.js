@@ -9,7 +9,18 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
   || "sb_publishable_8dNyHlIOv21aH-_NLbPhyA_e3Aj1MFg";
 const PRODUCTS_CHANGED_EVENT = "kaleido-storefront-products-changed";
 const HOME_CONFIG_CHANGED_EVENT = "kaleido-storefront-home-config-changed";
+const LOCAL_UPDATED_PREFIX = "kaleido-storefront-local-updated:";
+const BACKUP_PREFIX = "kaleido-storefront-backup:";
+const HYDRATION_TTL_MS = 15_000;
+const DEFAULT_HOME_CONFIG = {
+  categories: ["vetements", "peluches", "pantoufles", "porte-cles", "couvertures"],
+  customCategories: [],
+  categoryColors: {},
+  categoryPhotos: {},
+  featuredProductIds: [],
+};
 let hydrationPromise = null;
+let lastHydratedAt = 0;
 
 const readJson = (key, fallback) => {
   try {
@@ -19,29 +30,112 @@ const readJson = (key, fallback) => {
   }
 };
 
-export const readStorefrontProducts = () => readJson(PRODUCTS_KEY, []);
+const validProducts = (value) => (Array.isArray(value) ? value : []);
+const validHomeConfig = (value) => (
+  value && typeof value === "object" && !Array.isArray(value)
+    ? value
+    : { ...DEFAULT_HOME_CONFIG }
+);
+
+const documentKey = (docKey) => (docKey === "products" ? PRODUCTS_KEY : HOME_CONFIG_KEY);
+const documentEvent = (docKey) => (
+  docKey === "products" ? PRODUCTS_CHANGED_EVENT : HOME_CONFIG_CHANGED_EVENT
+);
+const hasMeaningfulData = (docKey, value) => (
+  docKey === "products"
+    ? Array.isArray(value) && value.length > 0
+    : Boolean(value && typeof value === "object" && Object.keys(value).length)
+);
+const validCloudPayload = (docKey, value) => (
+  docKey === "products"
+    ? Array.isArray(value)
+    : Boolean(value && typeof value === "object" && !Array.isArray(value))
+);
+
+const dispatchDocumentChange = (docKey, payload, updatedAt) => {
+  window.dispatchEvent(new CustomEvent(documentEvent(docKey), {
+    detail: docKey === "products"
+      ? { products: payload, updatedAt }
+      : { config: payload, updatedAt },
+  }));
+};
+
+const backupLocalDocument = (docKey, payload) => {
+  if (!hasMeaningfulData(docKey, payload)) return;
+  try {
+    window.localStorage.setItem(`${BACKUP_PREFIX}${docKey}`, JSON.stringify({
+      payload,
+      backedUpAt: new Date().toISOString(),
+    }));
+  } catch {
+    // The live document remains untouched if storage is already full.
+  }
+};
+
+const writeHydratedDocument = (docKey, payload, updatedAt) => {
+  const key = documentKey(docKey);
+  const current = readJson(key, docKey === "products" ? [] : null);
+  backupLocalDocument(docKey, current);
+  window.localStorage.setItem(key, JSON.stringify(payload));
+  window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${docKey}`, updatedAt);
+  dispatchDocumentChange(docKey, payload, updatedAt);
+};
+
+const compactCategoryPhoto = (photo) => {
+  if (!photo || typeof photo !== "object") return photo;
+  const original = photo.original || photo.src || photo.url || photo.preview || "";
+  const preview = photo.preview || photo.url || original;
+  return {
+    name: photo.name || "",
+    original,
+    preview,
+    x: Number(photo.x ?? photo.pos?.x) || 0,
+    y: Number(photo.y ?? photo.pos?.y) || 0,
+    scale: Number(photo.scale) || 1,
+    naturalWidth: Number(photo.naturalWidth) || 0,
+    naturalHeight: Number(photo.naturalHeight) || 0,
+  };
+};
+
+const compactHomeConfigForCloud = (config) => ({
+  ...validHomeConfig(config),
+  categoryPhotos: Object.fromEntries(
+    Object.entries(validHomeConfig(config).categoryPhotos || {})
+      .map(([id, photo]) => [id, compactCategoryPhoto(photo)]),
+  ),
+});
+
+export const readStorefrontProducts = () => validProducts(readJson(PRODUCTS_KEY, []));
 
 export const writeStorefrontProducts = (products) => {
   const nextProducts = Array.isArray(products) ? products : [];
   const updatedAt = new Date().toISOString();
   window.localStorage.setItem(PRODUCTS_KEY, JSON.stringify(nextProducts));
-  window.localStorage.setItem("kaleido-storefront-local-updated:products", updatedAt);
-  window.dispatchEvent(new CustomEvent(PRODUCTS_CHANGED_EVENT, {
-    detail: { products: nextProducts, updatedAt },
-  }));
+  window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}products`, updatedAt);
+  dispatchDocumentChange("products", nextProducts, updatedAt);
   return nextProducts;
 };
 
-export const readStorefrontHomeConfig = () => readJson(HOME_CONFIG_KEY, null);
+export const readStorefrontHomeConfig = () => {
+  const compact = compactHomeConfigForCloud(readJson(HOME_CONFIG_KEY, null));
+  try {
+    const serialized = JSON.stringify(compact);
+    if (window.localStorage.getItem(HOME_CONFIG_KEY) !== serialized) {
+      window.localStorage.setItem(HOME_CONFIG_KEY, serialized);
+    }
+  } catch {
+    // Keep serving the valid in-memory copy if local storage is unavailable.
+  }
+  return compact;
+};
 
 export const writeStorefrontHomeConfig = (config) => {
+  const nextConfig = compactHomeConfigForCloud(config);
   const updatedAt = new Date().toISOString();
-  window.localStorage.setItem(HOME_CONFIG_KEY, JSON.stringify(config));
-  window.localStorage.setItem("kaleido-storefront-local-updated:home-config", updatedAt);
-  window.dispatchEvent(new CustomEvent(HOME_CONFIG_CHANGED_EVENT, {
-    detail: { config, updatedAt },
-  }));
-  return config;
+  window.localStorage.setItem(HOME_CONFIG_KEY, JSON.stringify(nextConfig));
+  window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}home-config`, updatedAt);
+  dispatchDocumentChange("home-config", nextConfig, updatedAt);
+  return nextConfig;
 };
 
 export const readStorefrontStats = () => {
@@ -60,10 +154,15 @@ export const publishStorefront = async () => {
     return { ok: false, reason: "not-configured" };
   }
 
+  const hydration = await hydrateStorefrontFromCloud({ force: true });
+  if (!hydration.ok) {
+    return { ok: false, reason: `preflight-${hydration.reason}` };
+  }
+
   const updatedAt = new Date().toISOString();
   const documents = {
     products: readStorefrontProducts(),
-    "home-config": readJson(HOME_CONFIG_KEY, null),
+    "home-config": compactHomeConfigForCloud(readStorefrontHomeConfig()),
   };
   const body = Object.entries(documents).map(([docKey, payload]) => ({
     owner_key: OWNER_KEY,
@@ -90,7 +189,7 @@ export const publishStorefront = async () => {
 
     window.localStorage.setItem("kaleido-storefront-last-published-at", updatedAt);
     Object.keys(documents).forEach((docKey) => {
-      window.localStorage.setItem(`kaleido-storefront-local-updated:${docKey}`, updatedAt);
+      window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${docKey}`, updatedAt);
     });
     return { ok: true, updatedAt };
   } catch {
@@ -98,10 +197,13 @@ export const publishStorefront = async () => {
   }
 };
 
-export const hydrateStorefrontFromCloud = async () => {
+export const hydrateStorefrontFromCloud = async ({ force = false } = {}) => {
   if (hydrationPromise) return hydrationPromise;
   if (!SUPABASE_URL || !SUPABASE_KEY || !OWNER_KEY) {
     return { ok: false, reason: "not-configured" };
+  }
+  if (!force && Date.now() - lastHydratedAt < HYDRATION_TTL_MS) {
+    return { ok: true, cached: true, applied: [] };
   }
 
   hydrationPromise = (async () => {
@@ -117,30 +219,33 @@ export const hydrateStorefrontFromCloud = async () => {
       if (!response.ok) return { ok: false, reason: `http-${response.status}` };
 
       const rows = await response.json();
+      const applied = [];
       rows.forEach((row) => {
+        if (!["products", "home-config"].includes(row.doc_key)) return;
+        if (!validCloudPayload(row.doc_key, row.payload)) return;
+        const key = documentKey(row.doc_key);
+        const hasLocalDocument = window.localStorage.getItem(key) !== null;
+        const localPayload = readJson(key, row.doc_key === "products" ? [] : null);
         const localUpdatedAt = Date.parse(
-          window.localStorage.getItem(`kaleido-storefront-local-updated:${row.doc_key}`) || "",
+          window.localStorage.getItem(`${LOCAL_UPDATED_PREFIX}${row.doc_key}`) || "",
         );
         const cloudUpdatedAt = Date.parse(row.updated_at || "");
+        if (hasLocalDocument && !Number.isFinite(localUpdatedAt) && hasMeaningfulData(row.doc_key, localPayload)) {
+          window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${row.doc_key}`, new Date().toISOString());
+          return;
+        }
         if (Number.isFinite(localUpdatedAt) && (!Number.isFinite(cloudUpdatedAt) || localUpdatedAt >= cloudUpdatedAt)) {
           return;
         }
-        const key = row.doc_key === "products" ? PRODUCTS_KEY : HOME_CONFIG_KEY;
-        window.localStorage.setItem(key, JSON.stringify(row.payload));
-        window.localStorage.setItem(`kaleido-storefront-local-updated:${row.doc_key}`, row.updated_at);
-        if (row.doc_key === "products") {
-          window.dispatchEvent(new CustomEvent(PRODUCTS_CHANGED_EVENT, {
-            detail: { products: row.payload, updatedAt: row.updated_at },
-          }));
-        } else {
-          window.dispatchEvent(new CustomEvent(HOME_CONFIG_CHANGED_EVENT, {
-            detail: { config: row.payload, updatedAt: row.updated_at },
-          }));
-        }
+        writeHydratedDocument(row.doc_key, row.payload, row.updated_at || new Date().toISOString());
+        applied.push(row.doc_key);
       });
-      return { ok: true };
+      lastHydratedAt = Date.now();
+      return { ok: true, applied };
     } catch {
       return { ok: false, reason: "network" };
+    } finally {
+      hydrationPromise = null;
     }
   })();
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  hydrateStorefrontFromCloud,
   readStorefrontHomeConfig,
   readStorefrontProducts,
   STOREFRONT_HOME_CONFIG_CHANGED_EVENT,
@@ -74,11 +75,12 @@ const allCategoriesFrom = (raw) => {
 
 const cleanConfig = (raw) => {
   const categories = allCategoriesFrom(raw);
-  const selected = Array.isArray(raw?.categories)
+  const hasExplicitCategories = Array.isArray(raw?.categories);
+  const selected = hasExplicitCategories
     ? raw.categories.filter((id) => categories.some((category) => category.id === id))
     : categories.map((category) => category.id);
   return {
-    categories: selected.length ? selected : categories.map((category) => category.id),
+    categories: hasExplicitCategories ? selected : categories.map((category) => category.id),
     customCategories: customCategoriesFrom(raw),
     categoryColors: raw?.categoryColors || {},
     categoryPhotos: raw?.categoryPhotos || {},
@@ -315,31 +317,44 @@ function CategoryPhotoModal({ category, onClose, onSave }) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      const src = String(reader.result || "");
+      const importedSrc = String(reader.result || "");
       const image = new Image();
-      image.onload = () => setDraft({
-        name: file.name,
-        src,
-        original: src,
-        preview: src,
-        x: 0,
-        y: 0,
-        scale: 1,
-        naturalWidth: image.naturalWidth || 0,
-        naturalHeight: image.naturalHeight || 0,
-      });
+      image.onload = () => {
+        const maxSize = 1024;
+        const ratio = Math.min(1, maxSize / Math.max(image.naturalWidth, image.naturalHeight, 1));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio));
+        const context = canvas.getContext("2d");
+        let src = importedSrc;
+        if (context) {
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          src = canvas.toDataURL("image/jpeg", 0.84);
+        }
+        setDraft({
+          name: file.name,
+          src,
+          original: src,
+          preview: src,
+          x: 0,
+          y: 0,
+          scale: 1,
+          naturalWidth: canvas.width,
+          naturalHeight: canvas.height,
+        });
+      };
       image.onerror = () => setDraft({
         name: file.name,
-        src,
-        original: src,
-        preview: src,
+        src: importedSrc,
+        original: importedSrc,
+        preview: importedSrc,
         x: 0,
         y: 0,
         scale: 1,
         naturalWidth: 0,
         naturalHeight: 0,
       });
-      image.src = src;
+      image.src = importedSrc;
     };
     reader.readAsDataURL(file);
   };
@@ -511,6 +526,11 @@ export default function AdminStorefrontScreen({ navigation }) {
     window.addEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshProducts);
     window.addEventListener(STOREFRONT_HOME_CONFIG_CHANGED_EVENT, refreshConfig);
     window.addEventListener("storage", refreshStorage);
+    hydrateStorefrontFromCloud().then((result) => {
+      if (!result.ok) return;
+      refreshProducts();
+      refreshConfig();
+    });
     return () => {
       window.removeEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshProducts);
       window.removeEventListener(STOREFRONT_HOME_CONFIG_CHANGED_EVENT, refreshConfig);
@@ -542,13 +562,6 @@ export default function AdminStorefrontScreen({ navigation }) {
   const selectedIds = new Set(selected.map((product) => String(product.id)));
   const available = catalog.filter((product) => !selectedIds.has(String(product.id)));
   const activePhotoCategory = categories.find((category) => category.id === photoCategoryId);
-
-  useEffect(() => {
-    const cleanedIds = selected.map((product) => String(product.id));
-    if (cleanedIds.length !== config.featuredProductIds.length) {
-      saveConfig({ ...config, featuredProductIds: cleanedIds });
-    }
-  }, [catalog.length]);
 
   const addCategory = (event) => {
     event.preventDefault();

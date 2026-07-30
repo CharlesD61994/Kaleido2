@@ -184,6 +184,12 @@ export default function useEdgeSwipeBack({
     };
 
     const onTouchStart = (event) => {
+      if (
+        currentView === VIEWS.BOUTIQUE_ADMIN
+        && document.querySelector('[data-kaleido-admin-root="true"][data-admin-can-go-back="true"]')
+      ) {
+        return;
+      }
       const forcedEdgeZone = event?.target instanceof Element
         && Boolean(event.target.closest('[data-kaleido-edge-zone="true"]'));
 

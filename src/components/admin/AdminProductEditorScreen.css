@@ -463,6 +463,9 @@
 
 .admin-editor-subpage .admin-react-header {
   flex: 0 0 auto;
+  background: var(--k-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .admin-editor-subpage .admin-react-brand {
@@ -475,9 +478,8 @@
 }
 
 .admin-editor-subpage .admin-react-brand-logo {
-  box-shadow:
-    0 0 18px rgba(232, 75, 148, 0.38),
-    0 0 24px rgba(48, 199, 201, 0.32);
+  box-shadow: none;
+  filter: none;
 }
 
 .admin-editor-subpage-main::-webkit-scrollbar,
