@@ -4,6 +4,7 @@
   const COMPLETE_DISTANCE = 72;
   const EDGE_SIZE = 28;
   const MAX_VERTICAL_DRIFT = 60;
+  const HORIZONTAL_LOCK_DISTANCE = 8;
   const EDITING_PRODUCT_KEY = "kaleido-admin-editing-product-id";
   const EDITING_PRODUCT_DATA_KEY = "kaleido-admin-editing-product";
   const isFramed = window.parent && window.parent !== window;
@@ -119,6 +120,7 @@
     let progress = 0;
     let dragging = false;
     let cancelled = false;
+    let horizontalLocked = false;
     const page = () => document.querySelector(".admin-storefront");
 
     const reset = () => {
@@ -130,7 +132,17 @@
       }
       dragging = false;
       cancelled = false;
+      horizontalLocked = false;
       progress = 0;
+    };
+
+    const cancelSwipe = () => {
+      if (!dragging) return;
+      cancelled = true;
+      if (isFramed) {
+        window.parent.postMessage({ type: "kaleido-admin:swipe-cancel" }, "*");
+      }
+      reset();
     };
 
     window.addEventListener("touchstart", (event) => {
@@ -142,6 +154,7 @@
       startY = touch.clientY;
       dragging = true;
       cancelled = false;
+      horizontalLocked = false;
       const shell = page();
       if (!isFramed && shell) shell.style.transition = "none";
     }, { passive: true });
@@ -152,11 +165,19 @@
       const dx = touch.clientX - startX;
       const dy = Math.abs(touch.clientY - startY);
       if (dy > MAX_VERTICAL_DRIFT) {
-        cancelled = true;
-        reset();
+        cancelSwipe();
         return;
       }
+      if (!horizontalLocked) {
+        if (dy >= HORIZONTAL_LOCK_DISTANCE && dy > dx) {
+          cancelSwipe();
+          return;
+        }
+        if (dx < HORIZONTAL_LOCK_DISTANCE || dx <= dy) return;
+        horizontalLocked = true;
+      }
       if (dx <= 0) return;
+      event.preventDefault();
       progress = Math.min(dx, 132);
       const shell = page();
       if (!isFramed && shell) {
@@ -166,7 +187,7 @@
       if (isFramed) {
         window.parent.postMessage({ type: "kaleido-admin:swipe-progress", progress }, "*");
       }
-    }, { passive: true });
+    }, { passive: false });
 
     window.addEventListener("touchend", () => {
       if (!dragging) return;
@@ -199,7 +220,7 @@
       navigateWithTransition(target.href, { forceRootReturn: target.forceRootReturn });
     }, { passive: true });
 
-    window.addEventListener("touchcancel", reset, { passive: true });
+    window.addEventListener("touchcancel", cancelSwipe, { passive: true });
   };
 
   document.addEventListener("DOMContentLoaded", () => {

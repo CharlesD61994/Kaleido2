@@ -9,6 +9,7 @@
   let isNavigating = false;
   let preparedBackHref = "";
   let resetTimer = null;
+  let navigationWatchdog = null;
 
   const readJson = (key) => {
     try {
@@ -46,6 +47,28 @@
     });
   };
 
+  const clearNavigationWatchdog = () => {
+    window.clearTimeout(navigationWatchdog);
+    navigationWatchdog = null;
+  };
+
+  const armNavigationWatchdog = () => {
+    clearNavigationWatchdog();
+    navigationWatchdog = window.setTimeout(() => {
+      if (!isNavigating) return;
+      isNavigating = false;
+      if (activeFrame) {
+        activeFrame.style.transition = "";
+        activeFrame.style.transform = "";
+        activeFrame.style.opacity = "";
+        activeFrame.style.zIndex = "";
+        activeFrame.style.boxShadow = "";
+      }
+      cleanNextFrame();
+      setFrameInteractivity(true);
+    }, 2500);
+  };
+
   const cleanNextFrame = () => {
     if (!nextFrame) return;
     nextFrame.classList.remove("is-active", "is-preparing");
@@ -54,6 +77,8 @@
     nextFrame.style.opacity = "";
     nextFrame.style.zIndex = "";
     nextFrame.style.boxShadow = "";
+    nextFrame.style.pointerEvents = "none";
+    nextFrame.onload = null;
     nextFrame.removeAttribute("src");
     preparedBackHref = "";
   };
@@ -67,6 +92,7 @@
       nextFrame.style.transform = "translate3d(-14%, 0, 0)";
       nextFrame.style.opacity = "1";
       nextFrame.style.zIndex = "1";
+      nextFrame.style.pointerEvents = "none";
       nextFrame.src = targetHref;
       preparedBackHref = targetHref;
     }
@@ -89,6 +115,7 @@
     resetTimer = window.setTimeout(() => {
       activeFrame.style.transition = "";
       activeFrame.style.boxShadow = "";
+      if (!isNavigating) setFrameInteractivity(true);
     }, 190);
   };
 
@@ -105,13 +132,15 @@
   };
 
   const finishPreparedBack = () => {
-    if (!activeFrame || !nextFrame || stack.length <= 1 || isNavigating) {
+    if (isNavigating) return;
+    if (!activeFrame || !nextFrame || stack.length <= 1) {
       finishToApp();
       return;
     }
     const targetHref = prepareBackFrame();
     if (!targetHref) return;
     isNavigating = true;
+    armNavigationWatchdog();
     setFrameInteractivity(false);
     activeFrame.style.transition = "transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 190ms ease";
     nextFrame.style.transition = "transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1)";
@@ -132,6 +161,7 @@
       cleanNextFrame();
       currentHref = targetHref;
       isNavigating = false;
+      clearNavigationWatchdog();
       setFrameInteractivity(true);
     }, 205);
   };
@@ -144,6 +174,7 @@
     const targetHref = normalizeHref(href);
     if (!activeFrame || !nextFrame || targetHref === currentHref || isNavigating) return;
     isNavigating = true;
+    armNavigationWatchdog();
     setFrameInteractivity(false);
 
     const fromX = direction === "back" ? "-28%" : "100%";
@@ -183,12 +214,14 @@
         if (!replace && direction !== "back") stack.push(targetHref);
         if (replace) stack[stack.length - 1] = targetHref;
         isNavigating = false;
+        clearNavigationWatchdog();
         setFrameInteractivity(true);
       }, 245);
     };
   };
 
   const goBack = () => {
+    if (isNavigating) return;
     if (stack.length <= 1) {
       finishToApp();
       return;
@@ -198,7 +231,7 @@
   };
 
   window.addEventListener("message", (event) => {
-    if (event.source !== activeFrame?.contentWindow && event.source !== nextFrame?.contentWindow) return;
+    if (event.source !== activeFrame?.contentWindow) return;
     const data = event.data || {};
     if (data.type === "kaleido-admin:navigate") {
       if (data.rootReturn) {
@@ -212,6 +245,7 @@
     }
     if (data.type === "kaleido-admin:back") goBack();
     if (data.type === "kaleido-admin:swipe-progress" && activeFrame) {
+      if (isNavigating) return;
       const progress = Math.max(0, Math.min(Number(data.progress) || 0, 132));
       if (stack.length <= 1 && isEmbeddedInApp()) {
         window.parent.postMessage({ type: "kaleido-admin-root:swipe-progress", progress: progress / 132 }, "*");

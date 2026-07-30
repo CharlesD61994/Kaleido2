@@ -45,16 +45,19 @@ html.admin-is-leaving .admin-storefront {
   background: #F7F4FB;
   transform: translate3d(100%, 0, 0);
   will-change: transform;
+  pointer-events: none;
 }
 
 .admin-shell-frame.is-active {
   z-index: 2;
   transform: translate3d(0, 0, 0);
+  pointer-events: auto;
 }
 
 .admin-shell-frame.is-preparing {
   z-index: 3;
   opacity: 0;
+  pointer-events: none;
 }
 
 html.admin-shell-leaving .admin-shell-stage {
