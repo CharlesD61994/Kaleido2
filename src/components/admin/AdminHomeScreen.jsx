@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ADMIN_ROUTES } from "../../constants/adminRoutes";
 import { publishStorefront, readStorefrontStats, STOREFRONT_PRODUCTS_KEY } from "../../services/storefrontAdminStore";
-import Icon from "../icons/Icon";
 import AdminLayout from "./AdminLayout";
+import "./AdminHomeScreen.css";
 
 const modules = [
   {
@@ -50,9 +50,9 @@ const modules = [
 ];
 
 const statItems = [
-  { key: "drafts", label: "BROUILLONS", color: "#7C3AED", icon: "grid" },
-  { key: "ready", label: "TERMINÉS", color: "#0891B2", icon: "checkCircle" },
-  { key: "catalog", label: "CATALOGUE", color: "#059669", icon: "package" },
+  { key: "drafts", label: "BROUILLONS", color: "#7C3AED", symbol: "▦" },
+  { key: "ready", label: "TERMINÉS", color: "#0891B2", symbol: "◇" },
+  { key: "catalog", label: "CATALOGUE", color: "#059669", symbol: "●" },
 ];
 
 export default function AdminHomeScreen({ navigation, onExit }) {
@@ -103,24 +103,8 @@ export default function AdminHomeScreen({ navigation, onExit }) {
       type="button"
       onClick={handlePublish}
       disabled={publishState === "saving"}
-      style={{
-        minWidth: 72,
-        minHeight: 34,
-        padding: "0 13px",
-        border: `1px solid ${publishState === "error" ? "#E5484D" : "#7C3AED66"}`,
-        borderRadius: 10,
-        background: publishState === "saved"
-          ? "linear-gradient(135deg, #34D399, #059669)"
-          : publishState === "error"
-            ? "color-mix(in srgb, #E5484D 14%, var(--k-surface))"
-            : "linear-gradient(135deg, #8B5CF6, #7C3AED)",
-        color: publishState === "error" ? "#E5484D" : "#FFF",
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: 12,
-        fontWeight: 800,
-        cursor: publishState === "saving" ? "wait" : "pointer",
-        opacity: publishState === "saving" ? 0.72 : 1,
-      }}
+      className="admin-react-publish"
+      data-state={publishState}
     >
       {publishLabel}
     </button>
@@ -131,16 +115,7 @@ export default function AdminHomeScreen({ navigation, onExit }) {
       {publishError && (
         <p
           role="status"
-          style={{
-            margin: "0 0 12px",
-            padding: "9px 11px",
-            border: "1px solid #E5484D55",
-            borderRadius: 8,
-            background: "color-mix(in srgb, #E5484D 10%, var(--k-surface))",
-            color: "#E5484D",
-            fontSize: 12,
-            fontWeight: 700,
-          }}
+          className="admin-react-publish-error"
         >
           {publishError}
         </p>
@@ -148,105 +123,44 @@ export default function AdminHomeScreen({ navigation, onExit }) {
 
       <section
         aria-label="Résumé boutique"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          gap: 9,
-          marginBottom: 22,
-        }}
+        className="admin-react-stats"
       >
         {statItems.map((item) => (
           <article
             key={item.key}
+            className="admin-react-stat"
             style={{
-              minWidth: 0,
-              minHeight: 112,
-              padding: "13px 6px 11px",
-              border: `1px solid ${item.color}42`,
-              borderRadius: 8,
-              background: `linear-gradient(155deg, color-mix(in srgb, ${item.color} 11%, var(--k-surface)), var(--k-surface))`,
-              boxShadow: `0 8px 22px ${item.color}12`,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 5,
-              textAlign: "center",
+              "--stat-color": item.color,
             }}
           >
-            <Icon name={item.icon} size={20} color={item.color} />
-            <strong style={{ color: "var(--k-text)", fontSize: 26, lineHeight: 1 }}>{stats[item.key]}</strong>
-            <small style={{ color: item.color, fontSize: 9, fontWeight: 900 }}>{item.label}</small>
+            <span className="admin-react-stat-icon" aria-hidden="true">{item.symbol}</span>
+            <strong>{stats[item.key]}</strong>
+            <small>{item.label}</small>
           </article>
         ))}
       </section>
 
-      <section aria-labelledby="admin-modules-title">
-        <h2
-          id="admin-modules-title"
-          style={{
-            margin: "0 0 13px",
-            color: "var(--k-text)",
-            fontFamily: "'Syne', sans-serif",
-            fontSize: 18,
-          }}
-        >
+      <section aria-labelledby="admin-modules-title" className="admin-react-modules">
+        <h2 id="admin-modules-title">
           Gestion boutique
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+        <div className="admin-react-module-grid">
           {modules.map((module) => (
             <button
               key={module.title}
               type="button"
               disabled={module.disabled}
               onClick={() => navigation.navigate(ADMIN_ROUTES.LEGACY, { src: module.src })}
+              className="admin-react-module"
               style={{
-                position: "relative",
-                minWidth: 0,
-                minHeight: 154,
-                padding: "17px 14px 15px",
-                overflow: "visible",
-                border: `1px solid ${module.color}4F`,
-                borderRadius: 8,
-                background: `linear-gradient(150deg, color-mix(in srgb, ${module.color} 14%, var(--k-surface)), var(--k-surface) 68%)`,
-                boxShadow: module.disabled
-                  ? "none"
-                  : `0 10px 24px rgba(16,39,68,0.10), 0 0 18px ${module.color}20`,
-                color: "var(--k-text)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                gap: 8,
-                textAlign: "left",
-                cursor: module.disabled ? "default" : "pointer",
-                opacity: module.disabled ? 0.58 : 1,
-                WebkitTapHighlightColor: "transparent",
+                "--module-color": module.color,
               }}
             >
-              <span
-                style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 10,
-                  border: `1px solid ${module.color}66`,
-                  background: `color-mix(in srgb, ${module.color} 13%, var(--k-surface))`,
-                  color: module.color,
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                <Icon name={module.icon} size={25} color={module.color} />
-              </span>
-              <strong style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, lineHeight: 1.15 }}>
-                {module.title}
-              </strong>
-              <small style={{ color: "var(--k-text-muted)", fontSize: 11, lineHeight: 1.35 }}>
-                {module.description}
-              </small>
+              <span className="admin-react-module-icon" data-icon={module.icon} aria-hidden="true" />
+              <strong>{module.title}</strong>
+              <small>{module.description}</small>
               {module.disabled && (
-                <em style={{ marginTop: "auto", color: module.color, fontSize: 9, fontWeight: 900, fontStyle: "normal" }}>
-                  BIENTÔT
-                </em>
+                <em>BIENTÔT</em>
               )}
             </button>
           ))}
