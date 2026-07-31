@@ -109,7 +109,7 @@ export default function AdminHomeScreen({ navigation, onExit }) {
     const result = await publishStorefront();
     if (!result.ok) {
       setPublishState("error");
-      setPublishError(`Publication impossible (${result.reason}). Vérifie le SQL boutique dans Supabase.`);
+      setPublishError(result.message || `Publication impossible (${result.reason}).`);
       return;
     }
     setPublishState("saved");

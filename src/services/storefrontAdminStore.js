@@ -210,12 +210,11 @@ export const isStorefrontPublicationPending = () => {
 
 export const publishStorefront = async () => {
   if (!SUPABASE_URL || !SUPABASE_KEY || !OWNER_KEY) {
-    return { ok: false, reason: "not-configured" };
-  }
-
-  const hydration = await hydrateStorefrontFromCloud({ force: true });
-  if (!hydration.ok) {
-    return { ok: false, reason: `preflight-${hydration.reason}` };
+    return {
+      ok: false,
+      reason: "not-configured",
+      message: "La connexion Supabase de la boutique n’est pas configurée.",
+    };
   }
 
   const updatedAt = new Date().toISOString();
@@ -244,7 +243,33 @@ export const publishStorefront = async () => {
         body: JSON.stringify(body),
       },
     );
-    if (!response.ok) return { ok: false, reason: `http-${response.status}` };
+    if (!response.ok) {
+      let errorCode = "";
+      try {
+        const payload = await response.json();
+        errorCode = payload?.code || "";
+      } catch {
+        // The HTTP status remains enough to present a useful error.
+      }
+      const messages = {
+        401: "La clé Supabase de la boutique n’est plus autorisée.",
+        403: "Supabase refuse la publication. Vérifie la politique RLS d’écriture de la boutique.",
+        404: "La table boutique est introuvable dans Supabase.",
+        409: "Supabase a refusé la mise à jour à cause d’un conflit de données.",
+        413: "La publication contient trop de photos pour être envoyée en une seule fois.",
+        429: "Supabase reçoit trop de requêtes. Réessaie dans quelques instants.",
+      };
+      return {
+        ok: false,
+        reason: `http-${response.status}`,
+        status: response.status,
+        code: errorCode,
+        message: messages[response.status]
+          || (response.status >= 500
+            ? "Supabase est temporairement indisponible. Réessaie dans quelques instants."
+            : `La publication a été refusée par Supabase (${response.status}).`),
+      };
+    }
 
     window.localStorage.setItem(LAST_PUBLISHED_AT_KEY, updatedAt);
     window.localStorage.setItem(LAST_PUBLISHED_SNAPSHOT_KEY, createPublicStorefrontSnapshot());
@@ -254,7 +279,11 @@ export const publishStorefront = async () => {
     });
     return { ok: true, updatedAt };
   } catch {
-    return { ok: false, reason: "network" };
+    return {
+      ok: false,
+      reason: "network",
+      message: "La connexion à Supabase a échoué. Vérifie le réseau puis réessaie.",
+    };
   }
 };
 
