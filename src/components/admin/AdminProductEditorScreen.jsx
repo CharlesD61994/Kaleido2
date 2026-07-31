@@ -413,7 +413,6 @@ function ColorManager({
 
 function ProductPreviewPage({ editor, onBack }) {
   const [selections, setSelections] = useState({});
-  const cover = editor.productPhotos.find((photo) => photo.url);
   const simpleOptions = editor.options.filter((id) => !COLOR_SECTIONS[id] && !CHOICE_OPTIONS[id]);
 
   const choose = (group, value) => setSelections((current) => ({
@@ -425,9 +424,7 @@ function ProductPreviewPage({ editor, onBack }) {
     <section className="admin-react-page admin-editor-subpage">
       <AdminHeader onBack={onBack} title="Aperçu client" />
       <main className="admin-react-main admin-editor-preview-page">
-        <div className="admin-editor-preview-hero">
-          {cover ? <img src={cover.url} alt={cover.name} /> : <span>Photo du produit</span>}
-        </div>
+        <ProductPhotoCarousel photos={editor.productPhotos} />
         <div className="admin-editor-preview-detail">
           <small>AVEC SUIVI KALEIDO</small>
           <h1>{editor.name || "Nom du produit"}</h1>
@@ -500,19 +497,65 @@ function ProductPreviewPage({ editor, onBack }) {
             ))}
             {!editor.options.length && <p>Aucune option choisie.</p>}
           </section>
-
-          <section>
-            <h3>Photos du produit</h3>
-            <div className="admin-editor-preview-gallery">
-              {editor.productPhotos.filter((photo) => photo.url).map((photo) => (
-                <img key={photo.id} src={photo.url} alt={photo.name} />
-              ))}
-              {!editor.productPhotos.some((photo) => photo.url) && <p>Aucune photo ajoutée.</p>}
-            </div>
-          </section>
         </div>
       </main>
     </section>
+  );
+}
+
+function ProductPhotoCarousel({ photos }) {
+  const trackRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const visiblePhotos = photos.filter((photo) => photo.url);
+
+  const scrollToPhoto = (index) => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollTo({ left: track.clientWidth * index, behavior: "smooth" });
+  };
+
+  const updateActivePhoto = (event) => {
+    const track = event.currentTarget;
+    if (!track.clientWidth) return;
+    const nextIndex = Math.max(
+      0,
+      Math.min(visiblePhotos.length - 1, Math.round(track.scrollLeft / track.clientWidth)),
+    );
+    setActiveIndex(nextIndex);
+  };
+
+  return (
+    <div className="admin-editor-preview-hero">
+      {visiblePhotos.length ? (
+        <div
+          ref={trackRef}
+          className="admin-editor-preview-photo-track"
+          onScroll={updateActivePhoto}
+        >
+          {visiblePhotos.map((photo) => (
+            <div className="admin-editor-preview-photo-slide" key={photo.id}>
+              <img src={photo.url} alt={photo.name} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <span>Photo du produit</span>
+      )}
+      {visiblePhotos.length > 1 && (
+        <div className="admin-editor-preview-photo-dots" aria-label="Photos du produit">
+          {visiblePhotos.map((photo, index) => (
+            <button
+              type="button"
+              key={photo.id}
+              className={activeIndex === index ? "is-active" : ""}
+              aria-label={`Afficher la photo ${index + 1}`}
+              aria-current={activeIndex === index ? "true" : undefined}
+              onClick={() => scrollToPhoto(index)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

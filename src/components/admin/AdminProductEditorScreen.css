@@ -672,6 +672,7 @@
 }
 
 .admin-editor-preview-hero {
+  position: relative;
   display: grid;
   place-items: center;
   width: 100%;
@@ -683,10 +684,68 @@
   font-weight: 900;
 }
 
-.admin-editor-preview-hero img {
+.admin-editor-preview-photo-track {
+  display: flex;
   width: 100%;
   height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-editor-preview-photo-track::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-editor-preview-photo-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.admin-editor-preview-photo-slide img {
+  width: 100%;
+  height: 100%;
+  display: block;
   object-fit: cover;
+}
+
+.admin-editor-preview-photo-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(16, 19, 29, 0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform: translateX(-50%);
+}
+
+.admin-editor-preview-photo-dots button {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.admin-editor-preview-photo-dots button.is-active {
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  box-shadow: 0 0 9px rgba(255, 255, 255, 0.72);
 }
 
 .admin-editor-preview-detail {
@@ -802,19 +861,6 @@
 .admin-editor-client-choices button.is-selected {
   color: var(--option-color);
   background: color-mix(in srgb, var(--option-color) 12%, var(--k-surface));
-}
-
-.admin-editor-preview-gallery {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.admin-editor-preview-gallery img {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 14px;
-  object-fit: cover;
 }
 
 @media (max-width: 350px) {

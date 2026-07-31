@@ -57,6 +57,7 @@ const readJson = (key, fallback) => {
 
 const normalizePhoto = (photo) => (typeof photo === "string" ? { name: photo, url: "" } : photo || null);
 const productCover = (product) => (product.productPhotos || []).map(normalizePhoto).find((photo) => photo?.url);
+const productPhotos = (product) => (product.productPhotos || []).map(normalizePhoto).filter((photo) => photo?.url);
 const productColors = (product) => [...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])])];
 const isProductInCatalog = (product) => product?.status === "ready" && product.inCatalog !== false;
 const categoryPhotoSource = (photo) => photo?.preview || photo?.url || photo?.src || photo?.original || "";
@@ -283,10 +284,32 @@ const renderDetailOptions = (product) => {
   `;
 };
 
+const bindDetailPhotoCarousel = (hero) => {
+  const track = hero.querySelector(".detail-photo-track");
+  const dots = [...hero.querySelectorAll(".detail-photo-dots button")];
+  if (!track || dots.length < 2) return;
+
+  const setActiveDot = (index) => {
+    dots.forEach((dot, dotIndex) => dot.classList.toggle("is-active", dotIndex === index));
+  };
+
+  track.addEventListener("scroll", () => {
+    if (!track.clientWidth) return;
+    const index = Math.max(0, Math.min(dots.length - 1, Math.round(track.scrollLeft / track.clientWidth)));
+    setActiveDot(index);
+  }, { passive: true });
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener("click", () => {
+      track.scrollTo({ left: track.clientWidth * index, behavior: "smooth" });
+    });
+  });
+};
+
 const openProductDetail = (product) => {
   closeMenu();
   if (!productDetail || !product) return;
-  const cover = productCover(product);
+  const photos = productPhotos(product);
   const colors = productColors(product).slice(0, 6);
   const detailHero = productDetail.querySelector(".detail-hero");
   const detailContent = productDetail.querySelector(".detail-content");
@@ -294,12 +317,26 @@ const openProductDetail = (product) => {
   if (detailHero) {
     detailHero.innerHTML = `
       ${
-        cover?.url
-          ? `<img src="${cover.url}" alt="${escapeHtml(cover.name || product.name || "Produit")}" />`
+        photos.length
+          ? `<div class="detail-photo-track">
+              ${photos.map((photo) => `
+                <div class="detail-photo-slide">
+                  <img src="${escapeHtml(photo.url)}" alt="${escapeHtml(photo.name || product.name || "Produit")}" />
+                </div>
+              `).join("")}
+            </div>`
           : '<div class="detail-product-placeholder"></div>'
+      }
+      ${
+        photos.length > 1
+          ? `<div class="detail-photo-dots" aria-label="Photos du produit">
+              ${photos.map((_, index) => `<button type="button" class="${index === 0 ? "is-active" : ""}" aria-label="Afficher la photo ${index + 1}"></button>`).join("")}
+            </div>`
+          : ""
       }
       <button class="heart-button detail-heart" type="button" aria-label="Ajouter aux favoris"></button>
     `;
+    bindDetailPhotoCarousel(detailHero);
   }
 
   if (detailContent) {

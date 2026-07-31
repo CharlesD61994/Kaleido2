@@ -1065,11 +1065,68 @@ a {
     0 26px 54px rgba(16, 39, 68, 0.13);
 }
 
-.detail-hero img {
+.detail-photo-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detail-photo-track::-webkit-scrollbar {
+  display: none;
+}
+
+.detail-photo-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.detail-photo-slide img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
+}
+
+.detail-photo-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 13px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 25px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(16, 39, 68, 0.38);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform: translateX(-50%);
+}
+
+.detail-photo-dots button {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.detail-photo-dots button.is-active {
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  box-shadow: 0 0 9px rgba(255, 255, 255, 0.78);
 }
 
 .detail-heart {
