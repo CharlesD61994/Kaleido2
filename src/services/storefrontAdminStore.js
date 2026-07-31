@@ -12,6 +12,8 @@ const HOME_CONFIG_CHANGED_EVENT = "kaleido-storefront-home-config-changed";
 const LOCAL_UPDATED_PREFIX = "kaleido-storefront-local-updated:";
 const LOCAL_DIRTY_PREFIX = "kaleido-storefront-local-dirty:";
 const BACKUP_PREFIX = "kaleido-storefront-backup:";
+const LAST_PUBLISHED_AT_KEY = "kaleido-storefront-last-published-at";
+const LAST_PUBLISHED_SNAPSHOT_KEY = "kaleido-storefront-last-published-snapshot";
 const HYDRATION_TTL_MS = 15_000;
 const DEFAULT_HOME_CONFIG = {
   categories: ["vetements", "peluches", "pantoufles", "porte-cles", "couvertures"],
@@ -189,6 +191,23 @@ export const readStorefrontStats = () => {
   };
 };
 
+const createPublicStorefrontSnapshot = () => JSON.stringify({
+  products: readStorefrontProducts().filter(
+    (product) => product.status === "ready" && product.inCatalog !== false,
+  ),
+  homeConfig: compactHomeConfigForCloud(readStorefrontHomeConfig()),
+});
+
+export const isStorefrontPublicationPending = () => {
+  const publishedSnapshot = window.localStorage.getItem(LAST_PUBLISHED_SNAPSHOT_KEY);
+  if (publishedSnapshot !== null) {
+    return publishedSnapshot !== createPublicStorefrontSnapshot();
+  }
+  return !window.localStorage.getItem(LAST_PUBLISHED_AT_KEY)
+    || isDocumentDirty("products")
+    || isDocumentDirty("home-config");
+};
+
 export const publishStorefront = async () => {
   if (!SUPABASE_URL || !SUPABASE_KEY || !OWNER_KEY) {
     return { ok: false, reason: "not-configured" };
@@ -227,7 +246,8 @@ export const publishStorefront = async () => {
     );
     if (!response.ok) return { ok: false, reason: `http-${response.status}` };
 
-    window.localStorage.setItem("kaleido-storefront-last-published-at", updatedAt);
+    window.localStorage.setItem(LAST_PUBLISHED_AT_KEY, updatedAt);
+    window.localStorage.setItem(LAST_PUBLISHED_SNAPSHOT_KEY, createPublicStorefrontSnapshot());
     Object.keys(documents).forEach((docKey) => {
       window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${docKey}`, updatedAt);
       clearDocumentDirty(docKey);
@@ -283,6 +303,21 @@ export const hydrateStorefrontFromCloud = async ({ force = false } = {}) => {
         writeHydratedDocument(row.doc_key, row.payload, row.updated_at || new Date().toISOString());
         applied.push(row.doc_key);
       });
+      if (
+        rows.length > 0
+        && !isDocumentDirty("products")
+        && !isDocumentDirty("home-config")
+      ) {
+        const latestCloudUpdate = rows.reduce((latest, row) => {
+          const timestamp = Date.parse(row.updated_at || "");
+          return Number.isFinite(timestamp) && timestamp > latest ? timestamp : latest;
+        }, 0);
+        window.localStorage.setItem(
+          LAST_PUBLISHED_AT_KEY,
+          latestCloudUpdate ? new Date(latestCloudUpdate).toISOString() : new Date().toISOString(),
+        );
+        window.localStorage.setItem(LAST_PUBLISHED_SNAPSHOT_KEY, createPublicStorefrontSnapshot());
+      }
       lastHydratedAt = Date.now();
       return { ok: true, applied };
     } catch {

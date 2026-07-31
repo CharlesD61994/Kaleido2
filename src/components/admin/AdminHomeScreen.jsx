@@ -2,8 +2,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import { ADMIN_ROUTES } from "../../constants/adminRoutes";
 import {
   hydrateStorefrontFromCloud,
+  isStorefrontPublicationPending,
   publishStorefront,
   readStorefrontStats,
+  STOREFRONT_HOME_CONFIG_CHANGED_EVENT,
+  STOREFRONT_HOME_CONFIG_KEY,
   STOREFRONT_PRODUCTS_CHANGED_EVENT,
   STOREFRONT_PRODUCTS_KEY,
 } from "../../services/storefrontAdminStore";
@@ -56,34 +59,51 @@ const statItems = [
 
 export default function AdminHomeScreen({ navigation, onExit }) {
   const [stats, setStats] = useState(readStorefrontStats);
-  const [publishState, setPublishState] = useState("idle");
+  const [publishState, setPublishState] = useState(
+    () => (isStorefrontPublicationPending() ? "idle" : "saved"),
+  );
   const [publishError, setPublishError] = useState("");
 
-  const refreshStats = useCallback(() => setStats(readStorefrontStats()), []);
+  const refreshAdminState = useCallback(() => {
+    setStats(readStorefrontStats());
+    setPublishState((current) => (
+      current === "saving"
+        ? current
+        : isStorefrontPublicationPending() ? "idle" : "saved"
+    ));
+  }, []);
 
   useEffect(() => {
     const onStorage = (event) => {
-      if (!event.key || event.key === STOREFRONT_PRODUCTS_KEY) refreshStats();
+      if (
+        !event.key
+        || event.key === STOREFRONT_PRODUCTS_KEY
+        || event.key === STOREFRONT_HOME_CONFIG_KEY
+      ) {
+        refreshAdminState();
+      }
     };
-    window.addEventListener("focus", refreshStats);
+    window.addEventListener("focus", refreshAdminState);
     window.addEventListener("storage", onStorage);
-    window.addEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshStats);
+    window.addEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshAdminState);
+    window.addEventListener(STOREFRONT_HOME_CONFIG_CHANGED_EVENT, refreshAdminState);
     hydrateStorefrontFromCloud().then((result) => {
-      if (result.ok) refreshStats();
+      if (result.ok) refreshAdminState();
     });
     return () => {
-      window.removeEventListener("focus", refreshStats);
+      window.removeEventListener("focus", refreshAdminState);
       window.removeEventListener("storage", onStorage);
-      window.removeEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshStats);
+      window.removeEventListener(STOREFRONT_PRODUCTS_CHANGED_EVENT, refreshAdminState);
+      window.removeEventListener(STOREFRONT_HOME_CONFIG_CHANGED_EVENT, refreshAdminState);
     };
-  }, [refreshStats]);
+  }, [refreshAdminState]);
 
   useEffect(() => {
-    if (navigation.currentRoute.name === ADMIN_ROUTES.HOME) refreshStats();
-  }, [navigation.currentRoute.id, navigation.currentRoute.name, refreshStats]);
+    if (navigation.currentRoute.name === ADMIN_ROUTES.HOME) refreshAdminState();
+  }, [navigation.currentRoute.id, navigation.currentRoute.name, refreshAdminState]);
 
   const handlePublish = async () => {
-    if (publishState === "saving") return;
+    if (publishState === "saving" || !isStorefrontPublicationPending()) return;
     setPublishError("");
     setPublishState("saving");
     const result = await publishStorefront();
@@ -93,7 +113,6 @@ export default function AdminHomeScreen({ navigation, onExit }) {
       return;
     }
     setPublishState("saved");
-    window.setTimeout(() => setPublishState("idle"), 2600);
   };
 
   const publishLabel = publishState === "saving"
