@@ -145,6 +145,151 @@ const compactHomeConfigForCloud = (config) => ({
   ),
 });
 
+const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
+
+const optimizePublishedImage = (source) => new Promise((resolve) => {
+  if (typeof source !== "string" || !source.startsWith("data:image/")) {
+    resolve(source || "");
+    return;
+  }
+
+  const image = new Image();
+  image.addEventListener("load", () => {
+    const maxSize = 720;
+    const scale = Math.min(1, maxSize / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) {
+      resolve(source);
+      return;
+    }
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const optimized = canvas.toDataURL("image/jpeg", 0.76);
+    resolve(optimized.length < source.length ? optimized : source);
+  }, { once: true });
+  image.addEventListener("error", () => resolve(source), { once: true });
+  image.src = source;
+});
+
+const prepareProductsForPublication = async (products) => {
+  const prepared = [];
+  for (const product of validProducts(products)) {
+    const productPhotos = [];
+    for (const photo of product.productPhotos || []) {
+      productPhotos.push({
+        ...photo,
+        url: await optimizePublishedImage(photo?.url),
+      });
+    }
+
+    const colorPhotos = [];
+    for (const color of product.colorPhotos || []) {
+      const photos = [];
+      for (const photo of color.photos || []) {
+        photos.push({
+          ...photo,
+          url: await optimizePublishedImage(photo?.url),
+        });
+      }
+      colorPhotos.push({ ...color, photos });
+    }
+
+    prepared.push({ ...product, productPhotos, colorPhotos });
+  }
+  return prepared;
+};
+
+const prepareHomeConfigForPublication = async (config) => {
+  const prepared = compactHomeConfigForCloud(config);
+  const categoryPhotos = {};
+  for (const [id, photo] of Object.entries(prepared.categoryPhotos || {})) {
+    categoryPhotos[id] = {
+      ...photo,
+      preview: await optimizePublishedImage(photo?.preview),
+    };
+  }
+  return { ...prepared, categoryPhotos };
+};
+
+const publicationErrorMessage = (status) => {
+  const messages = {
+    401: "La clé Supabase de la boutique n’est plus autorisée.",
+    403: "Supabase refuse la publication. Vérifie la politique RLS d’écriture de la boutique.",
+    404: "La table boutique est introuvable dans Supabase.",
+    409: "Supabase a refusé la mise à jour à cause d’un conflit de données.",
+    413: "La publication contient trop de photos pour être envoyée en une seule fois.",
+    429: "Supabase reçoit trop de requêtes. Réessaie dans quelques instants.",
+  };
+  return messages[status]
+    || (status >= 500
+      ? "Supabase est temporairement indisponible. Réessaie dans quelques instants."
+      : `La publication a été refusée par Supabase (${status}).`);
+};
+
+const publishDocument = async ({ docKey, payload, updatedAt }) => {
+  const row = {
+    owner_key: OWNER_KEY,
+    doc_key: docKey,
+    payload,
+    updated_at: updatedAt,
+  };
+  let lastNetworkError = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/${TABLE_NAME}?on_conflict=owner_key,doc_key`,
+        {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "resolution=merge-duplicates,return=minimal",
+          },
+          body: JSON.stringify(row),
+        },
+      );
+
+      if (response.ok) return { ok: true };
+
+      let errorCode = "";
+      try {
+        const errorPayload = await response.json();
+        errorCode = errorPayload?.code || "";
+      } catch {
+        // The HTTP status is enough to present a useful error.
+      }
+
+      if (response.status >= 500 && attempt === 0) {
+        await wait(650);
+        continue;
+      }
+
+      return {
+        ok: false,
+        reason: `http-${response.status}`,
+        status: response.status,
+        code: errorCode,
+        message: publicationErrorMessage(response.status),
+      };
+    } catch (error) {
+      lastNetworkError = error;
+      if (attempt === 0) await wait(650);
+    }
+  }
+
+  console.warn(`[KALEIDO] storefront ${docKey} publication network error:`, lastNetworkError);
+  return {
+    ok: false,
+    reason: "network",
+    message: `L’envoi de ${docKey === "products" ? "Produits" : "Accueil boutique"} a été interrompu avant que Supabase réponde. Réessaie dans quelques instants.`,
+  };
+};
+
 export const readStorefrontProducts = () => validProducts(readJson(PRODUCTS_KEY, []));
 
 export const writeStorefrontProducts = (products) => {
@@ -218,57 +363,16 @@ export const publishStorefront = async () => {
   }
 
   const updatedAt = new Date().toISOString();
-  const documents = {
-    products: readStorefrontProducts(),
-    "home-config": compactHomeConfigForCloud(readStorefrontHomeConfig()),
-  };
-  const body = Object.entries(documents).map(([docKey, payload]) => ({
-    owner_key: OWNER_KEY,
-    doc_key: docKey,
-    payload,
-    updated_at: updatedAt,
-  }));
 
   try {
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/${TABLE_NAME}?on_conflict=owner_key,doc_key`,
-      {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "resolution=merge-duplicates,return=minimal",
-        },
-        body: JSON.stringify(body),
-      },
-    );
-    if (!response.ok) {
-      let errorCode = "";
-      try {
-        const payload = await response.json();
-        errorCode = payload?.code || "";
-      } catch {
-        // The HTTP status remains enough to present a useful error.
-      }
-      const messages = {
-        401: "La clé Supabase de la boutique n’est plus autorisée.",
-        403: "Supabase refuse la publication. Vérifie la politique RLS d’écriture de la boutique.",
-        404: "La table boutique est introuvable dans Supabase.",
-        409: "Supabase a refusé la mise à jour à cause d’un conflit de données.",
-        413: "La publication contient trop de photos pour être envoyée en une seule fois.",
-        429: "Supabase reçoit trop de requêtes. Réessaie dans quelques instants.",
-      };
-      return {
-        ok: false,
-        reason: `http-${response.status}`,
-        status: response.status,
-        code: errorCode,
-        message: messages[response.status]
-          || (response.status >= 500
-            ? "Supabase est temporairement indisponible. Réessaie dans quelques instants."
-            : `La publication a été refusée par Supabase (${response.status}).`),
-      };
+    const documents = {
+      products: await prepareProductsForPublication(readStorefrontProducts()),
+      "home-config": await prepareHomeConfigForPublication(readStorefrontHomeConfig()),
+    };
+
+    for (const [docKey, payload] of Object.entries(documents)) {
+      const result = await publishDocument({ docKey, payload, updatedAt });
+      if (!result.ok) return result;
     }
 
     window.localStorage.setItem(LAST_PUBLISHED_AT_KEY, updatedAt);
@@ -278,11 +382,12 @@ export const publishStorefront = async () => {
       clearDocumentDirty(docKey);
     });
     return { ok: true, updatedAt };
-  } catch {
+  } catch (error) {
+    console.warn("[KALEIDO] storefront publication preparation error:", error);
     return {
       ok: false,
-      reason: "network",
-      message: "La connexion à Supabase a échoué. Vérifie le réseau puis réessaie.",
+      reason: "preparation",
+      message: "Les données de la boutique n’ont pas pu être préparées pour la publication.",
     };
   }
 };
