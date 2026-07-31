@@ -9,6 +9,7 @@ import {
   STOREFRONT_PRODUCTS_KEY,
   writeStorefrontHomeConfig,
 } from "../../services/storefrontAdminStore";
+import { deleteImage, loadImage, saveImage } from "../../services/mediaStore";
 import AdminLayout from "./AdminLayout";
 import "./AdminStorefrontScreen.css";
 
@@ -51,6 +52,7 @@ const normalizePhoto = (photo) => {
   if (!src) return null;
   return {
     name: photo.name || "",
+    mediaId: photo.mediaId || "",
     src,
     original: photo.original || src,
     preview: photo.preview || photo.url || src,
@@ -306,12 +308,32 @@ function Modal({ children, className = "", onClose }) {
 function CategoryPhotoModal({ category, onClose, onSave }) {
   const [draft, setDraft] = useState(() => normalizePhoto(category.photo));
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const inputRef = useRef(null);
   const imageRef = useRef(null);
   const pointers = useRef(new Map());
   const gesture = useRef(null);
   const current = useRef(draft);
   current.current = draft;
+
+  useEffect(() => {
+    const mediaId = category.photo?.mediaId;
+    if (!mediaId) return undefined;
+    let active = true;
+    loadImage(mediaId).then((source) => {
+      if (!active || !source) return;
+      setDraft((photo) => photo ? {
+        ...photo,
+        mediaId,
+        src: source,
+        original: source,
+      } : photo);
+    });
+    return () => {
+      active = false;
+    };
+  }, [category.photo?.mediaId]);
 
   const loadFile = (file) => {
     if (!file) return;
@@ -437,6 +459,19 @@ function CategoryPhotoModal({ category, onClose, onSave }) {
     return { ...draft, preview: canvas.toDataURL("image/jpeg", 0.86) };
   };
 
+  const confirmPhoto = async () => {
+    if (saving) return;
+    setSaving(true);
+    setSaveError("");
+    try {
+      await onSave(buildPreview());
+    } catch (error) {
+      console.error("[KALEIDO] storefront category photo save error:", error);
+      setSaveError("La photo n’a pas pu être enregistrée. Réessaie.");
+      setSaving(false);
+    }
+  };
+
   const naturalWidth = draft?.naturalWidth || CROP_SIZE;
   const naturalHeight = draft?.naturalHeight || CROP_SIZE;
   const baseScale = Math.max(CROP_SIZE / naturalWidth, CROP_SIZE / naturalHeight);
@@ -484,8 +519,11 @@ function CategoryPhotoModal({ category, onClose, onSave }) {
         <button type="button" className="danger" disabled={!draft?.src} onClick={() => setConfirmDelete(true)}>
           Supprimer
         </button>
-        <button type="button" className="confirm" onClick={() => onSave(buildPreview())}>Confirmer</button>
+        <button type="button" className="confirm" disabled={saving} onClick={confirmPhoto}>
+          {saving ? "Enregistrement..." : "Confirmer"}
+        </button>
       </div>
+      {saveError && <p className="admin-storefront-photo-error" role="status">{saveError}</p>}
       {confirmDelete && (
         <div className="admin-storefront-delete-confirm">
           <section>
@@ -540,8 +578,9 @@ export default function AdminStorefrontScreen({ navigation }) {
 
   const saveConfig = (next) => {
     const cleaned = cleanConfig(next);
-    setConfig(cleaned);
-    writeStorefrontHomeConfig(cleaned);
+    const persisted = writeStorefrontHomeConfig(cleaned);
+    setConfig(cleanConfig(persisted));
+    return persisted;
   };
 
   const categories = useMemo(() => {
@@ -722,12 +761,30 @@ export default function AdminStorefrontScreen({ navigation }) {
         <CategoryPhotoModal
           category={activePhotoCategory}
           onClose={() => setPhotoCategoryId(null)}
-          onSave={(photo) => {
+          onSave={async (photo) => {
+            const mediaId = `storefront-category-${activePhotoCategory.id}`;
             const photos = { ...config.categoryPhotos };
-            if (photo) photos[activePhotoCategory.id] = photo;
-            else delete photos[activePhotoCategory.id];
-            saveConfig({ ...config, categoryPhotos: photos });
-            setPhotoCategoryId(null);
+            if (photo) {
+              const original = photo.original || photo.src || photo.preview;
+              photos[activePhotoCategory.id] = {
+                name: photo.name || "",
+                mediaId,
+                preview: photo.preview || original || "",
+                x: photo.x,
+                y: photo.y,
+                scale: photo.scale,
+                naturalWidth: photo.naturalWidth,
+                naturalHeight: photo.naturalHeight,
+              };
+              saveConfig({ ...config, categoryPhotos: photos });
+              setPhotoCategoryId(null);
+              if (original) await saveImage(mediaId, original);
+            } else {
+              delete photos[activePhotoCategory.id];
+              saveConfig({ ...config, categoryPhotos: photos });
+              setPhotoCategoryId(null);
+              await deleteImage(mediaId);
+            }
           }}
         />
       )}

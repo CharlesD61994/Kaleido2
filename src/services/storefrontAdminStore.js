@@ -10,6 +10,7 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 const PRODUCTS_CHANGED_EVENT = "kaleido-storefront-products-changed";
 const HOME_CONFIG_CHANGED_EVENT = "kaleido-storefront-home-config-changed";
 const LOCAL_UPDATED_PREFIX = "kaleido-storefront-local-updated:";
+const LOCAL_DIRTY_PREFIX = "kaleido-storefront-local-dirty:";
 const BACKUP_PREFIX = "kaleido-storefront-backup:";
 const HYDRATION_TTL_MS = 15_000;
 const DEFAULT_HOME_CONFIG = {
@@ -60,6 +61,18 @@ const dispatchDocumentChange = (docKey, payload, updatedAt) => {
   }));
 };
 
+const isDocumentDirty = (docKey) => (
+  window.localStorage.getItem(`${LOCAL_DIRTY_PREFIX}${docKey}`) === "1"
+);
+
+const markDocumentDirty = (docKey) => {
+  window.localStorage.setItem(`${LOCAL_DIRTY_PREFIX}${docKey}`, "1");
+};
+
+const clearDocumentDirty = (docKey) => {
+  window.localStorage.removeItem(`${LOCAL_DIRTY_PREFIX}${docKey}`);
+};
+
 const backupLocalDocument = (docKey, payload) => {
   if (!hasMeaningfulData(docKey, payload)) return;
   try {
@@ -78,15 +91,17 @@ const writeHydratedDocument = (docKey, payload, updatedAt) => {
   backupLocalDocument(docKey, current);
   window.localStorage.setItem(key, JSON.stringify(payload));
   window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${docKey}`, updatedAt);
+  clearDocumentDirty(docKey);
   dispatchDocumentChange(docKey, payload, updatedAt);
 };
 
-const compactCategoryPhoto = (photo) => {
+const normalizeCategoryPhotoForLocal = (photo) => {
   if (!photo || typeof photo !== "object") return photo;
   const original = photo.original || photo.src || photo.url || photo.preview || "";
   const preview = photo.preview || photo.url || original;
   return {
     name: photo.name || "",
+    mediaId: photo.mediaId || "",
     original,
     preview,
     x: Number(photo.x ?? photo.pos?.x) || 0,
@@ -97,11 +112,34 @@ const compactCategoryPhoto = (photo) => {
   };
 };
 
+const compactCategoryPhotoForCloud = (photo) => {
+  const normalized = normalizeCategoryPhotoForLocal(photo);
+  if (!normalized || typeof normalized !== "object") return normalized;
+  return {
+    name: normalized.name,
+    mediaId: normalized.mediaId,
+    preview: normalized.preview,
+    x: normalized.x,
+    y: normalized.y,
+    scale: normalized.scale,
+    naturalWidth: normalized.naturalWidth,
+    naturalHeight: normalized.naturalHeight,
+  };
+};
+
+const normalizeHomeConfigForLocal = (config) => ({
+  ...validHomeConfig(config),
+  categoryPhotos: Object.fromEntries(
+    Object.entries(validHomeConfig(config).categoryPhotos || {})
+      .map(([id, photo]) => [id, normalizeCategoryPhotoForLocal(photo)]),
+  ),
+});
+
 const compactHomeConfigForCloud = (config) => ({
   ...validHomeConfig(config),
   categoryPhotos: Object.fromEntries(
     Object.entries(validHomeConfig(config).categoryPhotos || {})
-      .map(([id, photo]) => [id, compactCategoryPhoto(photo)]),
+      .map(([id, photo]) => [id, compactCategoryPhotoForCloud(photo)]),
   ),
 });
 
@@ -112,12 +150,13 @@ export const writeStorefrontProducts = (products) => {
   const updatedAt = new Date().toISOString();
   window.localStorage.setItem(PRODUCTS_KEY, JSON.stringify(nextProducts));
   window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}products`, updatedAt);
+  markDocumentDirty("products");
   dispatchDocumentChange("products", nextProducts, updatedAt);
   return nextProducts;
 };
 
 export const readStorefrontHomeConfig = () => {
-  const compact = compactHomeConfigForCloud(readJson(HOME_CONFIG_KEY, null));
+  const compact = normalizeHomeConfigForLocal(readJson(HOME_CONFIG_KEY, null));
   try {
     const serialized = JSON.stringify(compact);
     if (window.localStorage.getItem(HOME_CONFIG_KEY) !== serialized) {
@@ -130,10 +169,11 @@ export const readStorefrontHomeConfig = () => {
 };
 
 export const writeStorefrontHomeConfig = (config) => {
-  const nextConfig = compactHomeConfigForCloud(config);
+  const nextConfig = normalizeHomeConfigForLocal(config);
   const updatedAt = new Date().toISOString();
   window.localStorage.setItem(HOME_CONFIG_KEY, JSON.stringify(nextConfig));
   window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}home-config`, updatedAt);
+  markDocumentDirty("home-config");
   dispatchDocumentChange("home-config", nextConfig, updatedAt);
   return nextConfig;
 };
@@ -190,6 +230,7 @@ export const publishStorefront = async () => {
     window.localStorage.setItem("kaleido-storefront-last-published-at", updatedAt);
     Object.keys(documents).forEach((docKey) => {
       window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${docKey}`, updatedAt);
+      clearDocumentDirty(docKey);
     });
     return { ok: true, updatedAt };
   } catch {
@@ -226,12 +267,14 @@ export const hydrateStorefrontFromCloud = async ({ force = false } = {}) => {
         const key = documentKey(row.doc_key);
         const hasLocalDocument = window.localStorage.getItem(key) !== null;
         const localPayload = readJson(key, row.doc_key === "products" ? [] : null);
+        if (isDocumentDirty(row.doc_key)) return;
         const localUpdatedAt = Date.parse(
           window.localStorage.getItem(`${LOCAL_UPDATED_PREFIX}${row.doc_key}`) || "",
         );
         const cloudUpdatedAt = Date.parse(row.updated_at || "");
         if (hasLocalDocument && !Number.isFinite(localUpdatedAt) && hasMeaningfulData(row.doc_key, localPayload)) {
           window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${row.doc_key}`, new Date().toISOString());
+          markDocumentDirty(row.doc_key);
           return;
         }
         if (Number.isFinite(localUpdatedAt) && (!Number.isFinite(cloudUpdatedAt) || localUpdatedAt >= cloudUpdatedAt)) {
