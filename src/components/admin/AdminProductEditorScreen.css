@@ -750,18 +750,18 @@
 
 .admin-editor-preview-detail {
   display: grid;
-  gap: 12px;
+  gap: 18px;
   padding: 20px 22px;
 }
 
-.admin-editor-preview-detail > small {
-  color: #e84b94;
-  font-size: 10px;
-  font-weight: 900;
+.admin-editor-preview-title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
 }
 
 .admin-editor-preview-detail h1,
-.admin-editor-preview-detail h2,
 .admin-editor-preview-detail h3,
 .admin-editor-preview-detail p {
   margin: 0;
@@ -773,26 +773,54 @@
   line-height: 1.05;
 }
 
-.admin-editor-preview-detail h2 {
-  color: var(--k-text-soft);
-  font-size: 17px;
+.admin-editor-preview-title-row > strong {
+  align-self: center;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--product-accent) 48%, var(--k-border));
+  border-radius: 999px;
+  color: var(--product-accent);
+  background: color-mix(in srgb, var(--product-accent) 10%, var(--k-surface));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--product-accent) 16%, transparent);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.admin-editor-preview-detail h2 strong {
-  color: #e84b94;
+.admin-editor-preview-story {
+  display: grid;
+  gap: 7px;
+  padding: 15px 16px 15px 18px;
+  border-left: 4px solid var(--product-accent);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--product-accent) 8%, var(--k-surface));
 }
 
-.admin-editor-preview-detail > p {
+.admin-editor-preview-story > strong {
+  color: var(--product-accent);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-editor-preview-story > p {
   color: var(--k-text-soft);
   font-size: 14px;
-  line-height: 1.55;
+  font-weight: 650;
+  line-height: 1.58;
 }
 
 .admin-editor-preview-detail > section {
   display: grid;
   gap: 13px;
-  padding-top: 16px;
+  padding-top: 18px;
   border-top: 1px solid var(--k-border);
+}
+
+.admin-editor-preview-detail > section > h3 {
+  color: var(--k-text);
+  font-family: "Syne", sans-serif;
+  font-size: 17px;
+  line-height: 1.15;
 }
 
 .admin-editor-client-group {

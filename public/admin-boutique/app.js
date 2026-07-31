@@ -32,6 +32,12 @@ const optionLabels = {
   delay: "Delai",
 };
 
+const formatProductPrice = (value) => {
+  const price = String(value || "").trim();
+  if (!price) return "Prix à définir";
+  return /[$€£]/.test(price) ? price : `${price} $`;
+};
+
 const glowClasses = ["glow-coral", "glow-teal", "glow-yellow"];
 
 const escapeHtml = (value) =>
@@ -243,8 +249,8 @@ const renderDetailOptions = (product) => {
   if (!groups.length) return "";
 
   return `
-    <div class="detail-panel">
-      <span class="panel-label">Options</span>
+    <div class="detail-panel detail-options-panel">
+      <span class="panel-label">Personnalisez votre produit</span>
       <div class="detail-option-list">
         ${groups
           .map((group) => {
@@ -310,7 +316,6 @@ const openProductDetail = (product) => {
   closeMenu();
   if (!productDetail || !product) return;
   const photos = productPhotos(product);
-  const colors = productColors(product).slice(0, 6);
   const detailHero = productDetail.querySelector(".detail-hero");
   const detailContent = productDetail.querySelector(".detail-content");
 
@@ -340,25 +345,16 @@ const openProductDetail = (product) => {
   }
 
   if (detailContent) {
+    const accent = product.cardColor || "#e84b94";
     detailContent.innerHTML = `
-      <p class="eyebrow detail-eyebrow">Avec suivi Kaleido</p>
-      <h2>${escapeHtml(product.name || "Produit sans nom")}</h2>
-      <p class="detail-price">A partir de <strong>${escapeHtml(product.price || "prix a definir")}</strong></p>
-      <p class="detail-copy">
-        ${escapeHtml(product.description || "Une creation faite a la main, personnalisable et suivie avec Kaleido.")}
-      </p>
-      ${
-        colors.length
-          ? `
-            <div class="detail-panel">
-              <span class="panel-label">Couleurs populaires</span>
-              <div class="detail-swatches" aria-label="Couleurs disponibles">
-                ${colors.map((color) => `<button style="--swatch:${color}" type="button" aria-label="${escapeHtml(color)}"></button>`).join("")}
-              </div>
-            </div>
-          `
-          : ""
-      }
+      <div class="detail-title-row" style="--product-accent:${escapeHtml(accent)}">
+        <h2>${escapeHtml(product.name || "Produit sans nom")}</h2>
+        <strong class="detail-price">${escapeHtml(formatProductPrice(product.price))}</strong>
+      </div>
+      <div class="detail-story" style="--product-accent:${escapeHtml(accent)}">
+        <strong>Le modèle</strong>
+        <p>${escapeHtml(product.description || "Ajoutez une description pour présenter cette création.")}</p>
+      </div>
       ${renderDetailOptions(product)}
       <div class="detail-panel tracking-panel">
         <span class="panel-label">Votre commande</span>

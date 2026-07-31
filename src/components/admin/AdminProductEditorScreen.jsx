@@ -47,6 +47,12 @@ const CATEGORIES = [
 
 const newId = () => window.crypto?.randomUUID?.() || `item-${Date.now()}-${Math.random()}`;
 
+const formatProductPrice = (value) => {
+  const price = String(value || "").trim();
+  if (!price) return "Prix à définir";
+  return /[$€£]/.test(price) ? price : `${price} $`;
+};
+
 const normalizePhoto = (photo) => (
   typeof photo === "string"
     ? { id: newId(), name: photo, url: "" }
@@ -426,13 +432,23 @@ function ProductPreviewPage({ editor, onBack }) {
       <main className="admin-react-main admin-editor-preview-page">
         <ProductPhotoCarousel photos={editor.productPhotos} />
         <div className="admin-editor-preview-detail">
-          <small>AVEC SUIVI KALEIDO</small>
-          <h1>{editor.name || "Nom du produit"}</h1>
-          <h2>À partir de <strong>{editor.price || "prix à définir"}</strong></h2>
-          <p>{editor.description || "Ajoute une description pour présenter cette création."}</p>
+          <div
+            className="admin-editor-preview-title-row"
+            style={{ "--product-accent": editor.cardColor || "#e84b94" }}
+          >
+            <h1>{editor.name || "Nom du produit"}</h1>
+            <strong>{formatProductPrice(editor.price)}</strong>
+          </div>
+          <div
+            className="admin-editor-preview-story"
+            style={{ "--product-accent": editor.cardColor || "#e84b94" }}
+          >
+            <strong>Le modèle</strong>
+            <p>{editor.description || "Ajoute une description pour présenter cette création."}</p>
+          </div>
 
           <section>
-            <h3>Options proposées</h3>
+            <h3>Personnalisez votre produit</h3>
             {Object.entries(COLOR_SECTIONS).map(([optionId, section]) => (
               editor.options.includes(optionId) && (
                 <div className="admin-editor-client-group" key={optionId}>
