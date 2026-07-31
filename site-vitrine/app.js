@@ -1,5 +1,5 @@
-const productsKey = "kaleido-storefront-product-drafts";
-const homeConfigKey = "kaleido-storefront-home-config";
+const productsKey = "kaleido-storefront-public-products-cache";
+const homeConfigKey = "kaleido-storefront-public-home-cache";
 const storefront = document.querySelector(".storefront");
 const menuButton = document.querySelector(".menu-button");
 const sideMenu = document.querySelector(".side-menu");

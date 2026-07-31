@@ -1,5 +1,10 @@
-const productsKey = "kaleido-storefront-product-drafts";
-const homeConfigKey = "kaleido-storefront-home-config";
+const isAdminPreview = new URLSearchParams(window.location.search).get("mode") === "preview";
+const productsKey = isAdminPreview
+  ? "kaleido-storefront-product-drafts"
+  : "kaleido-storefront-public-products-cache";
+const homeConfigKey = isAdminPreview
+  ? "kaleido-storefront-home-config"
+  : "kaleido-storefront-public-home-cache";
 const storefront = document.querySelector(".storefront");
 const menuButton = document.querySelector(".menu-button");
 const sideMenu = document.querySelector(".side-menu");
@@ -391,6 +396,13 @@ const renderStorefront = ({ products, homeConfig }) => {
 const loadPublishedStorefront = async () => {
   const cachedProducts = readJson(productsKey, []);
   const cachedHomeConfig = readJson(homeConfigKey, null);
+  if (isAdminPreview) {
+    renderStorefront({
+      products: cachedProducts,
+      homeConfig: cachedHomeConfig,
+    });
+    return;
+  }
   if (!window.KaleidoStorefrontCloud?.isConfigured) {
     renderStorefront({
       products: cachedProducts,

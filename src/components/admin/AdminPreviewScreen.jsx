@@ -8,7 +8,7 @@ export default function AdminPreviewScreen({ navigation }) {
       <AdminHeader onBack={navigation.goBack} title="Vitrine" />
       <iframe
         className="admin-react-preview-frame"
-        src="/admin-boutique/index.html"
+        src="/admin-boutique/index.html?mode=preview"
         title="Aperçu du site vitrine"
       />
     </section>
