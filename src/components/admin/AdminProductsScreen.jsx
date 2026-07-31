@@ -7,6 +7,7 @@ import {
   STOREFRONT_PRODUCTS_KEY,
   writeStorefrontProducts,
 } from "../../services/storefrontAdminStore";
+import { FLOATING_ACTION_BOTTOM } from "../../styles/layout";
 import AdminLayout from "./AdminLayout";
 import "./AdminProductsScreen.css";
 
@@ -398,18 +399,41 @@ export default function AdminProductsScreen({ navigation }) {
           ) : (
             <div className="admin-react-products-empty">
               <strong>{products.length ? "Aucun produit trouvé" : "Aucun produit créé"}</strong>
-              <p>{products.length ? "Essaie un autre mot ou un autre filtre." : "Crée un premier produit pour le voir apparaître ici."}</p>
-              {!products.length && (
-                <button
-                  type="button"
-                  onClick={() => navigation.navigate(ADMIN_ROUTES.PRODUCT_EDITOR)}
-                >
-                  Créer un produit
-                </button>
-              )}
+              <p>{products.length ? "Essaie un autre mot ou un autre filtre." : "Utilise le bouton + pour créer ton premier produit."}</p>
             </div>
           )}
         </section>
+      </div>
+
+      <div
+        style={{
+          position: "fixed",
+          bottom: FLOATING_ACTION_BOTTOM,
+          right: "calc(50% - 184px)",
+          zIndex: 50,
+        }}
+      >
+        <button
+          type="button"
+          aria-label="Créer un produit"
+          onClick={() => navigation.navigate(ADMIN_ROUTES.PRODUCT_EDITOR)}
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #7C3AED, #EC4899)",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 28,
+            color: "#fff",
+            boxShadow: "0 4px 20px #7C3AED88",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          +
+        </button>
       </div>
 
       <ProductActionModal

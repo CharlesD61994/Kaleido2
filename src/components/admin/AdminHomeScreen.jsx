@@ -12,13 +12,6 @@ import "./AdminHomeScreen.css";
 
 const modules = [
   {
-    title: "Créer un produit",
-    description: "Préparer une fiche avec photos, options, couleurs et aperçu client.",
-    color: "#F05B4F",
-    icon: "plus",
-    route: ADMIN_ROUTES.PRODUCT_EDITOR,
-  },
-  {
     title: "Vitrine",
     description: "Visualiser le site boutique comme les clients le verront.",
     color: "#7C3AED",
