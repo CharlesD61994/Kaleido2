@@ -336,12 +336,45 @@ export const readStorefrontStats = () => {
   };
 };
 
+const imageDataFingerprint = (source) => {
+  let hash = 2166136261;
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `image:${source.length}:${hash >>> 0}`;
+};
+
 const createPublicStorefrontSnapshot = () => JSON.stringify({
   products: readStorefrontProducts().filter(
     (product) => product.status === "ready" && product.inCatalog !== false,
   ),
   homeConfig: compactHomeConfigForCloud(readStorefrontHomeConfig()),
-});
+}, (_key, value) => (
+  typeof value === "string" && value.startsWith("data:image/")
+    ? imageDataFingerprint(value)
+    : value
+));
+
+const recordSuccessfulPublication = (documents, updatedAt) => {
+  try {
+    window.localStorage.setItem(LAST_PUBLISHED_AT_KEY, updatedAt);
+    window.localStorage.removeItem(LAST_PUBLISHED_SNAPSHOT_KEY);
+    window.localStorage.setItem(LAST_PUBLISHED_SNAPSHOT_KEY, createPublicStorefrontSnapshot());
+    Object.keys(documents).forEach((docKey) => {
+      window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${docKey}`, updatedAt);
+      clearDocumentDirty(docKey);
+    });
+  } catch (error) {
+    console.warn("[KALEIDO] storefront publication marker error:", error);
+    try {
+      window.localStorage.removeItem(LAST_PUBLISHED_SNAPSHOT_KEY);
+      Object.keys(documents).forEach(clearDocumentDirty);
+    } catch {
+      // Supabase already accepted the publication; this local marker is optional.
+    }
+  }
+};
 
 export const isStorefrontPublicationPending = () => {
   const publishedSnapshot = window.localStorage.getItem(LAST_PUBLISHED_SNAPSHOT_KEY);
@@ -375,12 +408,7 @@ export const publishStorefront = async () => {
       if (!result.ok) return result;
     }
 
-    window.localStorage.setItem(LAST_PUBLISHED_AT_KEY, updatedAt);
-    window.localStorage.setItem(LAST_PUBLISHED_SNAPSHOT_KEY, createPublicStorefrontSnapshot());
-    Object.keys(documents).forEach((docKey) => {
-      window.localStorage.setItem(`${LOCAL_UPDATED_PREFIX}${docKey}`, updatedAt);
-      clearDocumentDirty(docKey);
-    });
+    recordSuccessfulPublication(documents, updatedAt);
     return { ok: true, updatedAt };
   } catch (error) {
     console.warn("[KALEIDO] storefront publication preparation error:", error);
