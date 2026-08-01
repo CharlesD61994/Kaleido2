@@ -1,5 +1,10 @@
-const productsKey = "kaleido-storefront-public-products-cache";
-const homeConfigKey = "kaleido-storefront-public-home-cache";
+const isAdminPreview = new URLSearchParams(window.location.search).get("mode") === "preview";
+const productsKey = isAdminPreview
+  ? "kaleido-storefront-product-drafts"
+  : "kaleido-storefront-public-products-cache";
+const homeConfigKey = isAdminPreview
+  ? "kaleido-storefront-home-config"
+  : "kaleido-storefront-public-home-cache";
 const storefront = document.querySelector(".storefront");
 const menuButton = document.querySelector(".menu-button");
 const sideMenu = document.querySelector(".side-menu");
@@ -27,6 +32,12 @@ const optionLabels = {
   delay: "Delai",
 };
 
+const formatProductPrice = (value) => {
+  const price = String(value || "").trim();
+  if (!price) return "Prix à définir";
+  return /[$€£]/.test(price) ? price : `${price} $`;
+};
+
 const glowClasses = ["glow-coral", "glow-teal", "glow-yellow"];
 
 const escapeHtml = (value) =>
@@ -52,6 +63,7 @@ const readJson = (key, fallback) => {
 
 const normalizePhoto = (photo) => (typeof photo === "string" ? { name: photo, url: "" } : photo || null);
 const productCover = (product) => (product.productPhotos || []).map(normalizePhoto).find((photo) => photo?.url);
+const productPhotos = (product) => (product.productPhotos || []).map(normalizePhoto).filter((photo) => photo?.url);
 const productColors = (product) => [...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])])];
 const isProductInCatalog = (product) => product?.status === "ready" && product.inCatalog !== false;
 const categoryPhotoSource = (photo) => photo?.preview || photo?.url || photo?.src || photo?.original || "";
@@ -237,8 +249,8 @@ const renderDetailOptions = (product) => {
   if (!groups.length) return "";
 
   return `
-    <div class="detail-panel">
-      <span class="panel-label">Options</span>
+    <div class="detail-panel detail-options-panel">
+      <span class="panel-label">Personnalisez votre produit</span>
       <div class="detail-option-list">
         ${groups
           .map((group) => {
@@ -278,45 +290,71 @@ const renderDetailOptions = (product) => {
   `;
 };
 
+const bindDetailPhotoCarousel = (hero) => {
+  const track = hero.querySelector(".detail-photo-track");
+  const dots = [...hero.querySelectorAll(".detail-photo-dots button")];
+  if (!track || dots.length < 2) return;
+
+  const setActiveDot = (index) => {
+    dots.forEach((dot, dotIndex) => dot.classList.toggle("is-active", dotIndex === index));
+  };
+
+  track.addEventListener("scroll", () => {
+    if (!track.clientWidth) return;
+    const index = Math.max(0, Math.min(dots.length - 1, Math.round(track.scrollLeft / track.clientWidth)));
+    setActiveDot(index);
+  }, { passive: true });
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener("click", () => {
+      track.scrollTo({ left: track.clientWidth * index, behavior: "smooth" });
+    });
+  });
+};
+
 const openProductDetail = (product) => {
   closeMenu();
   if (!productDetail || !product) return;
-  const cover = productCover(product);
-  const colors = productColors(product).slice(0, 6);
+  const photos = productPhotos(product);
   const detailHero = productDetail.querySelector(".detail-hero");
   const detailContent = productDetail.querySelector(".detail-content");
 
   if (detailHero) {
     detailHero.innerHTML = `
       ${
-        cover?.url
-          ? `<img src="${cover.url}" alt="${escapeHtml(cover.name || product.name || "Produit")}" />`
+        photos.length
+          ? `<div class="detail-photo-track">
+              ${photos.map((photo) => `
+                <div class="detail-photo-slide">
+                  <img src="${escapeHtml(photo.url)}" alt="${escapeHtml(photo.name || product.name || "Produit")}" />
+                </div>
+              `).join("")}
+            </div>`
           : '<div class="detail-product-placeholder"></div>'
+      }
+      ${
+        photos.length > 1
+          ? `<div class="detail-photo-dots" aria-label="Photos du produit">
+              ${photos.map((_, index) => `<button type="button" class="${index === 0 ? "is-active" : ""}" aria-label="Afficher la photo ${index + 1}"></button>`).join("")}
+            </div>`
+          : ""
       }
       <button class="heart-button detail-heart" type="button" aria-label="Ajouter aux favoris"></button>
     `;
+    bindDetailPhotoCarousel(detailHero);
   }
 
   if (detailContent) {
+    const accent = product.cardColor || "#e84b94";
     detailContent.innerHTML = `
-      <p class="eyebrow detail-eyebrow">Avec suivi Kaleido</p>
-      <h2>${escapeHtml(product.name || "Produit sans nom")}</h2>
-      <p class="detail-price">A partir de <strong>${escapeHtml(product.price || "prix a definir")}</strong></p>
-      <p class="detail-copy">
-        ${escapeHtml(product.description || "Une creation faite a la main, personnalisable et suivie avec Kaleido.")}
-      </p>
-      ${
-        colors.length
-          ? `
-            <div class="detail-panel">
-              <span class="panel-label">Couleurs populaires</span>
-              <div class="detail-swatches" aria-label="Couleurs disponibles">
-                ${colors.map((color) => `<button style="--swatch:${color}" type="button" aria-label="${escapeHtml(color)}"></button>`).join("")}
-              </div>
-            </div>
-          `
-          : ""
-      }
+      <div class="detail-title-row" style="--product-accent:${escapeHtml(accent)}">
+        <h2>${escapeHtml(product.name || "Produit sans nom")}</h2>
+        <strong class="detail-price">${escapeHtml(formatProductPrice(product.price))}</strong>
+      </div>
+      <div class="detail-story" style="--product-accent:${escapeHtml(accent)}">
+        <strong>Le modèle</strong>
+        <p>${escapeHtml(product.description || "Ajoutez une description pour présenter cette création.")}</p>
+      </div>
       ${renderDetailOptions(product)}
       <div class="detail-panel tracking-panel">
         <span class="panel-label">Votre commande</span>
@@ -391,6 +429,13 @@ const renderStorefront = ({ products, homeConfig }) => {
 const loadPublishedStorefront = async () => {
   const cachedProducts = readJson(productsKey, []);
   const cachedHomeConfig = readJson(homeConfigKey, null);
+  if (isAdminPreview) {
+    renderStorefront({
+      products: cachedProducts,
+      homeConfig: cachedHomeConfig,
+    });
+    return;
+  }
   if (!window.KaleidoStorefrontCloud?.isConfigured) {
     renderStorefront({
       products: cachedProducts,

@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "sync:storefront": "node scripts/sync-storefront.mjs",
+    "predev": "npm run sync:storefront",
     "dev": "vite",
+    "prebuild": "npm run sync:storefront",
     "build": "vite build",
     "cap:sync:ios": "npm run build && node scripts/prepare-capacitor-dist.mjs && cap sync ios",
     "cap:open:ios": "cap open ios",
