@@ -15,6 +15,8 @@
   --k-teal: #188f91;
   --k-green: #8bbf3f;
   --k-violet: #7c3aed;
+  --k-app-bg: #f7f4fb;
+  --k-app-bg-soft: #efe9f8;
   --k-radius: 22px;
   --k-shadow: 0 22px 70px rgba(16, 39, 68, 0.14);
 }
@@ -31,10 +33,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--k-text);
-  background:
-    radial-gradient(circle at 20% 0%, rgba(48, 199, 201, 0.18), transparent 32%),
-    radial-gradient(circle at 80% 8%, rgba(232, 75, 148, 0.16), transparent 28%),
-    linear-gradient(135deg, #f8efe8, #fffefa 48%, #eefafa);
+  background: var(--k-app-bg);
   font-family: "DM Sans", system-ui, sans-serif;
 }
 
@@ -52,28 +51,19 @@ a {
   width: min(100%, 430px);
   min-height: 100vh;
   margin: 0 auto;
-  background: #05070a;
+  background: var(--k-app-bg);
 }
 
 .storefront {
   min-height: 100vh;
   padding: 0 0 74px;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.68)),
-    radial-gradient(circle at 18% 20%, rgba(240, 91, 79, 0.10), transparent 35%),
-    radial-gradient(circle at 88% 58%, rgba(48, 199, 201, 0.12), transparent 36%),
-    var(--k-paper);
+  background: var(--k-app-bg);
   position: relative;
   overflow: hidden;
 }
 
 .storefront::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(16, 39, 68, 0.028) 1px, transparent 1px);
-  background-size: 100% 42px;
-  pointer-events: none;
+  content: none;
 }
 
 .topbar,
