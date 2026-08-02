@@ -12,6 +12,15 @@ const productDetail = document.querySelector("[data-product-detail='pantoufles']
 const productBackButton = document.querySelector(".detail-back");
 const categoryRow = document.querySelector(".category-row");
 const productGrid = document.querySelector(".product-grid");
+const favoritesView = document.querySelector("[data-favorites-view]");
+const favoritesGrid = document.querySelector("[data-favorites-grid]");
+const favoritesEmpty = document.querySelector("[data-favorites-empty]");
+const favoritesCount = document.querySelector("[data-favorites-count]");
+const favoritesBrowseButton = document.querySelector("[data-favorites-browse]");
+const storefrontNavLinks = [...document.querySelectorAll("[data-storefront-nav]")];
+const favoritesKey = "kaleido-storefront-favorites-v1";
+let storefrontProducts = [];
+let productReturnView = "products";
 
 const defaultCategories = [
   { id: "vetements", label: "Vetements", color: "#7c3aed", icon: "♢", className: "photo-baby" },
@@ -91,6 +100,25 @@ const readJson = (key, fallback) => {
   } catch {
     return fallback;
   }
+};
+
+const storedFavoriteIds = readJson(favoritesKey, []);
+let favoriteIds = new Set(
+  (Array.isArray(storedFavoriteIds) ? storedFavoriteIds : []).map(String),
+);
+
+const saveFavoriteIds = () => {
+  try {
+    localStorage.setItem(favoritesKey, JSON.stringify([...favoriteIds]));
+  } catch {
+    // The current session still keeps the selection if browser storage is unavailable.
+  }
+};
+
+const setActiveNavigation = (name) => {
+  storefrontNavLinks.forEach((link) => {
+    link.classList.toggle("active", link.dataset.storefrontNav === name);
+  });
 };
 
 const normalizePhoto = (photo) => (typeof photo === "string" ? { name: photo, url: "" } : photo || null);
@@ -190,12 +218,20 @@ const bindPressables = () => {
 
 const bindHeartButtons = () => {
   document.querySelectorAll(".heart-button").forEach((button) => {
+    const productId = String(button.dataset.favoriteProduct || "");
+    const isFavorite = productId && favoriteIds.has(productId);
+    button.classList.toggle("is-active", Boolean(isFavorite));
+    button.setAttribute("aria-pressed", String(Boolean(isFavorite)));
+    button.setAttribute("aria-label", isFavorite ? "Retirer des favoris" : "Ajouter aux favoris");
+    if (!productId || button.dataset.favoriteBound === "true") return;
+    button.dataset.favoriteBound = "true";
     button.addEventListener("click", (event) => {
       event.stopPropagation();
-      button.classList.toggle("is-active");
-      button.style.background = button.classList.contains("is-active")
-        ? "rgba(232, 75, 148, 0.14)"
-        : "rgba(255, 255, 255, 0.78)";
+      if (favoriteIds.has(productId)) favoriteIds.delete(productId);
+      else favoriteIds.add(productId);
+      saveFavoriteIds();
+      bindHeartButtons();
+      renderFavorites();
     });
   });
 };
@@ -236,13 +272,13 @@ const renderProductCard = (product, index) => {
 
   return `
     <article class="product-card ${glow}" data-product-open="${escapeHtml(product.id)}" role="button" tabindex="0">
-      <button class="heart-button" type="button" aria-label="Ajouter aux favoris"></button>
+      <button class="heart-button" type="button" data-favorite-product="${escapeHtml(product.id)}" aria-label="Ajouter aux favoris"></button>
       <div class="product-image ${cover?.url ? "has-dynamic-product-image" : fallbackClass}">
         ${cover?.url ? `<img src="${cover.url}" alt="${escapeHtml(cover.name || product.name || "Produit")}" />` : ""}
       </div>
       <div class="product-info">
         <h3>${escapeHtml(product.name || "Produit sans nom")}</h3>
-        <p>A partir de <strong>${escapeHtml(product.price || "prix a definir")}</strong></p>
+        <p><strong>${escapeHtml(formatCalculatedPrice(product.price))}</strong></p>
         <div class="swatches" aria-label="Couleurs disponibles">
           ${
             visibleColors.length
@@ -547,9 +583,10 @@ const bindDetailPhotoCarousel = (hero) => {
   });
 };
 
-const openProductDetail = (product) => {
+const openProductDetail = (product, returnView = "products") => {
   closeMenu();
   if (!productDetail || !product) return;
+  productReturnView = returnView;
   const photos = productPhotos(product);
   const detailHero = productDetail.querySelector(".detail-hero");
   const detailContent = productDetail.querySelector(".detail-content");
@@ -574,7 +611,7 @@ const openProductDetail = (product) => {
             </div>`
           : ""
       }
-      <button class="heart-button detail-heart" type="button" aria-label="Ajouter aux favoris"></button>
+      <button class="heart-button detail-heart" type="button" data-favorite-product="${escapeHtml(product.id)}" aria-label="Ajouter aux favoris"></button>
     `;
     bindDetailPhotoCarousel(detailHero);
   }
@@ -619,6 +656,8 @@ const openProductDetail = (product) => {
     });
   }
 
+  storefront?.classList.remove("favorites-mode");
+  if (favoritesView) favoritesView.hidden = true;
   storefront?.classList.add("product-mode");
   productDetail.hidden = false;
   bindHeartButtons();
@@ -630,13 +669,18 @@ const closeProductDetail = () => {
   if (productDetail) {
     productDetail.hidden = true;
   }
+  if (productReturnView === "favorites") {
+    showFavorites();
+    return;
+  }
+  setActiveNavigation("products");
   document.querySelector("#patrons")?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
-const bindProductCards = (products) => {
+const bindProductCards = (products, root = document, returnView = "products") => {
   const productById = new Map(products.map((product) => [String(product.id), product]));
-  document.querySelectorAll("[data-product-open]").forEach((card) => {
-    const open = () => openProductDetail(productById.get(card.dataset.productOpen));
+  root.querySelectorAll("[data-product-open]").forEach((card) => {
+    const open = () => openProductDetail(productById.get(card.dataset.productOpen), returnView);
     card.addEventListener("click", open);
     card.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -661,15 +705,57 @@ const renderProducts = (products, homeConfig) => {
     return;
   }
   productGrid.innerHTML = productsToRender.map(renderProductCard).join("");
-  bindProductCards(productsToRender);
+  bindProductCards(productsToRender, productGrid);
+};
+
+const renderFavorites = () => {
+  if (!favoritesGrid || !favoritesEmpty || !favoritesCount) return;
+  const availableIds = new Set(storefrontProducts.map((product) => String(product.id)));
+  const cleanIds = new Set([...favoriteIds].filter((id) => availableIds.has(id)));
+  if (cleanIds.size !== favoriteIds.size) {
+    favoriteIds = cleanIds;
+    saveFavoriteIds();
+  }
+  const products = storefrontProducts.filter(
+    (product) => isProductInCatalog(product) && favoriteIds.has(String(product.id)),
+  );
+  favoritesCount.textContent = `${products.length} produit${products.length === 1 ? "" : "s"}`;
+  favoritesGrid.innerHTML = products.map(renderProductCard).join("");
+  favoritesGrid.hidden = products.length === 0;
+  favoritesEmpty.hidden = products.length > 0;
+  if (products.length) {
+    bindProductCards(products, favoritesGrid, "favorites");
+    bindPressables();
+  }
+  bindHeartButtons();
+};
+
+const showStandardView = (name, target) => {
+  storefront?.classList.remove("product-mode", "favorites-mode");
+  if (productDetail) productDetail.hidden = true;
+  if (favoritesView) favoritesView.hidden = true;
+  setActiveNavigation(name);
+  document.querySelector(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
+const showFavorites = () => {
+  renderFavorites();
+  storefront?.classList.remove("product-mode");
+  storefront?.classList.add("favorites-mode");
+  if (productDetail) productDetail.hidden = true;
+  if (favoritesView) favoritesView.hidden = false;
+  setActiveNavigation("favorites");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 const renderStorefront = ({ products, homeConfig }) => {
+  storefrontProducts = products;
   const cleanConfig = cleanHomeConfig(homeConfig);
   renderCategories(cleanConfig);
   renderProducts(products, cleanConfig);
   bindPressables();
   bindHeartButtons();
+  renderFavorites();
 };
 
 const loadPublishedStorefront = async () => {
@@ -715,6 +801,21 @@ const loadPublishedStorefront = async () => {
 };
 
 productBackButton?.addEventListener("click", closeProductDetail);
+favoritesBrowseButton?.addEventListener("click", () => showStandardView("products", "#patrons"));
+storefrontNavLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    const destination = link.dataset.storefrontNav;
+    if (destination === "favorites") {
+      event.preventDefault();
+      showFavorites();
+      return;
+    }
+    if (destination === "home" || destination === "products") {
+      event.preventDefault();
+      showStandardView(destination, destination === "home" ? "#accueil" : "#patrons");
+    }
+  });
+});
 bindPressables();
 bindHeartButtons();
 loadPublishedStorefront();
