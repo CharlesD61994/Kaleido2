@@ -1,4 +1,7 @@
-const isAdminPreview = new URLSearchParams(window.location.search).get("mode") === "preview";
+const storefrontParams = new URLSearchParams(window.location.search);
+const isAdminPreview = storefrontParams.get("mode") === "preview";
+const isProductPreview = isAdminPreview && storefrontParams.get("productPreview") === "1";
+if (isProductPreview) document.documentElement.classList.add("product-preview-pending");
 const productsKey = isAdminPreview
   ? "kaleido-storefront-product-drafts"
   : "kaleido-storefront-public-products-cache";
@@ -790,7 +793,13 @@ const loadPublishedStorefront = async () => {
   }
 };
 
-productBackButton?.addEventListener("click", closeProductDetail);
+productBackButton?.addEventListener("click", () => {
+  if (isProductPreview && window.parent !== window) {
+    window.parent.postMessage({ type: "kaleido-product-preview-close" }, "*");
+    return;
+  }
+  closeProductDetail();
+});
 favoritesBrowseButton?.addEventListener("click", () => showStandardView("products", "#patrons"));
 storefrontNavLinks.forEach((link) => {
   link.addEventListener("click", (event) => {
@@ -808,4 +817,15 @@ storefrontNavLinks.forEach((link) => {
 });
 bindPressables();
 bindHeartButtons();
-loadPublishedStorefront();
+if (isProductPreview) {
+  window.addEventListener("message", (event) => {
+    if (event.source !== window.parent) return;
+    if (event.data?.type !== "kaleido-product-preview-product" || !event.data.product) return;
+    storefrontProducts = [event.data.product];
+    openProductDetail(event.data.product);
+    document.documentElement.classList.remove("product-preview-pending");
+  });
+  window.parent.postMessage({ type: "kaleido-product-preview-ready" }, "*");
+} else {
+  loadPublishedStorefront();
+}

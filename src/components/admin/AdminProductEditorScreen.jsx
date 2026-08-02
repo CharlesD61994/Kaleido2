@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ADMIN_ROUTES } from "../../constants/adminRoutes";
 import {
   readStorefrontHomeConfig,
@@ -249,6 +249,41 @@ const createEditorState = (product) => {
       accentColor: productColorsForSection(source, "accentColor"),
     },
   };
+};
+
+const productFromEditor = (editor, previous = null) => {
+  const now = new Date().toISOString();
+  const colorPhotos = Object.values(editor.colorGroups)
+    .flat()
+    .map((color) => ({
+      id: color.id,
+      label: color.label,
+      value: color.value,
+      photos: (color.photos || []).map(normalizePhoto),
+    }));
+  const product = {
+    ...editor,
+    id: editor.id || "kaleido-live-product-preview",
+    name: editor.name.trim() || "Produit sans nom",
+    price: editor.price.trim(),
+    description: editor.description.trim(),
+    shopify: normalizeShopifyConnection(editor.shopify),
+    colors: {
+      main: editor.options.includes("mainColor")
+        ? editor.colorGroups.mainColor.map((color) => color.value)
+        : [],
+      accent: editor.options.includes("accentColor")
+        ? editor.colorGroups.accentColor.map((color) => color.value)
+        : [],
+    },
+    colorPhotos,
+    status: previous?.status || editor.status || "draft",
+    inCatalog: previous?.inCatalog ?? editor.inCatalog ?? false,
+    createdAt: previous?.createdAt || editor.createdAt || now,
+    updatedAt: now,
+  };
+  delete product.colorGroups;
+  return product;
 };
 
 const compressPhoto = (file) => new Promise((resolve) => {
@@ -590,6 +625,44 @@ function ColorManager({
 }
 
 function ProductPreviewPage({ editor, onBack }) {
+  const frameRef = useRef(null);
+  const product = useMemo(() => productFromEditor(editor), [editor]);
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.source !== frameRef.current?.contentWindow) return;
+      if (event.data?.type === "kaleido-product-preview-ready") {
+        frameRef.current?.contentWindow?.postMessage({
+          type: "kaleido-product-preview-product",
+          product,
+        }, "*");
+      }
+      if (event.data?.type === "kaleido-product-preview-close") onBack();
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [onBack, product]);
+
+  const sendProduct = () => {
+    frameRef.current?.contentWindow?.postMessage({
+      type: "kaleido-product-preview-product",
+      product,
+    }, "*");
+  };
+
+  return (
+    <section className="admin-react-page admin-editor-storefront-preview">
+      <iframe
+        ref={frameRef}
+        src="/admin-boutique/index.html?mode=preview&productPreview=1"
+        title="Aperçu exact de la fiche produit"
+        onLoad={sendProduct}
+      />
+    </section>
+  );
+}
+
+function LegacyProductPreviewPage({ editor, onBack }) {
   const [selections, setSelections] = useState({});
   const [expandedColorGroups, setExpandedColorGroups] = useState({});
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
@@ -1020,39 +1093,12 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
     if (saving) return;
     setSaveError("");
     setSaving(true);
-    const now = new Date().toISOString();
     const currentProducts = readStorefrontProducts();
     const previous = currentProducts.find((product) => String(product.id) === String(editor.id));
-    const colorPhotos = Object.values(editor.colorGroups)
-      .flat()
-      .map((color) => ({
-        id: color.id,
-        label: color.label,
-        value: color.value,
-        photos: (color.photos || []).map(normalizePhoto),
-      }));
-    const product = {
-      ...editor,
-      id: editor.id || newId(),
-      name: editor.name.trim() || "Produit sans nom",
-      price: editor.price.trim(),
-      description: editor.description.trim(),
-      shopify: normalizeShopifyConnection(editor.shopify),
-      colors: {
-        main: editor.options.includes("mainColor")
-          ? editor.colorGroups.mainColor.map((color) => color.value)
-          : [],
-        accent: editor.options.includes("accentColor")
-          ? editor.colorGroups.accentColor.map((color) => color.value)
-          : [],
-      },
-      colorPhotos,
-      status: previous?.status || editor.status || "draft",
-      inCatalog: previous?.inCatalog ?? editor.inCatalog ?? false,
-      createdAt: previous?.createdAt || editor.createdAt || now,
-      updatedAt: now,
-    };
-    delete product.colorGroups;
+    const product = productFromEditor(
+      editor.id ? editor : { ...editor, id: newId() },
+      previous,
+    );
 
     try {
       if (shopifyStore) {

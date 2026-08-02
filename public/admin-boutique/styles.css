@@ -1009,6 +1009,10 @@ a {
     var(--k-paper);
 }
 
+html.product-preview-pending .storefront {
+  visibility: hidden;
+}
+
 .product-detail[hidden] {
   display: none;
 }
