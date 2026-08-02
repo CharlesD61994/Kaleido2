@@ -1441,7 +1441,7 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
                   data-product-photo-id={photo.id}
                   key={photo.id}
                   onPointerDown={(event) => {
-                    if (!reorderingPhotos) return;
+                    if (!reorderingPhotos || event.target.closest("button")) return;
                     event.currentTarget.setPointerCapture?.(event.pointerId);
                     setDraggingPhotoId(photo.id);
                   }}
@@ -1457,6 +1457,26 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
                   {photo.url ? <img src={photo.url} alt={photo.name} /> : <i>Photo</i>}
                   <b>{index === 0 ? "Photo principale" : index + 1}</b>
                   <span>{photo.name}</span>
+                  {reorderingPhotos && (
+                    <div className="admin-editor-photo-order-actions">
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        aria-label={`Déplacer ${photo.name} vers la gauche`}
+                        onClick={() => moveProductPhoto(photo.id, editor.productPhotos[index - 1]?.id)}
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === editor.productPhotos.length - 1}
+                        aria-label={`Déplacer ${photo.name} vers la droite`}
+                        onClick={() => moveProductPhoto(photo.id, editor.productPhotos[index + 1]?.id)}
+                      >
+                        →
+                      </button>
+                    </div>
+                  )}
                   {!reorderingPhotos && (
                     <button
                       type="button"
