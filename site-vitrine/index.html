@@ -35,7 +35,7 @@
         </header>
 
         <nav class="side-menu" aria-label="Menu secondaire" aria-hidden="true">
-          <a href="#patrons">Tous les produits</a>
+          <a href="#catalogue" data-open-catalogue>Tous les produits</a>
           <a href="#categories-title">Catégories</a>
           <a href="https://app.atelierkaleido.ca">Suivre mon projet</a>
           <a href="#contact">Contact</a>
@@ -50,7 +50,7 @@
               <span>à votre</span>
               <span>image</span>
             </h1>
-            <a class="primary-cta" href="#patrons">Voir le catalogue <span>→</span></a>
+            <a class="primary-cta" href="#catalogue" data-open-catalogue>Voir le catalogue <span>→</span></a>
           </div>
 
           <div class="hero-showcase" aria-label="Parcours client Atelier Kaleido">
@@ -164,6 +164,37 @@
           </div>
         </section>
 
+        <section id="catalogue" class="catalog-view" data-catalog-view aria-labelledby="catalog-title" hidden>
+          <header class="catalog-header">
+            <span>Atelier Kaleido</span>
+            <h2 id="catalog-title">Catalogue</h2>
+            <span class="kaleido-underline" aria-hidden="true"></span>
+          </header>
+
+          <label class="catalog-search">
+            <span class="catalog-search-icon" aria-hidden="true"></span>
+            <input
+              type="search"
+              inputmode="search"
+              autocomplete="off"
+              placeholder="Rechercher un produit"
+              data-catalog-search
+            />
+          </label>
+
+          <div class="catalog-category-filters" data-catalog-filters aria-label="Filtrer par catégorie"></div>
+
+          <div class="catalog-results-heading">
+            <strong data-catalog-result-title>Tous les produits</strong>
+            <span data-catalog-result-count></span>
+          </div>
+          <div class="catalog-product-grid product-grid" data-catalog-grid></div>
+          <div class="catalog-empty" data-catalog-empty hidden>
+            <strong>Aucun produit trouvé</strong>
+            <p>Essayez une autre recherche ou une autre catégorie.</p>
+          </div>
+        </section>
+
         <section id="contact" class="trust-strip" aria-label="Atouts Atelier Kaleido">
           <article>
             <span class="trust-icon yarn-icon"></span>
@@ -252,9 +283,9 @@
             <span class="nav-icon home-icon"></span>
             Accueil
           </a>
-          <a href="#patrons" data-storefront-nav="products">
+          <a href="#catalogue" data-storefront-nav="catalog">
             <span class="nav-icon grid-icon"></span>
-            Produits
+            Catalogue
           </a>
           <a href="#favoris" data-storefront-nav="favorites">
             <span class="nav-icon fav-icon"></span>
@@ -270,6 +301,6 @@
 
     <script src="./storefront-config.js"></script>
     <script src="./storefront-cloud.js"></script>
-    <script src="./app.js?v=20260802-5"></script>
+    <script src="./app.js?v=20260802-6"></script>
   </body>
 </html>

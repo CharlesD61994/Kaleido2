@@ -11,10 +11,20 @@ const homeConfigKey = isAdminPreview
 const storefront = document.querySelector(".storefront");
 const menuButton = document.querySelector(".menu-button");
 const sideMenu = document.querySelector(".side-menu");
+const brandLink = document.querySelector(".brand");
 const productDetail = document.querySelector("[data-product-detail='pantoufles']");
 const productBackButton = document.querySelector(".detail-back");
 const categoryRow = document.querySelector(".category-row");
 const productGrid = document.querySelector(".product-grid");
+const catalogView = document.querySelector("[data-catalog-view]");
+const catalogGrid = document.querySelector("[data-catalog-grid]");
+const catalogFilters = document.querySelector("[data-catalog-filters]");
+const catalogSearch = document.querySelector("[data-catalog-search]");
+const catalogEmpty = document.querySelector("[data-catalog-empty]");
+const catalogResultTitle = document.querySelector("[data-catalog-result-title]");
+const catalogResultCount = document.querySelector("[data-catalog-result-count]");
+const openCatalogueLinks = [...document.querySelectorAll("[data-open-catalogue]")];
+const topSearchButton = document.querySelector(".search-button");
 const favoritesView = document.querySelector("[data-favorites-view]");
 const favoritesGrid = document.querySelector("[data-favorites-grid]");
 const favoritesEmpty = document.querySelector("[data-favorites-empty]");
@@ -23,7 +33,10 @@ const favoritesBrowseButton = document.querySelector("[data-favorites-browse]");
 const storefrontNavLinks = [...document.querySelectorAll("[data-storefront-nav]")];
 const favoritesKey = "kaleido-storefront-favorites-v1";
 let storefrontProducts = [];
-let productReturnView = "products";
+let productReturnView = "home";
+let storefrontHomeConfig = null;
+let catalogCategoryId = "";
+let catalogSearchTerm = "";
 
 const defaultCategories = [
   { id: "vetements", label: "Vetements", color: "#7c3aed", icon: "♢", className: "photo-baby" },
@@ -96,6 +109,12 @@ const escapeHtml = (value) =>
         "'": "&#039;",
       })[character],
   );
+
+const normalizeCatalogText = (value) => String(value || "")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLocaleLowerCase("fr-CA")
+  .trim();
 
 const readJson = (key, fallback) => {
   try {
@@ -250,7 +269,7 @@ const renderCategories = (homeConfig) => {
     .map((category) => {
       const photoSource = categoryPhotoSource(category.photo);
       return `
-        <button class="category-card dynamic-category-card" type="button">
+        <button class="category-card dynamic-category-card" type="button" data-home-category="${escapeHtml(category.id)}">
           <span class="category-photo ${photoSource ? "has-category-photo" : category.className || ""}" style="--ring:${category.color}">
             ${
               photoSource
@@ -263,6 +282,10 @@ const renderCategories = (homeConfig) => {
       `;
     })
     .join("");
+
+  categoryRow.querySelectorAll("[data-home-category]").forEach((button) => {
+    button.addEventListener("click", () => showCatalog(button.dataset.homeCategory));
+  });
 };
 
 const renderProductCard = (product, index) => {
@@ -649,8 +672,9 @@ const openProductDetail = (product, returnView = "products") => {
     });
   }
 
-  storefront?.classList.remove("favorites-mode");
+  storefront?.classList.remove("favorites-mode", "catalog-mode");
   if (favoritesView) favoritesView.hidden = true;
+  if (catalogView) catalogView.hidden = true;
   storefront?.classList.add("product-mode");
   productDetail.hidden = false;
   bindHeartButtons();
@@ -666,11 +690,15 @@ const closeProductDetail = () => {
     showFavorites();
     return;
   }
-  setActiveNavigation("products");
+  if (productReturnView === "catalog") {
+    showCatalog(catalogCategoryId, { preserveSearch: true });
+    return;
+  }
+  setActiveNavigation("home");
   document.querySelector("#patrons")?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
-const bindProductCards = (products, root = document, returnView = "products") => {
+const bindProductCards = (products, root = document, returnView = "home") => {
   const productById = new Map(products.map((product) => [String(product.id), product]));
   root.querySelectorAll("[data-product-open]").forEach((card) => {
     const open = () => openProductDetail(productById.get(card.dataset.productOpen), returnView);
@@ -701,6 +729,76 @@ const renderProducts = (products, homeConfig) => {
   bindProductCards(productsToRender, productGrid);
 };
 
+const catalogCategories = () => {
+  if (!storefrontHomeConfig) return [];
+  const allCategories = allCategoriesFrom(storefrontHomeConfig);
+  return storefrontHomeConfig.categories
+    .map((id) => allCategories.find((category) => category.id === id))
+    .filter(Boolean);
+};
+
+const productBelongsToCategory = (product, category) => {
+  if (!category) return true;
+  const productCategory = normalizeCatalogText(product.category);
+  return productCategory === normalizeCatalogText(category.id)
+    || productCategory === normalizeCatalogText(category.label);
+};
+
+const renderCatalog = () => {
+  if (!catalogGrid || !catalogFilters || !catalogEmpty) return;
+  const categories = catalogCategories();
+  const selectedCategory = categories.find((category) => category.id === catalogCategoryId) || null;
+  if (catalogCategoryId && !selectedCategory) catalogCategoryId = "";
+
+  catalogFilters.innerHTML = categories.map((category) => `
+    <button
+      type="button"
+      class="${category.id === catalogCategoryId ? "is-selected" : ""}"
+      style="--category-accent:${escapeHtml(category.color)}"
+      data-catalog-category="${escapeHtml(category.id)}"
+      aria-pressed="${category.id === catalogCategoryId}"
+    >${escapeHtml(category.label)}</button>
+  `).join("");
+
+  catalogFilters.querySelectorAll("[data-catalog-category]").forEach((button) => {
+    button.addEventListener("click", () => {
+      catalogCategoryId = catalogCategoryId === button.dataset.catalogCategory
+        ? ""
+        : button.dataset.catalogCategory;
+      renderCatalog();
+    });
+  });
+
+  const search = normalizeCatalogText(catalogSearchTerm);
+  const products = storefrontProducts
+    .filter(isProductInCatalog)
+    .filter((product) => productBelongsToCategory(product, selectedCategory))
+    .filter((product) => {
+      if (!search) return true;
+      return normalizeCatalogText([
+        product.name,
+        product.description,
+        product.category,
+      ].join(" ")).includes(search);
+    });
+
+  const currentCategory = categories.find((category) => category.id === catalogCategoryId);
+  if (catalogResultTitle) {
+    catalogResultTitle.textContent = currentCategory?.label || "Tous les produits";
+  }
+  if (catalogResultCount) {
+    catalogResultCount.textContent = `${products.length} produit${products.length === 1 ? "" : "s"}`;
+  }
+  catalogGrid.innerHTML = products.map(renderProductCard).join("");
+  catalogGrid.hidden = products.length === 0;
+  catalogEmpty.hidden = products.length > 0;
+  if (products.length) {
+    bindProductCards(products, catalogGrid, "catalog");
+    bindPressables();
+    bindHeartButtons();
+  }
+};
+
 const renderFavorites = () => {
   if (!favoritesGrid || !favoritesEmpty || !favoritesCount) return;
   const availableIds = new Set(storefrontProducts.map((product) => String(product.id)));
@@ -724,18 +822,37 @@ const renderFavorites = () => {
 };
 
 const showStandardView = (name, target) => {
-  storefront?.classList.remove("product-mode", "favorites-mode");
+  storefront?.classList.remove("product-mode", "favorites-mode", "catalog-mode");
   if (productDetail) productDetail.hidden = true;
   if (favoritesView) favoritesView.hidden = true;
+  if (catalogView) catalogView.hidden = true;
   setActiveNavigation(name);
   document.querySelector(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
+const showCatalog = (categoryId = "", { preserveSearch = false } = {}) => {
+  closeMenu();
+  catalogCategoryId = categoryId || "";
+  if (!preserveSearch) {
+    catalogSearchTerm = "";
+    if (catalogSearch) catalogSearch.value = "";
+  }
+  renderCatalog();
+  storefront?.classList.remove("product-mode", "favorites-mode");
+  storefront?.classList.add("catalog-mode");
+  if (productDetail) productDetail.hidden = true;
+  if (favoritesView) favoritesView.hidden = true;
+  if (catalogView) catalogView.hidden = false;
+  setActiveNavigation("catalog");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
 const showFavorites = () => {
   renderFavorites();
-  storefront?.classList.remove("product-mode");
+  storefront?.classList.remove("product-mode", "catalog-mode");
   storefront?.classList.add("favorites-mode");
   if (productDetail) productDetail.hidden = true;
+  if (catalogView) catalogView.hidden = true;
   if (favoritesView) favoritesView.hidden = false;
   setActiveNavigation("favorites");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -744,8 +861,10 @@ const showFavorites = () => {
 const renderStorefront = ({ products, homeConfig }) => {
   storefrontProducts = products;
   const cleanConfig = cleanHomeConfig(homeConfig);
+  storefrontHomeConfig = cleanConfig;
   renderCategories(cleanConfig);
   renderProducts(products, cleanConfig);
+  renderCatalog();
   bindPressables();
   bindHeartButtons();
   renderFavorites();
@@ -800,7 +919,31 @@ productBackButton?.addEventListener("click", () => {
   }
   closeProductDetail();
 });
-favoritesBrowseButton?.addEventListener("click", () => showStandardView("products", "#patrons"));
+favoritesBrowseButton?.addEventListener("click", () => showCatalog());
+brandLink?.addEventListener("click", (event) => {
+  event.preventDefault();
+  showStandardView("home", "#accueil");
+});
+sideMenu?.querySelectorAll('a[href="#categories-title"], a[href="#contact"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    showStandardView("home", link.getAttribute("href"));
+  });
+});
+openCatalogueLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    showCatalog();
+  });
+});
+topSearchButton?.addEventListener("click", () => {
+  showCatalog();
+  catalogSearch?.focus();
+});
+catalogSearch?.addEventListener("input", (event) => {
+  catalogSearchTerm = event.currentTarget.value;
+  renderCatalog();
+});
 storefrontNavLinks.forEach((link) => {
   link.addEventListener("click", (event) => {
     const destination = link.dataset.storefrontNav;
@@ -809,9 +952,14 @@ storefrontNavLinks.forEach((link) => {
       showFavorites();
       return;
     }
-    if (destination === "home" || destination === "products") {
+    if (destination === "catalog") {
       event.preventDefault();
-      showStandardView(destination, destination === "home" ? "#accueil" : "#patrons");
+      showCatalog();
+      return;
+    }
+    if (destination === "home") {
+      event.preventDefault();
+      showStandardView(destination, "#accueil");
     }
   });
 });
