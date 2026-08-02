@@ -632,16 +632,6 @@ const openProductDetail = (product, returnView = "products") => {
         ${hasLongDescription ? '<button class="detail-story-toggle" type="button" aria-expanded="false">Lire la suite</button>' : ""}
       </div>
       ${renderDetailOptions(product)}
-      <div class="detail-panel tracking-panel">
-        <span class="panel-label">Votre commande</span>
-        <div class="tracking-steps">
-          <span>Catalogue</span>
-          <span>Production</span>
-          <span>Produit final</span>
-        </div>
-        <div class="detail-progress"><span></span></div>
-        <small>Le suivi prive sera envoye apres la confirmation de la commande.</small>
-      </div>
       <div class="detail-actions">
         <button class="buy-button" type="button" data-shopify-product="${escapeHtml(shopifyProductId(product))}">Ajouter au panier</button>
       </div>
