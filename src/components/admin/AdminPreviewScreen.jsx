@@ -3,7 +3,8 @@ import AdminHeader from "./AdminHeader";
 import "./AdminProductsScreen.css";
 
 const PUBLIC_STOREFRONT_URL = String(
-  import.meta.env.VITE_STOREFRONT_ORIGIN || "https://atelierkaleido.ca",
+  import.meta.env.VITE_STOREFRONT_ORIGIN
+    || "https://kaleido3.vercel.app/admin-boutique/index.html",
 ).replace(/\/$/, "");
 
 export default function AdminPreviewScreen({ navigation }) {
