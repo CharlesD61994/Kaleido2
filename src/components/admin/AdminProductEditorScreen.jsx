@@ -83,6 +83,14 @@ const DEFAULT_PRODUCT_CATEGORIES = [
   { id: "couvertures", label: "Couvertures" },
 ];
 
+const PATTERN_AUDIENCES = [
+  { id: "general", label: "Général" },
+  { id: "homme", label: "Homme" },
+  { id: "femme", label: "Femme" },
+  { id: "enfant", label: "Enfant" },
+  { id: "bebe", label: "Bébé" },
+];
+
 const storefrontTaxonomy = (config = {}) => {
   const customCategories = Array.isArray(config.customCategories) ? config.customCategories : [];
   const categories = [...DEFAULT_PRODUCT_CATEGORIES, ...customCategories]
@@ -117,6 +125,31 @@ const patternImage = (patron) => {
 };
 
 const newId = () => window.crypto?.randomUUID?.() || `item-${Date.now()}-${Math.random()}`;
+
+const normalizePatternLinks = (source = {}) => {
+  const storedLinks = Array.isArray(source.patternLinks) ? source.patternLinks : [];
+  const links = storedLinks
+    .filter((link) => link?.patternId)
+    .map((link) => ({
+      id: String(link.id || newId()),
+      patternId: String(link.patternId),
+      audience: PATTERN_AUDIENCES.some((audience) => audience.id === link.audience)
+        ? link.audience
+        : "general",
+      patternSnapshot: link.patternSnapshot || null,
+    }));
+
+  if (!links.length && source.patternId) {
+    links.push({
+      id: newId(),
+      patternId: String(source.patternId),
+      audience: "general",
+      patternSnapshot: source.patternSnapshot || null,
+    });
+  }
+
+  return links;
+};
 
 const formatProductPrice = (value) => {
   const price = String(value || "").trim();
@@ -243,6 +276,7 @@ const createEmptyProduct = () => ({
   category: DEFAULT_PRODUCT_CATEGORIES[0].label,
   patternId: "",
   patternSnapshot: null,
+  patternLinks: [],
   subcategoryIds: [],
   collectionIds: [],
   price: "",
@@ -262,9 +296,11 @@ const createEmptyProduct = () => ({
 
 const createEditorState = (product) => {
   const source = product || createEmptyProduct();
+  const patternLinks = normalizePatternLinks(source);
   return {
     ...createEmptyProduct(),
     ...source,
+    patternLinks,
     shopify: normalizeShopifyConnection(source.shopify),
     options: [...(source.options || [])],
     optionPrices: {
@@ -302,6 +338,9 @@ const productFromEditor = (editor, previous = null) => {
     }));
   const product = {
     ...editor,
+    patternLinks: normalizePatternLinks(editor),
+    patternId: editor.patternLinks?.[0]?.patternId || "",
+    patternSnapshot: editor.patternLinks?.[0]?.patternSnapshot || null,
     id: editor.id || "kaleido-live-product-preview",
     name: editor.name.trim() || "Produit sans nom",
     price: editor.price.trim(),
@@ -503,7 +542,7 @@ function TaxonomyChoices({ emptyText, items, selected, onChange }) {
   );
 }
 
-function PatternPicker({ patrons, selectedId, onClose, onSelect }) {
+function PatternPicker({ patrons, selectedIds = [], onClose, onSelect }) {
   const [search, setSearch] = useState("");
   const normalizedSearch = categoryIdentity(search);
   const filtered = patrons.filter((patron) => (
@@ -535,7 +574,7 @@ function PatternPicker({ patrons, selectedId, onClose, onSelect }) {
         <div className="admin-pattern-picker-list">
           {filtered.map((patron) => (
             <button
-              className={String(patron.id) === String(selectedId) ? "is-selected" : ""}
+              className={selectedIds.some((id) => String(id) === String(patron.id)) ? "is-selected" : ""}
               key={patron.id}
               type="button"
               onClick={() => onSelect(patron)}
@@ -1108,7 +1147,7 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
   const [shopifyModalOpen, setShopifyModalOpen] = useState(false);
   const [shopifyCode, setShopifyCode] = useState("");
   const [shopifyError, setShopifyError] = useState("");
-  const [patternPickerOpen, setPatternPickerOpen] = useState(false);
+  const [patternPickerTarget, setPatternPickerTarget] = useState(null);
   const [reorderingPhotos, setReorderingPhotos] = useState(false);
   const [draggingPhotoId, setDraggingPhotoId] = useState(null);
   const productPhotoInput = useRef(null);
@@ -1346,36 +1385,63 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
           </section>
 
           <fieldset className="admin-editor-section admin-editor-pattern-section">
-            <legend>Patron associé</legend>
-            {editor.patternId ? (
-              <article className="admin-editor-pattern-card">
-                <span aria-hidden="true">◇</span>
-                <div>
-                  <strong>{editor.patternSnapshot?.title || "Patron associé"}</strong>
-                  <small>{editor.patternSnapshot?.type || "Bibliothèque Kaleido"}</small>
-                </div>
-                <button type="button" onClick={() => setPatternPickerOpen(true)}>Changer</button>
-                <button
-                  className="danger"
-                  type="button"
-                  onClick={() => update({ patternId: "", patternSnapshot: null })}
-                >
-                  Dissocier
-                </button>
-              </article>
-            ) : (
-              <button
-                className="admin-editor-pattern-empty"
-                type="button"
-                onClick={() => setPatternPickerOpen(true)}
-              >
-                <span aria-hidden="true">+</span>
-                <span>
-                  <strong>Choisir un patron</strong>
-                  <small>Relie ce produit à un patron de ta Bibliothèque.</small>
-                </span>
-              </button>
+            <legend>Patrons associés</legend>
+            {!!editor.patternLinks.length && (
+              <div className="admin-editor-pattern-list">
+                {editor.patternLinks.map((link) => (
+                  <article className="admin-editor-pattern-card" key={link.id}>
+                    <span aria-hidden="true">◇</span>
+                    <div className="admin-editor-pattern-copy">
+                      <strong>{link.patternSnapshot?.title || "Patron associé"}</strong>
+                      <small>{link.patternSnapshot?.type || "Bibliothèque Kaleido"}</small>
+                    </div>
+                    <button
+                      className="danger admin-editor-pattern-remove"
+                      type="button"
+                      aria-label={`Dissocier ${link.patternSnapshot?.title || "ce patron"}`}
+                      onClick={() => update({
+                        patternLinks: editor.patternLinks.filter((item) => item.id !== link.id),
+                      })}
+                    >
+                      ×
+                    </button>
+                    <label className="admin-editor-pattern-audience">
+                      Pour qui ?
+                      <select
+                        value={link.audience}
+                        onChange={(event) => update({
+                          patternLinks: editor.patternLinks.map((item) => (
+                            item.id === link.id ? { ...item, audience: event.target.value } : item
+                          )),
+                        })}
+                      >
+                        {PATTERN_AUDIENCES.map((audience) => (
+                          <option key={audience.id} value={audience.id}>{audience.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      className="admin-editor-pattern-change"
+                      type="button"
+                      onClick={() => setPatternPickerTarget(link.id)}
+                    >
+                      Changer le patron
+                    </button>
+                  </article>
+                ))}
+              </div>
             )}
+            <button
+              className="admin-editor-pattern-empty"
+              type="button"
+              onClick={() => setPatternPickerTarget("new")}
+            >
+              <span aria-hidden="true">+</span>
+              <span>
+                <strong>Associer un patron</strong>
+                <small>Ajoute un patron et précise à quel public il correspond.</small>
+              </span>
+            </button>
           </fieldset>
 
           <fieldset className="admin-editor-section admin-editor-taxonomy-section">
@@ -1665,20 +1731,31 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
           </div>
         </form>
       </div>
-      {patternPickerOpen && (
+      {patternPickerTarget && (
         <PatternPicker
           patrons={patrons}
-          selectedId={editor.patternId}
-          onClose={() => setPatternPickerOpen(false)}
+          selectedIds={editor.patternLinks.map((link) => link.patternId)}
+          onClose={() => setPatternPickerTarget(null)}
           onSelect={(patron) => {
-            update({
+            const patternLink = {
+              id: patternPickerTarget === "new" ? newId() : patternPickerTarget,
               patternId: String(patron.id),
+              audience: "general",
               patternSnapshot: {
                 title: patternTitle(patron),
                 type: patternType(patron),
               },
+            };
+            update({
+              patternLinks: patternPickerTarget === "new"
+                ? [...editor.patternLinks, patternLink]
+                : editor.patternLinks.map((link) => (
+                  link.id === patternPickerTarget
+                    ? { ...patternLink, audience: link.audience }
+                    : link
+                )),
             });
-            setPatternPickerOpen(false);
+            setPatternPickerTarget(null);
           }}
         />
       )}

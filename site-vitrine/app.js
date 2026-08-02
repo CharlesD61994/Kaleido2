@@ -43,10 +43,10 @@ let catalogCollectionId = "";
 let catalogSearchTerm = "";
 
 const defaultCategories = [
-  { id: "vetements", label: "Vetements", color: "#7c3aed", icon: "♢", className: "photo-baby" },
-  { id: "peluches", label: "Peluches crochetees", color: "#e84b94", icon: "●", className: "photo-plush" },
+  { id: "vetements", label: "Vêtements", color: "#7c3aed", icon: "♢", className: "photo-baby" },
+  { id: "peluches", label: "Peluches crochetées", color: "#e84b94", icon: "●", className: "photo-plush" },
   { id: "pantoufles", label: "Pantoufles", color: "#30c7c9", icon: "◒", className: "photo-slippers" },
-  { id: "porte-cles", label: "Porte-cles", color: "#f4831f", icon: "◇", className: "photo-accessories" },
+  { id: "porte-cles", label: "Porte-clés", color: "#f4831f", icon: "◇", className: "photo-accessories" },
   { id: "couvertures", label: "Couvertures", color: "#8bbf3f", icon: "▧", className: "photo-socks" },
 ];
 
@@ -55,10 +55,10 @@ const optionLabels = {
   accentColor: "Couleur secondaire",
   recipient: "Pour qui ?",
   shoeSize: "Pointure",
-  keychain: "Porte-cle",
+  keychain: "Porte-clé",
   personalization: "Personnalisation",
   finish: "Finition",
-  delay: "Delai",
+  delay: "Délai",
 };
 
 const optionColors = {
