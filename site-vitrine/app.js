@@ -240,7 +240,17 @@ const productOptionGroups = (product) => {
   });
   (product.options || [])
     .filter((id) => !["mainColor", "accentColor", "recipient", "shoeSize"].includes(id))
-    .forEach((id) => groups.push({ title: optionLabels[id] || id, type: "simple", values: ["Option disponible"] }));
+    .forEach((id) => {
+      if (id === "keychain") {
+        groups.push({
+          title: "Voulez-vous en faire un porte-cl\u00e9 ?",
+          type: "choice",
+          values: ["Oui", "Non"],
+        });
+        return;
+      }
+      groups.push({ title: optionLabels[id] || id, type: "simple", values: ["Option disponible"] });
+    });
   return groups;
 };
 
@@ -256,21 +266,26 @@ const renderDetailOptions = (product) => {
           .map((group) => {
             if (group.type === "color") {
               const cards = group.colors
-                .map((color) => {
+                .map((color, colorIndex) => {
                   const colorData = group.photos.find((item) => item.value === color);
                   const photo = colorData?.photos?.find((item) => item.url);
                   return `
-                    <button class="detail-color-card" type="button" style="--swatch:${color}">
-                      ${photo?.url ? `<img src="${photo.url}" alt="${escapeHtml(photo.name || colorData?.label || group.title)}" />` : '<span></span>'}
+                    <button
+                      class="detail-color-card${colorIndex >= 6 ? " is-extra" : ""}"
+                      type="button"
+                      style="--swatch:${color}"
+                    >
+                      ${photo?.url ? `<img src="${photo.url}" alt="${escapeHtml(photo.name || colorData?.label || group.title)}" data-color-photo="${escapeHtml(photo.url)}" data-color-name="${escapeHtml(colorData?.label || group.title)}" />` : '<span></span>'}
                       <strong>${escapeHtml(colorData?.label || color)}</strong>
                     </button>
                   `;
                 })
                 .join("");
               return `
-                <div class="detail-option-group">
+                <div class="detail-option-group detail-color-group">
                   <strong>${escapeHtml(group.title)}</strong>
                   <div class="detail-color-row">${cards}</div>
+                  ${group.colors.length > 6 ? '<button class="detail-colors-toggle" type="button" aria-expanded="false">Afficher les autres couleurs</button>' : ""}
                 </div>
               `;
             }
@@ -288,6 +303,60 @@ const renderDetailOptions = (product) => {
       </div>
     </div>
   `;
+};
+
+const closeColorLightbox = () => {
+  document.querySelector(".detail-color-lightbox")?.remove();
+};
+
+const openColorLightbox = (source, name) => {
+  closeColorLightbox();
+  const lightbox = document.createElement("div");
+  lightbox.className = "detail-color-lightbox";
+  lightbox.setAttribute("role", "dialog");
+  lightbox.setAttribute("aria-modal", "true");
+  lightbox.setAttribute("aria-label", name || "Photo de la couleur");
+  lightbox.innerHTML = `
+    <button class="detail-color-lightbox-close" type="button" aria-label="Fermer">&times;</button>
+    <figure>
+      <img src="${escapeHtml(source)}" alt="${escapeHtml(name || "Photo de la couleur")}" />
+      ${name ? `<figcaption>${escapeHtml(name)}</figcaption>` : ""}
+    </figure>
+  `;
+  lightbox.addEventListener("click", (event) => {
+    if (event.target === lightbox || event.target.closest(".detail-color-lightbox-close")) closeColorLightbox();
+  });
+  document.body.appendChild(lightbox);
+  lightbox.querySelector(".detail-color-lightbox-close")?.focus();
+};
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeColorLightbox();
+});
+
+const bindDetailOptions = (container) => {
+  container.querySelectorAll(".detail-colors-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+      const group = button.closest(".detail-color-group");
+      const expanded = group?.classList.toggle("is-expanded") ?? false;
+      button.setAttribute("aria-expanded", String(expanded));
+      button.textContent = expanded ? "Afficher moins de couleurs" : "Afficher les autres couleurs";
+    });
+  });
+
+  container.querySelectorAll(".detail-choice-row button, .detail-color-card").forEach((button) => {
+    button.addEventListener("click", () => {
+      button.parentElement?.querySelectorAll("button").forEach((candidate) => candidate.classList.remove("is-selected"));
+      button.classList.add("is-selected");
+    });
+  });
+
+  container.querySelectorAll(".detail-color-card img[data-color-photo]").forEach((photo) => {
+    photo.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openColorLightbox(photo.dataset.colorPhoto, photo.dataset.colorName);
+    });
+  });
 };
 
 const bindDetailPhotoCarousel = (hero) => {
@@ -371,6 +440,7 @@ const openProductDetail = (product) => {
         <button class="secondary-button" type="button">Demander une couleur</button>
       </div>
     `;
+    bindDetailOptions(detailContent);
   }
 
   storefront?.classList.add("product-mode");

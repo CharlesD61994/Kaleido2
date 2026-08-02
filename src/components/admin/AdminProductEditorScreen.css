@@ -756,9 +756,9 @@
 
 .admin-editor-preview-title-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  gap: 10px;
 }
 
 .admin-editor-preview-detail h1,
@@ -774,7 +774,7 @@
 }
 
 .admin-editor-preview-title-row > strong {
-  align-self: center;
+  align-self: start;
   padding: 8px 12px;
   border: 1px solid color-mix(in srgb, var(--product-accent) 48%, var(--k-border));
   border-radius: 999px;
@@ -868,6 +868,17 @@
   font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.admin-editor-show-colors {
+  justify-self: start;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, #30c7c9 38%, var(--k-border));
+  border-radius: 999px;
+  color: #188f91;
+  background: color-mix(in srgb, #30c7c9 10%, var(--k-surface));
+  font: 900 12px "DM Sans", system-ui, sans-serif;
 }
 
 .admin-editor-client-choices {

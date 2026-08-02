@@ -419,7 +419,10 @@ function ColorManager({
 
 function ProductPreviewPage({ editor, onBack }) {
   const [selections, setSelections] = useState({});
-  const simpleOptions = editor.options.filter((id) => !COLOR_SECTIONS[id] && !CHOICE_OPTIONS[id]);
+  const [expandedColorGroups, setExpandedColorGroups] = useState({});
+  const simpleOptions = editor.options.filter((id) => (
+    !COLOR_SECTIONS[id] && !CHOICE_OPTIONS[id] && id !== "keychain"
+  ));
 
   const choose = (group, value) => setSelections((current) => ({
     ...current,
@@ -454,7 +457,9 @@ function ProductPreviewPage({ editor, onBack }) {
                 <div className="admin-editor-client-group" key={optionId}>
                   <strong>{section.title}</strong>
                   <div className="admin-editor-client-colors">
-                    {editor.colorGroups[optionId].map((color) => {
+                    {editor.colorGroups[optionId]
+                      .slice(0, expandedColorGroups[optionId] ? undefined : 6)
+                      .map((color) => {
                       const photo = color.photos?.find((item) => item.url);
                       return (
                         <button
@@ -471,6 +476,18 @@ function ProductPreviewPage({ editor, onBack }) {
                     })}
                     {!editor.colorGroups[optionId].length && <small>Aucune couleur ajoutée.</small>}
                   </div>
+                  {editor.colorGroups[optionId].length > 6 && (
+                    <button
+                      className="admin-editor-show-colors"
+                      type="button"
+                      onClick={() => setExpandedColorGroups((current) => ({
+                        ...current,
+                        [optionId]: !current[optionId],
+                      }))}
+                    >
+                      {expandedColorGroups[optionId] ? "Afficher moins de couleurs" : "Afficher les autres couleurs"}
+                    </button>
+                  )}
                 </div>
               )
             ))}
@@ -495,6 +512,25 @@ function ProductPreviewPage({ editor, onBack }) {
                 </div>
               )
             ))}
+
+            {editor.options.includes("keychain") && (
+              <div className="admin-editor-client-group">
+                <strong>Voulez-vous en faire un porte-clé ?</strong>
+                <div className="admin-editor-client-choices">
+                  {["Oui", "Non"].map((choice) => (
+                    <button
+                      type="button"
+                      className={selections.keychain === choice ? "is-selected" : ""}
+                      key={choice}
+                      onClick={() => choose("keychain", choice)}
+                      style={{ "--option-color": optionById("keychain").color }}
+                    >
+                      {choice}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {simpleOptions.map((optionId) => (
               <div className="admin-editor-client-group" key={optionId}>
