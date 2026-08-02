@@ -1148,14 +1148,10 @@ a {
 .detail-price {
   align-self: start;
   margin: 0;
-  padding: 1px 6px 3px 0;
+  padding: 1px 0 3px;
   border: 0;
   color: var(--product-accent);
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--product-accent) 18%, transparent) 0 46%,
-    transparent 46%
-  );
+  background: none;
   box-shadow: none;
   font-size: 24px;
   font-weight: 900;
