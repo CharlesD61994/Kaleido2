@@ -29,6 +29,13 @@ const modules = [
     route: ADMIN_ROUTES.PRODUCTS,
   },
   {
+    title: "Catalogue",
+    description: "Organiser les catégories, les sous-catégories et les collections.",
+    color: "#F4831F",
+    icon: "catalog",
+    route: ADMIN_ROUTES.CATALOG,
+  },
+  {
     title: "Accueil boutique",
     description: "Choisir les catégories et les produits affichés sur la page d'accueil.",
     color: "#E84B94",

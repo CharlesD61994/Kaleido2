@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { ADMIN_ROUTES } from "../../constants/adminRoutes";
 import useAdminNavigation from "../../hooks/useAdminNavigation";
 import AdminHomeScreen from "./AdminHomeScreen";
+import AdminCatalogScreen from "./AdminCatalogScreen";
 import { AdminNavigationProvider } from "./AdminNavigationContext";
 import AdminPreviewScreen from "./AdminPreviewScreen";
 import AdminProductEditorScreen from "./AdminProductEditorScreen";
@@ -196,6 +197,9 @@ export default function AdminRoot({
     }
     if (route.name === ADMIN_ROUTES.PRODUCTS) {
       return <AdminProductsScreen navigation={navigation} />;
+    }
+    if (route.name === ADMIN_ROUTES.CATALOG) {
+      return <AdminCatalogScreen navigation={navigation} />;
     }
     if (route.name === ADMIN_ROUTES.PRODUCT_EDITOR) {
       return (

@@ -2,6 +2,7 @@ export const ADMIN_ROUTES = Object.freeze({
   HOME: "admin_home",
   PREVIEW: "admin_preview",
   PRODUCTS: "admin_products",
+  CATALOG: "admin_catalog",
   STOREFRONT: "admin_storefront",
   PRODUCT_EDITOR: "admin_product_editor",
 });

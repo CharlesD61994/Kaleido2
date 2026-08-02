@@ -741,10 +741,10 @@ const renderProducts = (products, homeConfig) => {
 
 const catalogCategories = () => {
   if (!storefrontHomeConfig) return [];
-  const allCategories = allCategoriesFrom(storefrontHomeConfig);
-  return storefrontHomeConfig.categories
-    .map((id) => allCategories.find((category) => category.id === id))
-    .filter(Boolean);
+  const products = storefrontProducts.filter(isProductInCatalog);
+  return allCategoriesFrom(storefrontHomeConfig).filter((category) => (
+    products.some((product) => productBelongsToCategory(product, category))
+  ));
 };
 
 const productBelongsToCategory = (product, category) => {

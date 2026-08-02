@@ -8,7 +8,6 @@ import {
   STOREFRONT_PRODUCTS_CHANGED_EVENT,
   STOREFRONT_PRODUCTS_KEY,
   writeStorefrontHomeConfig,
-  writeStorefrontProducts,
 } from "../../services/storefrontAdminStore";
 import { deleteImage, loadImage, saveImage } from "../../services/mediaStore";
 import AdminLayout from "./AdminLayout";
@@ -23,16 +22,6 @@ const DEFAULT_CATEGORIES = [
 ];
 const CATEGORY_ICONS = ["✦", "◌", "●", "◒", "◇", "▧", "♢"];
 const CROP_SIZE = 260;
-const SWIPE_WIDTH = 144;
-
-const slugify = (value) =>
-  String(value || "categorie")
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 34) || "categorie";
 
 const customCategoriesFrom = (raw) => (
   Array.isArray(raw?.customCategories)
@@ -44,19 +33,6 @@ const customCategoriesFrom = (raw) => (
         color: category.color || "#30c7c9",
         icon: category.icon || CATEGORY_ICONS[index % CATEGORY_ICONS.length],
         custom: true,
-      }))
-    : []
-);
-
-const taxonomyItemsFrom = (raw, key) => (
-  Array.isArray(raw?.[key])
-    ? raw[key]
-      .filter((item) => item?.id && item?.label)
-      .map((item) => ({
-        id: String(item.id),
-        label: String(item.label),
-        color: item.color || (key === "collections" ? "#e84b94" : "#30c7c9"),
-        ...(key === "subcategories" ? { categoryId: String(item.categoryId || "") } : {}),
       }))
     : []
 );
@@ -98,8 +74,8 @@ const cleanConfig = (raw) => {
   return {
     categories: hasExplicitCategories ? selected : categories.map((category) => category.id),
     customCategories: customCategoriesFrom(raw),
-    subcategories: taxonomyItemsFrom(raw, "subcategories"),
-    collections: taxonomyItemsFrom(raw, "collections"),
+    subcategories: Array.isArray(raw?.subcategories) ? raw.subcategories : [],
+    collections: Array.isArray(raw?.collections) ? raw.collections : [],
     categoryColors: raw?.categoryColors || {},
     categoryPhotos: raw?.categoryPhotos || {},
     featuredProductIds: Array.isArray(raw?.featuredProductIds)
@@ -186,98 +162,19 @@ function ProductCard({ index, onAdd, onMove, onRemove, product, total }) {
 function CategoryCard({
   category,
   config,
-  index,
-  onColor,
   onMove,
   onOpenPhoto,
-  onRemove,
   onToggle,
-  open,
-  setOpen,
 }) {
-  const drag = useRef(null);
-  const suppressClickUntil = useRef(0);
-  const [offset, setOffset] = useState(0);
   const selected = config.categories.includes(category.id);
   const selectedIndex = config.categories.indexOf(category.id);
 
-  useEffect(() => {
-    if (!open) setOffset(0);
-  }, [open]);
-
-  const onPointerDown = (event) => {
-    if (event.target.closest("input, label")) return;
-    drag.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      base: open ? SWIPE_WIDTH : 0,
-      horizontal: false,
-    };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  };
-
-  const onPointerMove = (event) => {
-    const current = drag.current;
-    if (!current || current.pointerId !== event.pointerId) return;
-    const dx = event.clientX - current.startX;
-    const dy = event.clientY - current.startY;
-    if (!current.horizontal && Math.abs(dx) > 7 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-      current.horizontal = true;
-    }
-    if (!current.horizontal) return;
-    event.preventDefault();
-    setOffset(Math.max(0, Math.min(SWIPE_WIDTH, current.base - dx)));
-  };
-
-  const endPointer = (event) => {
-    const current = drag.current;
-    if (!current || current.pointerId !== event.pointerId) return;
-    const dx = event.clientX - current.startX;
-    if (current.horizontal) setOpen(dx < -34 || (open && dx < 34) ? category.id : null);
-    if (current.horizontal) suppressClickUntil.current = performance.now() + 350;
-    setOffset(0);
-    drag.current = null;
-  };
-
-  const effectiveOffset = offset || (open ? SWIPE_WIDTH : 0);
-  const ratio = effectiveOffset / SWIPE_WIDTH;
-
   return (
     <article
-      className={`admin-storefront-category-shell${open ? " is-open" : ""}${offset ? " is-dragging" : ""}`}
-      style={{
-        "--category-color": category.color,
-        "--swipe": `${effectiveOffset}px`,
-        "--action-opacity": ratio,
-        "--action-shift": `${Math.round(12 * (1 - ratio))}px`,
-      }}
+      className="admin-storefront-category-shell"
+      style={{ "--category-color": category.color, "--swipe": "0px" }}
     >
-      <div className="admin-storefront-category-actions">
-        <label>
-          <i style={{ "--swatch": category.color }} />
-          <span>Couleur</span>
-          <input
-            type="color"
-            value={category.color}
-            onChange={(event) => onColor(event.target.value)}
-            aria-label={`Changer la couleur de ${category.label}`}
-          />
-        </label>
-        <button type="button" className="danger" onClick={onRemove}>Retirer</button>
-      </div>
-      <div
-        className="admin-storefront-category-card"
-        onClickCapture={(event) => {
-          if (performance.now() >= suppressClickUntil.current) return;
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endPointer}
-        onPointerCancel={endPointer}
-      >
+      <div className="admin-storefront-category-card">
         <div className="admin-storefront-category-main">
           <button
             type="button"
@@ -319,86 +216,6 @@ function Modal({ children, className = "", onClose }) {
         {children}
       </section>
     </div>
-  );
-}
-
-function TaxonomyModal({ categories, item, type, onClose, onSave }) {
-  const isSubcategory = type === "subcategory";
-  const [label, setLabel] = useState(item?.label || "");
-  const [color, setColor] = useState(item?.color || (isSubcategory ? "#30c7c9" : "#e84b94"));
-  const [categoryId, setCategoryId] = useState(item?.categoryId || categories[0]?.id || "");
-
-  return (
-    <Modal className="admin-storefront-taxonomy-modal" onClose={onClose}>
-      <span>{isSubcategory ? "Sous-catégorie" : "Collection"}</span>
-      <h2>{item ? "Modifier" : "Ajouter"} {isSubcategory ? "une sous-catégorie" : "une collection"}</h2>
-      <form onSubmit={(event) => {
-        event.preventDefault();
-        if (!label.trim() || (isSubcategory && !categoryId)) return;
-        onSave({
-          id: item?.id || slugify(label),
-          label: label.trim(),
-          color,
-          ...(isSubcategory ? { categoryId } : {}),
-        });
-      }}>
-        <label>
-          <span>Nom</span>
-          <input
-            autoFocus
-            type="text"
-            value={label}
-            placeholder={isSubcategory ? "Ex: Animaux" : "Ex: Noël"}
-            onChange={(event) => setLabel(event.target.value)}
-          />
-        </label>
-        {isSubcategory && (
-          <label>
-            <span>Catégorie principale</span>
-            <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>{category.label}</option>
-              ))}
-            </select>
-          </label>
-        )}
-        <label className="admin-storefront-taxonomy-color">
-          <span>Couleur</span>
-          <input type="color" value={color} onChange={(event) => setColor(event.target.value)} />
-        </label>
-        <button type="submit">Enregistrer</button>
-      </form>
-    </Modal>
-  );
-}
-
-function TaxonomySection({ items, categories, title, description, onAdd, onEdit, onRemove }) {
-  const categoryMap = new Map(categories.map((category) => [String(category.id), category.label]));
-  return (
-    <section className="admin-storefront-section admin-storefront-taxonomy-section">
-      <header>
-        <h2>{title}</h2>
-        <p>{description}</p>
-      </header>
-      <div className="admin-storefront-taxonomy-list">
-        {items.map((item) => (
-          <article key={item.id} style={{ "--taxonomy-color": item.color }}>
-            <button type="button" onClick={() => onEdit(item)}>
-              <i aria-hidden="true" />
-              <span>
-                <strong>{item.label}</strong>
-                {item.categoryId && <small>{categoryMap.get(String(item.categoryId)) || "Catégorie retirée"}</small>}
-              </span>
-            </button>
-            <button type="button" onClick={() => onRemove(item)} aria-label={`Retirer ${item.label}`}>×</button>
-          </article>
-        ))}
-        <button className="admin-storefront-taxonomy-add" type="button" onClick={onAdd}>
-          <span>+</span>
-          <strong>Ajouter</strong>
-        </button>
-      </div>
-    </section>
   );
 }
 
@@ -645,12 +462,8 @@ function CategoryPhotoModal({ category, onClose, onSave }) {
 export default function AdminStorefrontScreen({ navigation }) {
   const [config, setConfig] = useState(() => cleanConfig(readStorefrontHomeConfig()));
   const [products, setProducts] = useState(readStorefrontProducts);
-  const [openActions, setOpenActions] = useState(null);
-  const [categoryModal, setCategoryModal] = useState(false);
   const [photoCategoryId, setPhotoCategoryId] = useState(null);
   const [productPicker, setProductPicker] = useState(false);
-  const [newCategory, setNewCategory] = useState({ label: "", color: "#30c7c9" });
-  const [taxonomyModal, setTaxonomyModal] = useState(null);
 
   useEffect(() => {
     const refreshProducts = () => setProducts(readStorefrontProducts());
@@ -700,92 +513,9 @@ export default function AdminStorefrontScreen({ navigation }) {
   const available = catalog.filter((product) => !selectedIds.has(String(product.id)));
   const activePhotoCategory = categories.find((category) => category.id === photoCategoryId);
 
-  const addCategory = (event) => {
-    event.preventDefault();
-    const label = newCategory.label.trim();
-    if (!label) return;
-    const existing = new Set(categories.map((category) => category.id));
-    const base = slugify(label);
-    let id = base;
-    let suffix = 2;
-    while (existing.has(id)) {
-      id = `${base}-${suffix}`;
-      suffix += 1;
-    }
-    const custom = {
-      id,
-      label,
-      color: newCategory.color,
-      icon: CATEGORY_ICONS[config.customCategories.length % CATEGORY_ICONS.length],
-      custom: true,
-    };
-    saveConfig({
-      ...config,
-      categories: [...config.categories, id],
-      customCategories: [...config.customCategories, custom],
-    });
-    setCategoryModal(false);
-    setNewCategory({ label: "", color: "#30c7c9" });
-  };
-
-  const removeCategory = (category) => {
-    if (category.custom && !window.confirm(`Retirer la catégorie « ${category.label} » ?`)) return;
-    const nextPhotos = { ...config.categoryPhotos };
-    delete nextPhotos[category.id];
-    saveConfig({
-      ...config,
-      categories: config.categories.filter((id) => id !== category.id),
-      subcategories: category.custom
-        ? config.subcategories.filter((item) => item.categoryId !== category.id)
-        : config.subcategories,
-      categoryPhotos: category.custom ? nextPhotos : config.categoryPhotos,
-      customCategories: category.custom
-        ? config.customCategories.filter((item) => item.id !== category.id)
-        : config.customCategories,
-    });
-    setOpenActions(null);
-  };
-
-  const saveTaxonomyItem = (type, item) => {
-    const key = type === "subcategory" ? "subcategories" : "collections";
-    const currentItems = config[key] || [];
-    const isExisting = currentItems.some((entry) => entry.id === item.id);
-    const existingIds = new Set(currentItems.map((entry) => entry.id));
-    let id = item.id;
-    let suffix = 2;
-    while (!isExisting && existingIds.has(id)) {
-      id = `${item.id}-${suffix}`;
-      suffix += 1;
-    }
-    saveConfig({
-      ...config,
-      [key]: isExisting
-        ? currentItems.map((entry) => (entry.id === item.id ? { ...item, id } : entry))
-        : [...currentItems, { ...item, id }],
-    });
-    setTaxonomyModal(null);
-  };
-
-  const removeTaxonomyItem = (type, item) => {
-    if (!window.confirm(`Retirer « ${item.label} » ?`)) return;
-    const key = type === "subcategory" ? "subcategories" : "collections";
-    saveConfig({
-      ...config,
-      [key]: (config[key] || []).filter((entry) => entry.id !== item.id),
-    });
-    const productKey = type === "subcategory" ? "subcategoryIds" : "collectionIds";
-    const nextProducts = products.map((product) => ({
-      ...product,
-      [productKey]: (product[productKey] || []).filter((id) => String(id) !== String(item.id)),
-    }));
-    setProducts(writeStorefrontProducts(nextProducts));
-  };
-
   return (
     <AdminLayout onBack={navigation.goBack} title="Accueil boutique">
-      <div className="admin-storefront-content" onPointerDown={(event) => {
-        if (openActions && !event.target.closest(".admin-storefront-category-shell")) setOpenActions(null);
-      }}>
+      <div className="admin-storefront-content">
         <section className="admin-storefront-section">
           <header>
             <h2>Catégories affichées</h2>
@@ -797,9 +527,6 @@ export default function AdminStorefrontScreen({ navigation }) {
                 key={category.id}
                 category={category}
                 config={config}
-                index={index}
-                open={openActions === category.id}
-                setOpen={setOpenActions}
                 onOpenPhoto={() => setPhotoCategoryId(category.id)}
                 onToggle={() => saveConfig({
                   ...config,
@@ -811,46 +538,10 @@ export default function AdminStorefrontScreen({ navigation }) {
                   ...config,
                   categories: moveItem(config.categories, config.categories.indexOf(category.id), direction),
                 })}
-                onColor={(color) => saveConfig({
-                  ...config,
-                  categoryColors: { ...config.categoryColors, [category.id]: color },
-                  customCategories: config.customCategories.map((item) => (
-                    item.id === category.id ? { ...item, color } : item
-                  )),
-                })}
-                onRemove={() => removeCategory(category)}
               />
             ))}
-            <button
-              type="button"
-              className="admin-storefront-add-category"
-              onClick={() => setCategoryModal(true)}
-            >
-              <strong>Ajouter une catégorie</strong>
-              <small>Créer une nouvelle entrée</small>
-            </button>
           </div>
         </section>
-
-        <TaxonomySection
-          title="Sous-catégories"
-          description="Préciser les produits à l’intérieur de chaque catégorie"
-          items={config.subcategories}
-          categories={categories}
-          onAdd={() => setTaxonomyModal({ type: "subcategory", item: null })}
-          onEdit={(item) => setTaxonomyModal({ type: "subcategory", item })}
-          onRemove={(item) => removeTaxonomyItem("subcategory", item)}
-        />
-
-        <TaxonomySection
-          title="Collections"
-          description="Créer des regroupements saisonniers ou thématiques"
-          items={config.collections}
-          categories={categories}
-          onAdd={() => setTaxonomyModal({ type: "collection", item: null })}
-          onEdit={(item) => setTaxonomyModal({ type: "collection", item })}
-          onRemove={(item) => removeTaxonomyItem("collection", item)}
-        />
 
         <section className="admin-storefront-section">
           <header>
@@ -884,44 +575,6 @@ export default function AdminStorefrontScreen({ navigation }) {
           </div>
         </section>
       </div>
-
-      {categoryModal && (
-        <Modal className="admin-storefront-category-modal" onClose={() => setCategoryModal(false)}>
-          <span>Catégorie</span>
-          <h2>Ajouter une catégorie</h2>
-          <form onSubmit={addCategory}>
-            <label>
-              <span>Nouvelle catégorie</span>
-              <input
-                autoFocus
-                type="text"
-                value={newCategory.label}
-                placeholder="Ex: Bonnets"
-                onChange={(event) => setNewCategory((current) => ({ ...current, label: event.target.value }))}
-              />
-            </label>
-            <label>
-              <span>Couleur</span>
-              <input
-                type="color"
-                value={newCategory.color}
-                onChange={(event) => setNewCategory((current) => ({ ...current, color: event.target.value }))}
-              />
-            </label>
-            <button type="submit">Ajouter</button>
-          </form>
-        </Modal>
-      )}
-
-      {taxonomyModal && (
-        <TaxonomyModal
-          categories={categories}
-          item={taxonomyModal.item}
-          type={taxonomyModal.type}
-          onClose={() => setTaxonomyModal(null)}
-          onSave={(item) => saveTaxonomyItem(taxonomyModal.type, item)}
-        />
-      )}
 
       {activePhotoCategory && (
         <CategoryPhotoModal

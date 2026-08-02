@@ -356,6 +356,16 @@
     linear-gradient(#fff, #fff) 18px 18px / 14px 14px no-repeat;
 }
 
+.admin-react-module-icon[data-icon="catalog"]::before {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #fff;
+  border-radius: 7px;
+  background:
+    linear-gradient(#fff, #fff) 50% 0 / 3px 100% no-repeat,
+    linear-gradient(#fff, #fff) 0 50% / 100% 3px no-repeat;
+}
+
 .admin-react-module-icon[data-icon="storefront"]::before {
   top: 14px;
   left: 12px;
