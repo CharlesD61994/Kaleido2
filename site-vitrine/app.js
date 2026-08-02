@@ -49,6 +49,25 @@ const formatProductPrice = (value) => {
   return /[$€£]/.test(price) ? price : `${price} $`;
 };
 
+const parseProductPrice = (value) => {
+  const normalized = String(value || "")
+    .replace(/\s/g, "")
+    .replace(",", ".")
+    .replace(/[^0-9.-]/g, "");
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? amount : null;
+};
+
+const formatCalculatedPrice = (basePrice, adjustment = 0) => {
+  const baseAmount = parseProductPrice(basePrice);
+  const adjustmentAmount = parseProductPrice(adjustment) ?? 0;
+  if (baseAmount === null) return formatProductPrice(basePrice);
+  return `${new Intl.NumberFormat("fr-CA", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(baseAmount + adjustmentAmount)} $`;
+};
+
 const glowClasses = ["glow-coral", "glow-teal", "glow-yellow"];
 
 const escapeHtml = (value) =>
@@ -265,9 +284,10 @@ const productOptionGroups = (product) => {
       if (id === "keychain") {
         groups.push({
           title: "Voulez-vous en faire un porte-cl\u00e9 ?",
-          type: "choice",
+          type: "priced-choice",
           accent: optionColors.keychain,
           values: ["Oui", "Non"],
+          priceAdjustment: parseProductPrice(product.optionPrices?.keychain) ?? 0,
         });
         return;
       }
@@ -301,6 +321,7 @@ const renderDetailOptions = (product) => {
                       class="detail-color-card${colorIndex >= 6 ? " is-extra" : ""}"
                       type="button"
                       style="--swatch:${color}"
+                      data-option-value="${escapeHtml(colorData?.label || color)}"
                     >
                       ${photo?.url ? `<img src="${photo.url}" alt="${escapeHtml(photo.name || colorData?.label || group.title)}" data-color-photo="${escapeHtml(photo.url)}" data-color-name="${escapeHtml(colorData?.label || group.title)}" />` : '<span></span>'}
                       <strong>${escapeHtml(colorData?.label || color)}</strong>
@@ -309,7 +330,11 @@ const renderDetailOptions = (product) => {
                 })
                 .join("");
               return `
-                <div class="detail-option-group detail-color-group" style="--option-heading:${group.accent || "#30c7c9"}">
+                <div
+                  class="detail-option-group detail-color-group"
+                  style="--option-heading:${group.accent || "#30c7c9"}"
+                  data-option-group="${escapeHtml(group.title)}"
+                >
                   <strong>${escapeHtml(group.title)}</strong>
                   <div class="detail-color-row">${cards}</div>
                   ${group.colors.length > 6 ? '<button class="detail-colors-toggle" type="button" aria-expanded="false">Afficher les autres couleurs</button>' : ""}
@@ -318,10 +343,22 @@ const renderDetailOptions = (product) => {
             }
 
             return `
-              <div class="detail-option-group" style="--option-heading:${group.accent || "#30c7c9"}">
+              <div
+                class="detail-option-group"
+                style="--option-heading:${group.accent || "#30c7c9"}"
+                data-option-group="${escapeHtml(group.title)}"
+              >
                 <strong>${escapeHtml(group.title)}</strong>
                 <div class="detail-choice-row">
-                  ${group.values.map((value) => `<button type="button">${escapeHtml(value)}</button>`).join("")}
+                  ${group.values.map((value) => {
+                    const adjustment = group.type === "priced-choice" && value === "Oui"
+                      ? group.priceAdjustment
+                      : 0;
+                    const priceLabel = adjustment > 0
+                      ? ` (+${formatCalculatedPrice(0, adjustment)})`
+                      : "";
+                    return `<button type="button" data-option-value="${escapeHtml(value)}" data-price-adjustment="${adjustment}">${escapeHtml(value)}${escapeHtml(priceLabel)}</button>`;
+                  }).join("")}
                 </div>
               </div>
             `;
@@ -361,7 +398,15 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeColorLightbox();
 });
 
-const bindDetailOptions = (container) => {
+const bindDetailOptions = (container, product) => {
+  const updateDisplayedPrice = () => {
+    const price = container.querySelector(".detail-price");
+    if (!price) return;
+    const adjustment = [...container.querySelectorAll("[data-price-adjustment].is-selected")]
+      .reduce((total, button) => total + (parseProductPrice(button.dataset.priceAdjustment) ?? 0), 0);
+    price.textContent = formatCalculatedPrice(product.price, adjustment);
+  };
+
   container.querySelectorAll(".detail-colors-toggle").forEach((button) => {
     button.addEventListener("click", () => {
       const group = button.closest(".detail-color-group");
@@ -376,6 +421,7 @@ const bindDetailOptions = (container) => {
       const wasSelected = button.classList.contains("is-selected");
       button.parentElement?.querySelectorAll("button").forEach((candidate) => candidate.classList.remove("is-selected"));
       if (!wasSelected) button.classList.add("is-selected");
+      updateDisplayedPrice();
     });
   });
 
@@ -448,7 +494,7 @@ const openProductDetail = (product) => {
     detailContent.innerHTML = `
       <div class="detail-title-row" style="--product-accent:${escapeHtml(accent)}">
         <h2>${escapeHtml(product.name || "Produit sans nom")}</h2>
-        <strong class="detail-price">${escapeHtml(formatProductPrice(product.price))}</strong>
+        <strong class="detail-price">${escapeHtml(formatCalculatedPrice(product.price))}</strong>
         <span class="detail-title-divider" aria-hidden="true"></span>
       </div>
       <div class="detail-story" style="--product-accent:${escapeHtml(accent)}">
@@ -471,7 +517,7 @@ const openProductDetail = (product) => {
         <button class="buy-button" type="button" data-shopify-product="${escapeHtml(shopifyProductId(product))}">Ajouter au panier</button>
       </div>
     `;
-    bindDetailOptions(detailContent);
+    bindDetailOptions(detailContent, product);
     detailContent.querySelector(".detail-story-toggle")?.addEventListener("click", (event) => {
       const button = event.currentTarget;
       const paragraph = button.previousElementSibling;

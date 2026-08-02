@@ -55,6 +55,25 @@ const formatProductPrice = (value) => {
   return /[$€£]/.test(price) ? price : `${price} $`;
 };
 
+const parseProductPrice = (value) => {
+  const normalized = String(value || "")
+    .replace(/\s/g, "")
+    .replace(",", ".")
+    .replace(/[^0-9.-]/g, "");
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? amount : null;
+};
+
+const formatCalculatedPrice = (basePrice, adjustment = 0) => {
+  const baseAmount = parseProductPrice(basePrice);
+  const adjustmentAmount = parseProductPrice(adjustment) ?? 0;
+  if (baseAmount === null) return formatProductPrice(basePrice);
+  return `${new Intl.NumberFormat("fr-CA", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(baseAmount + adjustmentAmount)} $`;
+};
+
 const normalizeShopifyConnection = (value) => {
   if (!value) return null;
   if (typeof value === "object") {
@@ -158,6 +177,7 @@ const createEmptyProduct = () => ({
   shopify: null,
   options: [],
   optionChoices: {},
+  optionPrices: { keychain: "" },
   productPhotos: [],
   colorPhotos: [],
   colors: { main: [], accent: [] },
@@ -172,6 +192,9 @@ const createEditorState = (product) => {
     ...source,
     shopify: normalizeShopifyConnection(source.shopify),
     options: [...(source.options || [])],
+    optionPrices: {
+      keychain: String(source.optionPrices?.keychain || ""),
+    },
     optionChoices: Object.fromEntries(
       Object.entries(source.optionChoices || {}).map(([key, values]) => [key, [...values]]),
     ),
@@ -488,6 +511,10 @@ function ProductPreviewPage({ editor, onBack }) {
   ));
   const previewDescription = editor.description || "Ajoute une description pour présenter cette création.";
   const hasLongDescription = previewDescription.length > 180;
+  const displayedPrice = formatCalculatedPrice(
+    editor.price,
+    selections.keychain === "Oui" ? editor.optionPrices?.keychain : 0,
+  );
 
   const choose = (group, value) => setSelections((current) => ({
     ...current,
@@ -505,7 +532,7 @@ function ProductPreviewPage({ editor, onBack }) {
             style={{ "--product-accent": editor.cardColor || "#e84b94" }}
           >
             <h1>{editor.name || "Nom du produit"}</h1>
-            <strong>{formatProductPrice(editor.price)}</strong>
+            <strong>{displayedPrice}</strong>
             <span className="admin-editor-preview-title-divider" aria-hidden="true" />
           </div>
           <div
@@ -610,6 +637,9 @@ function ProductPreviewPage({ editor, onBack }) {
                       style={{ "--option-color": optionById("keychain").color }}
                     >
                       {choice}
+                      {choice === "Oui" && parseProductPrice(editor.optionPrices?.keychain) > 0
+                        ? ` (+${formatCalculatedPrice(0, editor.optionPrices.keychain)})`
+                        : ""}
                     </button>
                   ))}
                 </div>
@@ -1060,6 +1090,33 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
               />
             )
           ))}
+
+          {editor.options.includes("keychain") && (
+            <fieldset className="admin-editor-config-card admin-editor-price-config">
+              <legend>Supplément porte-clé</legend>
+              <label>
+                Montant ajouté au prix
+                <div className="admin-editor-price-input">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={editor.optionPrices?.keychain || ""}
+                    placeholder="5,00"
+                    onChange={(event) => update({
+                      optionPrices: {
+                        ...editor.optionPrices,
+                        keychain: event.target.value,
+                      },
+                    })}
+                  />
+                  <span>$</span>
+                </div>
+                <small>
+                  Ce montant s’ajoute automatiquement lorsque le client choisit « Oui ».
+                </small>
+              </label>
+            </fieldset>
+          )}
 
           <section className="admin-editor-shopify">
             <header>
