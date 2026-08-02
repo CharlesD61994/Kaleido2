@@ -122,6 +122,18 @@
   background: linear-gradient(135deg, #30c7c9, #7c3aed);
 }
 
+.admin-editor-section-heading > .admin-editor-reorder-button {
+  color: #6d35cf;
+  border-color: rgba(124, 58, 237, 0.42);
+  background: rgba(124, 58, 237, 0.09);
+}
+
+.admin-editor-section-heading > .admin-editor-reorder-button.is-active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #7c3aed, #e84b94);
+}
+
 .admin-editor-photo-drop,
 .admin-editor-add-color {
   appearance: none;
@@ -377,6 +389,31 @@
   color: var(--k-text);
   background: var(--k-surface-2);
   font: 800 12px "DM Sans", system-ui, sans-serif;
+}
+
+.admin-editor-pattern-default {
+  grid-column: 2 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--k-border-strong);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--k-surface-2) 88%, transparent);
+}
+
+.admin-editor-pattern-default span {
+  color: var(--k-text-soft);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.admin-editor-pattern-default strong {
+  color: var(--k-text);
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .admin-editor-pattern-card .admin-editor-pattern-change {

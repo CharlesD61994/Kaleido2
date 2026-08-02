@@ -84,7 +84,7 @@ const DEFAULT_PRODUCT_CATEGORIES = [
 ];
 
 const PATTERN_AUDIENCES = [
-  { id: "general", label: "Général" },
+  { id: "general", label: "Par défaut" },
   { id: "homme", label: "Homme" },
   { id: "femme", label: "Femme" },
   { id: "enfant", label: "Enfant" },
@@ -148,7 +148,15 @@ const normalizePatternLinks = (source = {}) => {
     });
   }
 
-  return links;
+  const allowedAudienceIds = source.options?.includes("recipient")
+    ? new Set([
+      "general",
+      ...(source.optionChoices?.recipient || []).map((choice) => categoryIdentity(choice)),
+    ])
+    : new Set(["general"]);
+  return links.map((link) => (
+    allowedAudienceIds.has(link.audience) ? link : { ...link, audience: "general" }
+  ));
 };
 
 const formatProductPrice = (value) => {
@@ -1160,6 +1168,17 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
   const availableSubcategories = taxonomy.subcategories.filter((subcategory) => (
     String(subcategory.categoryId) === String(selectedCategory?.id)
   ));
+  const availablePatternAudiences = useMemo(() => {
+    const fallback = PATTERN_AUDIENCES[0];
+    if (!editor.options.includes("recipient")) return [fallback];
+    const selectedAudienceIds = new Set(
+      (editor.optionChoices.recipient || []).map((choice) => categoryIdentity(choice)),
+    );
+    return [
+      fallback,
+      ...PATTERN_AUDIENCES.slice(1).filter((audience) => selectedAudienceIds.has(audience.id)),
+    ];
+  }, [editor.optionChoices.recipient, editor.options]);
 
   const update = (patch) => setEditor((current) => ({ ...current, ...patch }));
 
@@ -1172,6 +1191,9 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
           ? current.options.filter((id) => id !== optionId)
           : [...current.options, optionId],
       };
+      if (optionId === "recipient" && isActive) {
+        next.patternLinks = current.patternLinks.map((link) => ({ ...link, audience: "general" }));
+      }
       if (optionId !== "shoeSize" || isActive) return next;
 
       const selectedAudiences = current.options.includes("recipient")
@@ -1191,9 +1213,13 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
       const addedAudiences = values.filter(
         (audience) => !previous.includes(audience) && SHOE_SIZE_GROUPS[audience],
       );
+      const allowedAudienceIds = new Set(["general", ...values.map((value) => categoryIdentity(value))]);
       return {
         ...current,
         optionChoices: { ...current.optionChoices, recipient: values },
+        patternLinks: current.patternLinks.map((link) => (
+          allowedAudienceIds.has(link.audience) ? link : { ...link, audience: "general" }
+        )),
         ...(current.options.includes("shoeSize") && addedAudiences.length
           ? {
             shoeSizeChoices: selectAllShoeSizes(current.shoeSizeChoices, addedAudiences),
@@ -1405,21 +1431,30 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
                     >
                       ×
                     </button>
-                    <label className="admin-editor-pattern-audience">
-                      Pour qui ?
-                      <select
-                        value={link.audience}
-                        onChange={(event) => update({
-                          patternLinks: editor.patternLinks.map((item) => (
-                            item.id === link.id ? { ...item, audience: event.target.value } : item
-                          )),
-                        })}
-                      >
-                        {PATTERN_AUDIENCES.map((audience) => (
-                          <option key={audience.id} value={audience.id}>{audience.label}</option>
-                        ))}
-                      </select>
-                    </label>
+                    {availablePatternAudiences.length > 1 ? (
+                      <label className="admin-editor-pattern-audience">
+                        Associer à
+                        <select
+                          value={availablePatternAudiences.some((audience) => audience.id === link.audience)
+                            ? link.audience
+                            : "general"}
+                          onChange={(event) => update({
+                            patternLinks: editor.patternLinks.map((item) => (
+                              item.id === link.id ? { ...item, audience: event.target.value } : item
+                            )),
+                          })}
+                        >
+                          {availablePatternAudiences.map((audience) => (
+                            <option key={audience.id} value={audience.id}>{audience.label}</option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : (
+                      <div className="admin-editor-pattern-default">
+                        <span>Association</span>
+                        <strong>Patron par défaut</strong>
+                      </div>
+                    )}
                     <button
                       className="admin-editor-pattern-change"
                       type="button"
@@ -1469,7 +1504,7 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
               <strong>Photos du produit</strong>
               {editor.productPhotos.length > 1 && (
                 <button
-                  className={reorderingPhotos ? "is-active" : ""}
+                  className={`admin-editor-reorder-button${reorderingPhotos ? " is-active" : ""}`}
                   type="button"
                   onClick={() => {
                     setReorderingPhotos((current) => !current);
