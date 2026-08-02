@@ -420,9 +420,12 @@ function ColorManager({
 function ProductPreviewPage({ editor, onBack }) {
   const [selections, setSelections] = useState({});
   const [expandedColorGroups, setExpandedColorGroups] = useState({});
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const simpleOptions = editor.options.filter((id) => (
     !COLOR_SECTIONS[id] && !CHOICE_OPTIONS[id] && id !== "keychain"
   ));
+  const previewDescription = editor.description || "Ajoute une description pour présenter cette création.";
+  const hasLongDescription = previewDescription.length > 180;
 
   const choose = (group, value) => setSelections((current) => ({
     ...current,
@@ -441,13 +444,21 @@ function ProductPreviewPage({ editor, onBack }) {
           >
             <h1>{editor.name || "Nom du produit"}</h1>
             <strong>{formatProductPrice(editor.price)}</strong>
+            <span className="admin-editor-preview-title-divider" aria-hidden="true" />
           </div>
           <div
             className="admin-editor-preview-story"
             style={{ "--product-accent": editor.cardColor || "#e84b94" }}
           >
-            <strong>Le modèle</strong>
-            <p>{editor.description || "Ajoute une description pour présenter cette création."}</p>
+            <strong>À propos</strong>
+            <p className={hasLongDescription && !descriptionExpanded ? "is-collapsible" : ""}>
+              {previewDescription}
+            </p>
+            {hasLongDescription && (
+              <button type="button" onClick={() => setDescriptionExpanded((current) => !current)}>
+                {descriptionExpanded ? "Réduire" : "Lire la suite"}
+              </button>
+            )}
           </div>
 
           <section>

@@ -1133,7 +1133,7 @@ a {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   justify-items: start;
-  gap: 10px;
+  gap: 7px;
 }
 
 .detail-title-row h2 {
@@ -1148,25 +1148,34 @@ a {
 .detail-price {
   align-self: start;
   margin: 0;
-  padding: 9px 13px;
-  border: 1px solid color-mix(in srgb, var(--product-accent) 50%, rgba(16, 39, 68, 0.10));
-  border-radius: 999px;
+  padding: 0;
+  border: 0;
   color: var(--product-accent);
-  background: color-mix(in srgb, var(--product-accent) 9%, rgba(255, 255, 255, 0.76));
-  box-shadow: 0 0 18px color-mix(in srgb, var(--product-accent) 17%, transparent);
-  font-size: 17px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 21px;
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.15;
   white-space: nowrap;
+}
+
+.detail-title-divider {
+  width: min(108px, 34%);
+  height: 4px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--product-accent), color-mix(in srgb, var(--product-accent), transparent 78%));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--product-accent), transparent 68%);
 }
 
 .detail-story {
   display: grid;
   gap: 7px;
-  padding: 16px 17px 16px 19px;
-  border-left: 4px solid var(--product-accent);
-  border-radius: 0 8px 8px 0;
-  background: color-mix(in srgb, var(--product-accent) 8%, rgba(255, 255, 255, 0.72));
+  padding: 15px 16px;
+  border: 1px solid color-mix(in srgb, var(--product-accent) 22%, rgba(16, 39, 68, 0.08));
+  border-left: 3px solid var(--product-accent);
+  border-radius: 0 12px 12px 0;
+  background: color-mix(in srgb, var(--product-accent) 6%, rgba(255, 255, 255, 0.70));
 }
 
 .detail-story > strong {
@@ -1181,6 +1190,22 @@ a {
   font-size: 15px;
   line-height: 1.58;
   font-weight: 650;
+}
+
+.detail-story > p.is-collapsible:not(.is-expanded) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.detail-story-toggle {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  color: var(--product-accent);
+  background: transparent;
+  font: 900 13px "DM Sans", system-ui, sans-serif;
 }
 
 .detail-panel {

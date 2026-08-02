@@ -775,25 +775,34 @@
 
 .admin-editor-preview-title-row > strong {
   align-self: start;
-  padding: 8px 12px;
-  border: 1px solid color-mix(in srgb, var(--product-accent) 48%, var(--k-border));
-  border-radius: 999px;
+  padding: 0;
+  border: 0;
   color: var(--product-accent);
-  background: color-mix(in srgb, var(--product-accent) 10%, var(--k-surface));
-  box-shadow: 0 0 16px color-mix(in srgb, var(--product-accent) 16%, transparent);
-  font-size: 16px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 20px;
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.15;
   white-space: nowrap;
+}
+
+.admin-editor-preview-title-divider {
+  width: min(108px, 34%);
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--product-accent), color-mix(in srgb, var(--product-accent), transparent 78%));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--product-accent), transparent 68%);
 }
 
 .admin-editor-preview-story {
   display: grid;
   gap: 7px;
   padding: 15px 16px 15px 18px;
-  border-left: 4px solid var(--product-accent);
-  border-radius: 0 8px 8px 0;
-  background: color-mix(in srgb, var(--product-accent) 8%, var(--k-surface));
+  border: 1px solid color-mix(in srgb, var(--product-accent) 22%, var(--k-border));
+  border-left: 3px solid var(--product-accent);
+  border-radius: 0 12px 12px 0;
+  background: color-mix(in srgb, var(--product-accent) 6%, var(--k-surface));
 }
 
 .admin-editor-preview-story > strong {
@@ -807,6 +816,22 @@
   font-size: 14px;
   font-weight: 650;
   line-height: 1.58;
+}
+
+.admin-editor-preview-story > p.is-collapsible {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.admin-editor-preview-story > button {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  color: var(--product-accent);
+  background: transparent;
+  font: 900 13px "DM Sans", system-ui, sans-serif;
 }
 
 .admin-editor-preview-detail > section {

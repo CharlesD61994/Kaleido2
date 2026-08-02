@@ -346,8 +346,9 @@ const bindDetailOptions = (container) => {
 
   container.querySelectorAll(".detail-choice-row button, .detail-color-card").forEach((button) => {
     button.addEventListener("click", () => {
+      const wasSelected = button.classList.contains("is-selected");
       button.parentElement?.querySelectorAll("button").forEach((candidate) => candidate.classList.remove("is-selected"));
-      button.classList.add("is-selected");
+      if (!wasSelected) button.classList.add("is-selected");
     });
   });
 
@@ -415,14 +416,18 @@ const openProductDetail = (product) => {
 
   if (detailContent) {
     const accent = product.cardColor || "#e84b94";
+    const description = String(product.description || "Ajoutez une description pour présenter cette création.");
+    const hasLongDescription = description.length > 180;
     detailContent.innerHTML = `
       <div class="detail-title-row" style="--product-accent:${escapeHtml(accent)}">
         <h2>${escapeHtml(product.name || "Produit sans nom")}</h2>
         <strong class="detail-price">${escapeHtml(formatProductPrice(product.price))}</strong>
+        <span class="detail-title-divider" aria-hidden="true"></span>
       </div>
       <div class="detail-story" style="--product-accent:${escapeHtml(accent)}">
-        <strong>Le modèle</strong>
-        <p>${escapeHtml(product.description || "Ajoutez une description pour présenter cette création.")}</p>
+        <strong>À propos</strong>
+        <p${hasLongDescription ? ' class="is-collapsible"' : ""}>${escapeHtml(description)}</p>
+        ${hasLongDescription ? '<button class="detail-story-toggle" type="button" aria-expanded="false">Lire la suite</button>' : ""}
       </div>
       ${renderDetailOptions(product)}
       <div class="detail-panel tracking-panel">
@@ -441,6 +446,13 @@ const openProductDetail = (product) => {
       </div>
     `;
     bindDetailOptions(detailContent);
+    detailContent.querySelector(".detail-story-toggle")?.addEventListener("click", (event) => {
+      const button = event.currentTarget;
+      const paragraph = button.previousElementSibling;
+      const expanded = paragraph?.classList.toggle("is-expanded") ?? false;
+      button.setAttribute("aria-expanded", String(expanded));
+      button.textContent = expanded ? "Réduire" : "Lire la suite";
+    });
   }
 
   storefront?.classList.add("product-mode");
