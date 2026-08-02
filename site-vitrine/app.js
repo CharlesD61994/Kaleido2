@@ -98,7 +98,7 @@ const productCover = (product) => (product.productPhotos || []).map(normalizePho
 const productPhotos = (product) => (product.productPhotos || []).map(normalizePhoto).filter((photo) => photo?.url);
 const productColors = (product) => [...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])])];
 const shopifyProductId = (product) => (
-  typeof product?.shopify === "object"
+  product?.shopify && typeof product.shopify === "object"
     ? String(product.shopify.productId || product.shopify.id || "")
     : String(product?.shopify || "")
 );

@@ -1239,6 +1239,11 @@ a {
   border-bottom: 1px solid rgba(16, 39, 68, 0.10);
 }
 
+.detail-option-group[hidden],
+.detail-shoe-size-audience[hidden] {
+  display: none;
+}
+
 .detail-option-group:last-child {
   padding-bottom: 0;
   border-bottom: 0;
