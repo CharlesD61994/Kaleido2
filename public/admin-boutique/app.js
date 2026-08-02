@@ -43,6 +43,8 @@ const optionColors = {
   delay: "#188f91",
 };
 
+const shoeSizeAudiences = ["Femme", "Homme", "Enfant"];
+
 const formatProductPrice = (value) => {
   const price = String(value || "").trim();
   if (!price) return "Prix à définir";
@@ -256,8 +258,10 @@ const renderProductCard = (product, index) => {
 
 const productOptionGroups = (product) => {
   const groups = [];
+  const activeOptions = new Set(product.options || []);
   if ((product.colors?.main || []).length) {
     groups.push({
+      key: "mainColor",
       title: "Couleur principale",
       type: "color",
       accent: optionColors.mainColor,
@@ -267,6 +271,7 @@ const productOptionGroups = (product) => {
   }
   if ((product.colors?.accent || []).length) {
     groups.push({
+      key: "accentColor",
       title: "Couleur secondaire",
       type: "color",
       accent: optionColors.accentColor,
@@ -274,15 +279,45 @@ const productOptionGroups = (product) => {
       photos: (product.colorPhotos || []).filter((color) => product.colors.accent.includes(color.value)),
     });
   }
+  const recipientValues = product.optionChoices?.recipient || [];
+  if (activeOptions.has("recipient") && recipientValues.length) {
+    groups.push({
+      key: "recipient",
+      title: optionLabels.recipient,
+      type: "choice",
+      accent: optionColors.recipient,
+      values: recipientValues,
+    });
+  }
+  if (activeOptions.has("shoeSize")) {
+    const sizes = Object.fromEntries(shoeSizeAudiences.map((audience) => [
+      audience,
+      Array.isArray(product.shoeSizeChoices?.[audience])
+        ? product.shoeSizeChoices[audience]
+        : [],
+    ]));
+    if (Object.values(sizes).some((values) => values.length)) {
+      groups.push({
+        key: "shoeSize",
+        title: optionLabels.shoeSize,
+        type: "dependent-shoe-size",
+        accent: optionColors.shoeSize,
+        sizes,
+        dependsOnRecipient: activeOptions.has("recipient") && recipientValues.length > 0,
+      });
+    }
+  }
   Object.entries(product.optionChoices || {}).forEach(([key, values]) => {
+    if (["recipient", "shoeSize"].includes(key) || !activeOptions.has(key)) return;
     if (!Array.isArray(values) || values.length === 0) return;
-    groups.push({ title: optionLabels[key] || key, type: "choice", accent: optionColors[key], values });
+    groups.push({ key, title: optionLabels[key] || key, type: "choice", accent: optionColors[key], values });
   });
   (product.options || [])
     .filter((id) => !["mainColor", "accentColor", "recipient", "shoeSize"].includes(id))
     .forEach((id) => {
       if (id === "keychain") {
         groups.push({
+          key: id,
           title: "Voulez-vous en faire un porte-cl\u00e9 ?",
           type: "priced-choice",
           accent: optionColors.keychain,
@@ -292,6 +327,7 @@ const productOptionGroups = (product) => {
         return;
       }
       groups.push({
+        key: id,
         title: optionLabels[id] || id,
         type: "simple",
         accent: optionColors[id],
@@ -334,10 +370,40 @@ const renderDetailOptions = (product) => {
                   class="detail-option-group detail-color-group"
                   style="--option-heading:${group.accent || "#30c7c9"}"
                   data-option-group="${escapeHtml(group.title)}"
+                  data-option-key="${escapeHtml(group.key)}"
                 >
                   <strong>${escapeHtml(group.title)}</strong>
                   <div class="detail-color-row">${cards}</div>
                   ${group.colors.length > 6 ? '<button class="detail-colors-toggle" type="button" aria-expanded="false">Afficher les autres couleurs</button>' : ""}
+                </div>
+              `;
+            }
+
+            if (group.type === "dependent-shoe-size") {
+              const audiences = shoeSizeAudiences
+                .filter((audience) => group.sizes[audience]?.length)
+                .map((audience) => `
+                  <div class="detail-shoe-size-audience" data-shoe-audience="${escapeHtml(audience)}">
+                    ${group.dependsOnRecipient ? "" : `<span>${escapeHtml(audience)}</span>`}
+                    <div class="detail-choice-row">
+                      ${group.sizes[audience].map((value) => `
+                        <button type="button" data-option-value="${escapeHtml(value)}">${escapeHtml(value)}</button>
+                      `).join("")}
+                    </div>
+                  </div>
+                `)
+                .join("");
+              return `
+                <div
+                  class="detail-option-group detail-shoe-size-group"
+                  style="--option-heading:${group.accent || "#7c3aed"}"
+                  data-option-group="${escapeHtml(group.title)}"
+                  data-option-key="shoeSize"
+                  data-depends-on-recipient="${group.dependsOnRecipient}"
+                  ${group.dependsOnRecipient ? "hidden" : ""}
+                >
+                  <strong>${escapeHtml(group.title)}</strong>
+                  <div class="detail-shoe-size-list">${audiences}</div>
                 </div>
               `;
             }
@@ -347,6 +413,7 @@ const renderDetailOptions = (product) => {
                 class="detail-option-group"
                 style="--option-heading:${group.accent || "#30c7c9"}"
                 data-option-group="${escapeHtml(group.title)}"
+                data-option-key="${escapeHtml(group.key || group.title)}"
               >
                 <strong>${escapeHtml(group.title)}</strong>
                 <div class="detail-choice-row">
@@ -407,6 +474,26 @@ const bindDetailOptions = (container, product) => {
     price.textContent = formatCalculatedPrice(product.price, adjustment);
   };
 
+  const recipientGroup = container.querySelector('[data-option-key="recipient"]');
+  const shoeSizeGroup = container.querySelector('[data-option-key="shoeSize"]');
+  const syncDependentShoeSizes = () => {
+    if (!shoeSizeGroup) return;
+    const dependsOnRecipient = shoeSizeGroup.dataset.dependsOnRecipient === "true";
+    const selectedRecipient = recipientGroup
+      ?.querySelector("button.is-selected")
+      ?.dataset.optionValue || "";
+    const hasShoeSizes = shoeSizeAudiences.includes(selectedRecipient);
+
+    shoeSizeGroup.hidden = dependsOnRecipient && !hasShoeSizes;
+    shoeSizeGroup.querySelectorAll("[data-shoe-audience]").forEach((group) => {
+      const isVisible = !dependsOnRecipient || group.dataset.shoeAudience === selectedRecipient;
+      group.hidden = !isVisible;
+      if (!isVisible) {
+        group.querySelectorAll("button.is-selected").forEach((button) => button.classList.remove("is-selected"));
+      }
+    });
+  };
+
   container.querySelectorAll(".detail-colors-toggle").forEach((button) => {
     button.addEventListener("click", () => {
       const group = button.closest(".detail-color-group");
@@ -421,9 +508,12 @@ const bindDetailOptions = (container, product) => {
       const wasSelected = button.classList.contains("is-selected");
       button.parentElement?.querySelectorAll("button").forEach((candidate) => candidate.classList.remove("is-selected"));
       if (!wasSelected) button.classList.add("is-selected");
+      syncDependentShoeSizes();
       updateDisplayedPrice();
     });
   });
+
+  syncDependentShoeSizes();
 
   container.querySelectorAll(".detail-color-card img[data-color-photo]").forEach((photo) => {
     photo.addEventListener("click", (event) => {

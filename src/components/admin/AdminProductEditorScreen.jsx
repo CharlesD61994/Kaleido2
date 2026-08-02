@@ -25,13 +25,32 @@ const CHOICE_OPTIONS = {
   recipient: {
     label: "Pour qui ?",
     placeholder: "Ajouter un public",
-    values: ["Femme", "Homme", "Enfant"],
+    values: ["Femme", "Homme", "Enfant", "Bébé"],
   },
-  shoeSize: {
-    label: "Pointure",
-    placeholder: "Ajouter une pointure",
-    values: ["Bébé", "Enfant", "Femme", "Homme", "Sur mesure"],
-  },
+};
+
+const SHOE_SIZE_GROUPS = {
+  Femme: ["5", "5,5", "6", "6,5", "7", "7,5", "8", "8,5", "9", "9,5", "10", "10,5", "11", "12"],
+  Homme: ["6", "6,5", "7", "7,5", "8", "8,5", "9", "9,5", "10", "10,5", "11", "11,5", "12", "13", "14"],
+  Enfant: [
+    "5 enfant", "6 enfant", "7 enfant", "8 enfant", "9 enfant", "10 enfant", "11 enfant",
+    "12 enfant", "13 enfant", "1 jeunesse", "2 jeunesse", "3 jeunesse", "4 jeunesse",
+    "5 jeunesse", "6 jeunesse", "7 jeunesse",
+  ],
+};
+
+const emptyShoeSizeChoices = () => Object.fromEntries(
+  Object.keys(SHOE_SIZE_GROUPS).map((audience) => [audience, []]),
+);
+
+const normalizeShoeSizeChoices = (source = {}) => {
+  const stored = source.shoeSizeChoices || {};
+  return Object.fromEntries(
+    Object.keys(SHOE_SIZE_GROUPS).map((audience) => [
+      audience,
+      Array.isArray(stored[audience]) ? [...stored[audience]] : [],
+    ]),
+  );
 };
 
 const COLOR_SECTIONS = {
@@ -177,6 +196,7 @@ const createEmptyProduct = () => ({
   shopify: null,
   options: [],
   optionChoices: {},
+  shoeSizeChoices: emptyShoeSizeChoices(),
   optionPrices: { keychain: "" },
   productPhotos: [],
   colorPhotos: [],
@@ -198,6 +218,7 @@ const createEditorState = (product) => {
     optionChoices: Object.fromEntries(
       Object.entries(source.optionChoices || {}).map(([key, values]) => [key, [...values]]),
     ),
+    shoeSizeChoices: normalizeShoeSizeChoices(source),
     productPhotos: (source.productPhotos || []).map(normalizePhoto),
     colorGroups: {
       mainColor: productColorsForSection(source, "mainColor"),
@@ -315,6 +336,48 @@ function ChoiceSection({ config, selected, onChange }) {
         />
         <button type="button" onClick={addValue}>Ajouter</button>
       </div>
+    </fieldset>
+  );
+}
+
+function ShoeSizeSection({ selected, onChange, audiences }) {
+  const visibleAudiences = audiences.length
+    ? audiences.filter((audience) => SHOE_SIZE_GROUPS[audience])
+    : Object.keys(SHOE_SIZE_GROUPS);
+
+  return (
+    <fieldset className="admin-editor-config-card admin-editor-shoe-sizes">
+      <legend>Pointures offertes</legend>
+      {visibleAudiences.map((audience) => (
+        <section key={audience}>
+          <strong>{audience}</strong>
+          <div className="admin-editor-choice-grid">
+            {SHOE_SIZE_GROUPS[audience].map((size) => (
+              <button
+                className={(selected[audience] || []).includes(size) ? "is-selected" : ""}
+                type="button"
+                key={size}
+                onClick={() => {
+                  const current = selected[audience] || [];
+                  onChange({
+                    ...selected,
+                    [audience]: current.includes(size)
+                      ? current.filter((item) => item !== size)
+                      : [...current, size],
+                  });
+                }}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </section>
+      ))}
+      {!visibleAudiences.length && (
+        <p className="admin-editor-shoe-sizes-empty">
+          Aucune pointure n’est nécessaire lorsque le produit est destiné uniquement aux bébés.
+        </p>
+      )}
     </fieldset>
   );
 }
@@ -515,11 +578,18 @@ function ProductPreviewPage({ editor, onBack }) {
     editor.price,
     selections.keychain === "Oui" ? editor.optionPrices?.keychain : 0,
   );
+  const shoeSizeAudiences = editor.options.includes("recipient")
+    ? (SHOE_SIZE_GROUPS[selections.recipient] ? [selections.recipient] : [])
+    : Object.keys(SHOE_SIZE_GROUPS);
 
-  const choose = (group, value) => setSelections((current) => ({
-    ...current,
-    [group]: current[group] === value ? "" : value,
-  }));
+  const choose = (group, value) => setSelections((current) => {
+    const nextValue = current[group] === value ? "" : value;
+    return {
+      ...current,
+      [group]: nextValue,
+      ...(group === "recipient" ? { shoeSize: "" } : {}),
+    };
+  });
 
   return (
     <section className="admin-react-page admin-editor-subpage">
@@ -619,6 +689,31 @@ function ProductPreviewPage({ editor, onBack }) {
                   </div>
                 </div>
               )
+            ))}
+
+            {editor.options.includes("shoeSize") && shoeSizeAudiences.map((audience) => (
+              <div
+                className="admin-editor-client-group"
+                key={`shoe-size-${audience}`}
+                style={{ "--group-color": optionById("shoeSize").color }}
+              >
+                <strong>
+                  {editor.options.includes("recipient") ? "Pointure" : `Pointure - ${audience}`}
+                </strong>
+                <div className="admin-editor-client-choices">
+                  {(editor.shoeSizeChoices[audience] || []).map((size) => (
+                    <button
+                      type="button"
+                      className={selections.shoeSize === `${audience}:${size}` ? "is-selected" : ""}
+                      key={size}
+                      onClick={() => choose("shoeSize", `${audience}:${size}`)}
+                      style={{ "--option-color": optionById("shoeSize").color }}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
 
             {editor.options.includes("keychain") && (
@@ -1090,6 +1185,16 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
               />
             )
           ))}
+
+          {editor.options.includes("shoeSize") && (
+            <ShoeSizeSection
+              selected={editor.shoeSizeChoices}
+              audiences={editor.options.includes("recipient")
+                ? (editor.optionChoices.recipient || [])
+                : []}
+              onChange={(shoeSizeChoices) => update({ shoeSizeChoices })}
+            />
+          )}
 
           {editor.options.includes("keychain") && (
             <fieldset className="admin-editor-config-card admin-editor-price-config">

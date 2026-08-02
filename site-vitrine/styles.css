@@ -1279,6 +1279,22 @@ a {
   box-shadow: 0 0 15px rgba(48, 199, 201, 0.18);
 }
 
+.detail-shoe-size-list,
+.detail-shoe-size-audience {
+  display: grid;
+  gap: 9px;
+}
+
+.detail-shoe-size-audience + .detail-shoe-size-audience {
+  padding-top: 12px;
+  border-top: 1px solid rgba(16, 39, 68, 0.08);
+}
+
+.detail-shoe-size-audience > span {
+  color: var(--k-muted);
+  font: 800 12px "DM Sans", system-ui, sans-serif;
+}
+
 .detail-color-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
