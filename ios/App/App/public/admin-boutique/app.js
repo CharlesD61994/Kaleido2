@@ -32,6 +32,17 @@ const optionLabels = {
   delay: "Delai",
 };
 
+const optionColors = {
+  mainColor: "#f05b4f",
+  accentColor: "#30c7c9",
+  recipient: "#e84b94",
+  shoeSize: "#7c3aed",
+  keychain: "#f3b51b",
+  personalization: "#8bbf3f",
+  finish: "#f4831f",
+  delay: "#188f91",
+};
+
 const formatProductPrice = (value) => {
   const price = String(value || "").trim();
   if (!price) return "Prix à définir";
@@ -222,6 +233,7 @@ const productOptionGroups = (product) => {
     groups.push({
       title: "Couleur principale",
       type: "color",
+      accent: optionColors.mainColor,
       colors: product.colors.main,
       photos: (product.colorPhotos || []).filter((color) => product.colors.main.includes(color.value)),
     });
@@ -230,13 +242,14 @@ const productOptionGroups = (product) => {
     groups.push({
       title: "Couleur secondaire",
       type: "color",
+      accent: optionColors.accentColor,
       colors: product.colors.accent,
       photos: (product.colorPhotos || []).filter((color) => product.colors.accent.includes(color.value)),
     });
   }
   Object.entries(product.optionChoices || {}).forEach(([key, values]) => {
     if (!Array.isArray(values) || values.length === 0) return;
-    groups.push({ title: optionLabels[key] || key, type: "choice", values });
+    groups.push({ title: optionLabels[key] || key, type: "choice", accent: optionColors[key], values });
   });
   (product.options || [])
     .filter((id) => !["mainColor", "accentColor", "recipient", "shoeSize"].includes(id))
@@ -245,11 +258,17 @@ const productOptionGroups = (product) => {
         groups.push({
           title: "Voulez-vous en faire un porte-cl\u00e9 ?",
           type: "choice",
+          accent: optionColors.keychain,
           values: ["Oui", "Non"],
         });
         return;
       }
-      groups.push({ title: optionLabels[id] || id, type: "simple", values: ["Option disponible"] });
+      groups.push({
+        title: optionLabels[id] || id,
+        type: "simple",
+        accent: optionColors[id],
+        values: ["Option disponible"],
+      });
     });
   return groups;
 };
@@ -282,7 +301,7 @@ const renderDetailOptions = (product) => {
                 })
                 .join("");
               return `
-                <div class="detail-option-group detail-color-group">
+                <div class="detail-option-group detail-color-group" style="--option-heading:${group.accent || "#30c7c9"}">
                   <strong>${escapeHtml(group.title)}</strong>
                   <div class="detail-color-row">${cards}</div>
                   ${group.colors.length > 6 ? '<button class="detail-colors-toggle" type="button" aria-expanded="false">Afficher les autres couleurs</button>' : ""}
@@ -291,7 +310,7 @@ const renderDetailOptions = (product) => {
             }
 
             return `
-              <div class="detail-option-group">
+              <div class="detail-option-group" style="--option-heading:${group.accent || "#30c7c9"}">
                 <strong>${escapeHtml(group.title)}</strong>
                 <div class="detail-choice-row">
                   ${group.values.map((value) => `<button type="button">${escapeHtml(value)}</button>`).join("")}

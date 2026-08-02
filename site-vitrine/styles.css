@@ -1148,12 +1148,16 @@ a {
 .detail-price {
   align-self: start;
   margin: 0;
-  padding: 0;
+  padding: 1px 6px 3px 0;
   border: 0;
   color: var(--product-accent);
-  background: transparent;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--product-accent) 18%, transparent) 0 46%,
+    transparent 46%
+  );
   box-shadow: none;
-  font-size: 21px;
+  font-size: 24px;
   font-weight: 900;
   line-height: 1.15;
   white-space: nowrap;
@@ -1220,7 +1224,7 @@ a {
 
 .detail-option-list {
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 .detail-options-panel {
@@ -1234,8 +1238,8 @@ a {
 
 .detail-option-group {
   display: grid;
-  gap: 8px;
-  padding-bottom: 12px;
+  gap: 10px;
+  padding-bottom: 15px;
   border-bottom: 1px solid rgba(16, 39, 68, 0.10);
 }
 
@@ -1245,9 +1249,15 @@ a {
 }
 
 .detail-option-group > strong {
-  color: var(--k-ink);
-  font-size: 13px;
+  display: block;
+  padding: 9px 11px;
+  border-left: 3px solid var(--option-heading, var(--k-cyan));
+  border-radius: 0 9px 9px 0;
+  color: color-mix(in srgb, var(--option-heading, var(--k-cyan)) 76%, var(--k-ink));
+  background: color-mix(in srgb, var(--option-heading, var(--k-cyan)) 9%, rgba(255, 255, 255, 0.66));
+  font-size: 15px;
   font-weight: 900;
+  line-height: 1.2;
 }
 
 .detail-choice-row {

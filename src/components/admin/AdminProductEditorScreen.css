@@ -775,12 +775,16 @@
 
 .admin-editor-preview-title-row > strong {
   align-self: start;
-  padding: 0;
+  padding: 1px 6px 3px 0;
   border: 0;
   color: var(--product-accent);
-  background: transparent;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--product-accent) 18%, transparent) 0 46%,
+    transparent 46%
+  );
   box-shadow: none;
-  font-size: 20px;
+  font-size: 23px;
   font-weight: 900;
   line-height: 1.15;
   white-space: nowrap;
@@ -853,6 +857,18 @@
   gap: 9px;
   padding-top: 12px;
   border-top: 1px solid var(--k-border);
+}
+
+.admin-editor-client-group > strong {
+  display: block;
+  padding: 9px 11px;
+  border-left: 3px solid var(--group-color, #30c7c9);
+  border-radius: 0 9px 9px 0;
+  color: color-mix(in srgb, var(--group-color, #30c7c9) 76%, var(--k-text));
+  background: color-mix(in srgb, var(--group-color, #30c7c9) 9%, var(--k-surface));
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.2;
 }
 
 .admin-editor-client-colors {

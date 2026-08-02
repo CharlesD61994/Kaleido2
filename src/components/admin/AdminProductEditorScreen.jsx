@@ -465,7 +465,11 @@ function ProductPreviewPage({ editor, onBack }) {
             <h3>Personnalisez votre produit</h3>
             {Object.entries(COLOR_SECTIONS).map(([optionId, section]) => (
               editor.options.includes(optionId) && (
-                <div className="admin-editor-client-group" key={optionId}>
+                <div
+                  className="admin-editor-client-group"
+                  key={optionId}
+                  style={{ "--group-color": optionById(optionId).color }}
+                >
                   <strong>{section.title}</strong>
                   <div className="admin-editor-client-colors">
                     {editor.colorGroups[optionId]
@@ -505,7 +509,11 @@ function ProductPreviewPage({ editor, onBack }) {
 
             {Object.entries(CHOICE_OPTIONS).map(([optionId, config]) => (
               editor.options.includes(optionId) && (
-                <div className="admin-editor-client-group" key={optionId}>
+                <div
+                  className="admin-editor-client-group"
+                  key={optionId}
+                  style={{ "--group-color": optionById(optionId).color }}
+                >
                   <strong>{config.label}</strong>
                   <div className="admin-editor-client-choices">
                     {(editor.optionChoices[optionId] || []).map((choice) => (
@@ -525,7 +533,10 @@ function ProductPreviewPage({ editor, onBack }) {
             ))}
 
             {editor.options.includes("keychain") && (
-              <div className="admin-editor-client-group">
+              <div
+                className="admin-editor-client-group"
+                style={{ "--group-color": optionById("keychain").color }}
+              >
                 <strong>Voulez-vous en faire un porte-clé ?</strong>
                 <div className="admin-editor-client-choices">
                   {["Oui", "Non"].map((choice) => (
@@ -544,7 +555,11 @@ function ProductPreviewPage({ editor, onBack }) {
             )}
 
             {simpleOptions.map((optionId) => (
-              <div className="admin-editor-client-group" key={optionId}>
+              <div
+                className="admin-editor-client-group"
+                key={optionId}
+                style={{ "--group-color": optionById(optionId)?.color }}
+              >
                 <strong>{optionById(optionId)?.label}</strong>
                 <div className="admin-editor-client-choices">
                   <button
