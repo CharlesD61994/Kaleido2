@@ -460,8 +460,7 @@ const openProductDetail = (product) => {
         <small>Le suivi prive sera envoye apres la confirmation de la commande.</small>
       </div>
       <div class="detail-actions">
-        <button class="buy-button" type="button">Commander avec Shopify</button>
-        <button class="secondary-button" type="button">Demander une couleur</button>
+        <button class="buy-button" type="button" data-shopify-product="${escapeHtml(product.shopify || "")}">Ajouter au panier</button>
       </div>
     `;
     bindDetailOptions(detailContent);
