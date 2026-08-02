@@ -76,6 +76,11 @@ const normalizePhoto = (photo) => (typeof photo === "string" ? { name: photo, ur
 const productCover = (product) => (product.productPhotos || []).map(normalizePhoto).find((photo) => photo?.url);
 const productPhotos = (product) => (product.productPhotos || []).map(normalizePhoto).filter((photo) => photo?.url);
 const productColors = (product) => [...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])])];
+const shopifyProductId = (product) => (
+  typeof product?.shopify === "object"
+    ? String(product.shopify.productId || product.shopify.id || "")
+    : String(product?.shopify || "")
+);
 const isProductInCatalog = (product) => product?.status === "ready" && product.inCatalog !== false;
 const categoryPhotoSource = (photo) => photo?.preview || photo?.url || photo?.src || photo?.original || "";
 
@@ -124,6 +129,9 @@ const cleanHomeConfig = (rawConfig) => {
     featuredProductIds: Array.isArray(rawConfig?.featuredProductIds)
       ? rawConfig.featuredProductIds.map(String)
       : [],
+    shopify: rawConfig?.shopify && typeof rawConfig.shopify === "object"
+      ? rawConfig.shopify
+      : null,
   };
 };
 
@@ -460,7 +468,7 @@ const openProductDetail = (product) => {
         <small>Le suivi prive sera envoye apres la confirmation de la commande.</small>
       </div>
       <div class="detail-actions">
-        <button class="buy-button" type="button" data-shopify-product="${escapeHtml(product.shopify || "")}">Ajouter au panier</button>
+        <button class="buy-button" type="button" data-shopify-product="${escapeHtml(shopifyProductId(product))}">Ajouter au panier</button>
       </div>
     `;
     bindDetailOptions(detailContent);

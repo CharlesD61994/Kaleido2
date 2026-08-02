@@ -1,7 +1,9 @@
 import React, { useMemo, useRef, useState } from "react";
 import { ADMIN_ROUTES } from "../../constants/adminRoutes";
 import {
+  readStorefrontHomeConfig,
   readStorefrontProducts,
+  writeStorefrontHomeConfig,
   writeStorefrontProducts,
 } from "../../services/storefrontAdminStore";
 import AdminHeader from "./AdminHeader";
@@ -53,6 +55,65 @@ const formatProductPrice = (value) => {
   return /[$€£]/.test(price) ? price : `${price} $`;
 };
 
+const normalizeShopifyConnection = (value) => {
+  if (!value) return null;
+  if (typeof value === "object") {
+    const productId = String(value.productId || value.id || "").trim();
+    if (!productId) return null;
+    return {
+      productId,
+      domain: String(value.domain || "").trim().toLowerCase(),
+      connectedAt: value.connectedAt || "",
+    };
+  }
+  const productId = String(value).trim();
+  return productId ? { productId, domain: "", connectedAt: "" } : null;
+};
+
+const normalizeShopifyStore = (value) => {
+  if (!value || typeof value !== "object") return null;
+  const domain = String(value.domain || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
+  const storefrontAccessToken = String(value.storefrontAccessToken || "").trim();
+  if (!domain || !storefrontAccessToken) return null;
+  return { domain, storefrontAccessToken };
+};
+
+const parseShopifyBuyButtonCode = (source) => {
+  const code = String(source || "").trim();
+  if (!code) throw new Error("Colle d'abord le code complet généré par Shopify.");
+
+  const domainMatch = code.match(/\bdomain\s*:\s*["'`]([^"'`]+)["'`]/i);
+  const tokenMatch = code.match(/\bstorefrontAccessToken\s*:\s*["'`]([^"'`]+)["'`]/i);
+  const componentMatch = code.match(
+    /createComponent\s*\(\s*["'`]product["'`]\s*,\s*\{[\s\S]*?\bid\s*:\s*["'`]([^"'`]+)["'`]/i,
+  );
+
+  const domain = String(domainMatch?.[1] || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
+  const storefrontAccessToken = String(tokenMatch?.[1] || "").trim();
+  const rawProductId = String(componentMatch?.[1] || "").trim();
+  const productId = rawProductId.split("/").filter(Boolean).pop() || "";
+
+  if (!domain || !domain.includes(".")) {
+    throw new Error("Le domaine Shopify n'a pas été trouvé dans ce code.");
+  }
+  if (!storefrontAccessToken) {
+    throw new Error("Le jeton public Storefront n'a pas été trouvé dans ce code.");
+  }
+  if (!productId) {
+    throw new Error("L'identifiant du produit Shopify n'a pas été trouvé dans ce code.");
+  }
+
+  return { domain, storefrontAccessToken, productId };
+};
+
 const normalizePhoto = (photo) => (
   typeof photo === "string"
     ? { id: newId(), name: photo, url: "" }
@@ -94,7 +155,7 @@ const createEmptyProduct = () => ({
   category: CATEGORIES[0],
   price: "",
   description: "",
-  shopify: "",
+  shopify: null,
   options: [],
   optionChoices: {},
   productPhotos: [],
@@ -109,6 +170,7 @@ const createEditorState = (product) => {
   return {
     ...createEmptyProduct(),
     ...source,
+    shopify: normalizeShopifyConnection(source.shopify),
     options: [...(source.options || [])],
     optionChoices: Object.fromEntries(
       Object.entries(source.optionChoices || {}).map(([key, values]) => [key, [...values]]),
@@ -637,6 +699,62 @@ function ProductPhotoCarousel({ photos }) {
   );
 }
 
+function ShopifyConnectionModal({ code, error, onCodeChange, onClose, onConnect }) {
+  return (
+    <div
+      className="admin-shopify-modal-backdrop"
+      role="presentation"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="admin-shopify-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="admin-shopify-modal-title"
+      >
+        <button
+          className="admin-shopify-modal-close"
+          type="button"
+          aria-label="Fermer"
+          onClick={onClose}
+        >
+          ×
+        </button>
+        <header>
+          <span aria-hidden="true">S</span>
+          <div>
+            <h2 id="admin-shopify-modal-title">Connecter à Shopify</h2>
+            <p>Colle le code complet généré par le canal Bouton d'achat.</p>
+          </div>
+        </header>
+        <form onSubmit={(event) => { event.preventDefault(); onConnect(); }}>
+          <label>
+            Code Buy Button
+            <textarea
+              autoFocus
+              rows="10"
+              value={code}
+              spellCheck="false"
+              placeholder={'<div id="product-component-..."></div>\n<script type="text/javascript">...'}
+              onChange={(event) => onCodeChange(event.target.value)}
+            />
+          </label>
+          <small>
+            Kaleido conservera seulement le domaine, le jeton public Storefront et l'identifiant du produit.
+          </small>
+          {error && <p className="admin-shopify-modal-error" role="alert">{error}</p>}
+          <div className="admin-shopify-modal-actions">
+            <button type="button" onClick={onClose}>Annuler</button>
+            <button className="primary" type="submit">Analyser et connecter</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
 export default function AdminProductEditorScreen({ navigation, productId }) {
   const existingProduct = useMemo(
     () => readStorefrontProducts().find((product) => String(product.id) === String(productId)),
@@ -646,6 +764,12 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
   const [subpage, setSubpage] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [shopifyStore, setShopifyStore] = useState(
+    () => normalizeShopifyStore(readStorefrontHomeConfig().shopify),
+  );
+  const [shopifyModalOpen, setShopifyModalOpen] = useState(false);
+  const [shopifyCode, setShopifyCode] = useState("");
+  const [shopifyError, setShopifyError] = useState("");
   const productPhotoInput = useRef(null);
 
   const update = (patch) => setEditor((current) => ({ ...current, ...patch }));
@@ -666,6 +790,49 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
       ...current,
       productPhotos: [...current.productPhotos, ...photos],
     }));
+  };
+
+  const openShopifyModal = () => {
+    setShopifyCode("");
+    setShopifyError("");
+    setShopifyModalOpen(true);
+  };
+
+  const connectShopifyProduct = () => {
+    try {
+      const parsed = parseShopifyBuyButtonCode(shopifyCode);
+      if (shopifyStore?.domain && shopifyStore.domain !== parsed.domain) {
+        throw new Error(
+          `Ce code vient de ${parsed.domain}, mais Kaleido est déjà connecté à ${shopifyStore.domain}.`,
+        );
+      }
+
+      const duplicate = readStorefrontProducts().find((product) => {
+        const connection = normalizeShopifyConnection(product.shopify);
+        return connection?.productId === parsed.productId
+          && String(product.id) !== String(editor.id || "");
+      });
+      if (duplicate) {
+        throw new Error(`Ce produit Shopify est déjà associé à la fiche « ${duplicate.name} ».`);
+      }
+
+      setShopifyStore({
+        domain: parsed.domain,
+        storefrontAccessToken: parsed.storefrontAccessToken,
+      });
+      update({
+        shopify: {
+          productId: parsed.productId,
+          domain: parsed.domain,
+          connectedAt: new Date().toISOString(),
+        },
+      });
+      setShopifyModalOpen(false);
+      setShopifyCode("");
+      setShopifyError("");
+    } catch (error) {
+      setShopifyError(error?.message || "Le code Shopify n'a pas pu être analysé.");
+    }
   };
 
   const saveProduct = () => {
@@ -689,7 +856,7 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
       name: editor.name.trim() || "Produit sans nom",
       price: editor.price.trim(),
       description: editor.description.trim(),
-      shopify: editor.shopify.trim(),
+      shopify: normalizeShopifyConnection(editor.shopify),
       colors: {
         main: editor.options.includes("mainColor")
           ? editor.colorGroups.mainColor.map((color) => color.value)
@@ -707,6 +874,12 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
     delete product.colorGroups;
 
     try {
+      if (shopifyStore) {
+        writeStorefrontHomeConfig({
+          ...readStorefrontHomeConfig(),
+          shopify: shopifyStore,
+        });
+      }
       writeStorefrontProducts([
         product,
         ...currentProducts.filter((item) => String(item.id) !== String(product.id)),
@@ -888,16 +1061,44 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
             )
           ))}
 
-          <section className="admin-editor-fields">
-            <label>
-              Lien ou ID Shopify
-              <input
-                type="text"
-                value={editor.shopify}
-                placeholder="À ajouter plus tard"
-                onChange={(event) => update({ shopify: event.target.value })}
-              />
-            </label>
+          <section className="admin-editor-shopify">
+            <header>
+              <div>
+                <strong>Shopify</strong>
+                <small>Relie cette fiche au produit vendu dans le panier.</small>
+              </div>
+              <span className={editor.shopify ? "is-connected" : ""}>
+                {editor.shopify ? "Connecté" : "Non connecté"}
+              </span>
+            </header>
+            {editor.shopify ? (
+              <div className="admin-editor-shopify-card">
+                <span aria-hidden="true">S</span>
+                <div>
+                  <strong>Produit Shopify connecté</strong>
+                  <small>{editor.shopify.domain || shopifyStore?.domain || "Boutique à confirmer"}</small>
+                  <code>Produit {editor.shopify.productId}</code>
+                </div>
+                <div className="admin-editor-shopify-actions">
+                  <button type="button" onClick={openShopifyModal}>Modifier</button>
+                  <button
+                    className="danger"
+                    type="button"
+                    onClick={() => update({ shopify: null })}
+                  >
+                    Déconnecter
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button className="admin-editor-shopify-connect" type="button" onClick={openShopifyModal}>
+                <span aria-hidden="true">S</span>
+                <span>
+                  <strong>Connecter à Shopify</strong>
+                  <small>Colle le code Buy Button et Kaleido fera le reste.</small>
+                </span>
+              </button>
+            )}
           </section>
 
           <section className="admin-editor-live-preview">
@@ -922,13 +1123,31 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
             </button>
             <button
               type="button"
-              onClick={() => setEditor(createEditorState(existingProduct))}
+              onClick={() => {
+                setEditor(createEditorState(existingProduct));
+                setShopifyStore(normalizeShopifyStore(readStorefrontHomeConfig().shopify));
+              }}
             >
               Réinitialiser
             </button>
           </div>
         </form>
       </div>
+      {shopifyModalOpen && (
+        <ShopifyConnectionModal
+          code={shopifyCode}
+          error={shopifyError}
+          onCodeChange={(value) => {
+            setShopifyCode(value);
+            if (shopifyError) setShopifyError("");
+          }}
+          onClose={() => {
+            setShopifyModalOpen(false);
+            setShopifyError("");
+          }}
+          onConnect={connectShopifyProduct}
+        />
+      )}
     </AdminLayout>
   );
 }

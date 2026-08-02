@@ -21,6 +21,7 @@ const DEFAULT_HOME_CONFIG = {
   categoryColors: {},
   categoryPhotos: {},
   featuredProductIds: [],
+  shopify: null,
 };
 let hydrationPromise = null;
 let lastHydratedAt = 0;

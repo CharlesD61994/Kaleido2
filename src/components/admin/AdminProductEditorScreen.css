@@ -939,6 +939,285 @@
   background: color-mix(in srgb, var(--option-color) 12%, var(--k-surface));
 }
 
+.admin-editor-shopify {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--k-border);
+}
+
+.admin-editor-shopify > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-editor-shopify > header > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.admin-editor-shopify > header strong {
+  color: var(--k-text);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.admin-editor-shopify > header small {
+  color: var(--k-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.admin-editor-shopify > header > span {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid var(--k-border-strong);
+  border-radius: 999px;
+  color: var(--k-text-soft);
+  background: var(--k-surface);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.admin-editor-shopify > header > span.is-connected {
+  border-color: rgba(35, 164, 95, 0.34);
+  color: #16844a;
+  background: rgba(35, 164, 95, 0.1);
+}
+
+.admin-editor-shopify-connect,
+.admin-editor-shopify-card {
+  width: 100%;
+  min-width: 0;
+  min-height: 84px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, #23a45f 34%, var(--k-border));
+  border-radius: 17px;
+  color: var(--k-text);
+  background: color-mix(in srgb, #23a45f 7%, var(--k-surface));
+  box-shadow: 0 0 18px rgba(35, 164, 95, 0.1);
+}
+
+.admin-editor-shopify-connect {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "DM Sans", system-ui, sans-serif;
+  text-align: left;
+}
+
+.admin-editor-shopify-connect > span:first-child,
+.admin-editor-shopify-card > span:first-child,
+.admin-shopify-modal > header > span {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: white;
+  background: #23a45f;
+  box-shadow: 0 0 16px rgba(35, 164, 95, 0.28);
+  font: 900 20px "Syne", system-ui, sans-serif;
+}
+
+.admin-editor-shopify-connect > span:last-child,
+.admin-editor-shopify-card > div:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.admin-editor-shopify-connect strong,
+.admin-editor-shopify-card strong {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.admin-editor-shopify-connect small,
+.admin-editor-shopify-card small,
+.admin-editor-shopify-card code {
+  overflow: hidden;
+  color: var(--k-text-soft);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-editor-shopify-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-editor-shopify-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.admin-editor-shopify-actions button {
+  min-height: 40px;
+  border: 1px solid var(--k-border-strong);
+  border-radius: 12px;
+  color: var(--k-text);
+  background: var(--k-surface);
+  font: 900 12px "DM Sans", system-ui, sans-serif;
+}
+
+.admin-editor-shopify-actions button.danger {
+  border-color: rgba(240, 91, 79, 0.28);
+  color: #d9473e;
+  background: rgba(240, 91, 79, 0.08);
+}
+
+.admin-shopify-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top, 0px)) 18px max(18px, env(safe-area-inset-bottom, 0px));
+  background: rgba(9, 12, 22, 0.58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.admin-shopify-modal {
+  position: relative;
+  width: min(100%, 440px);
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid color-mix(in srgb, #23a45f 30%, var(--k-border));
+  border-radius: 20px;
+  color: var(--k-text);
+  background: var(--k-bg);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3), 0 0 28px rgba(35, 164, 95, 0.13);
+}
+
+.admin-shopify-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--k-border-strong);
+  border-radius: 50%;
+  color: var(--k-text);
+  background: var(--k-surface);
+  font: 900 15px "DM Sans", system-ui, sans-serif;
+}
+
+.admin-shopify-modal > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 34px;
+}
+
+.admin-shopify-modal > header > div {
+  min-width: 0;
+}
+
+.admin-shopify-modal h2,
+.admin-shopify-modal p {
+  margin: 0;
+}
+
+.admin-shopify-modal h2 {
+  font: 900 20px "Syne", system-ui, sans-serif;
+}
+
+.admin-shopify-modal > header p {
+  margin-top: 3px;
+  color: var(--k-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.admin-shopify-modal form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.admin-shopify-modal label {
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-shopify-modal textarea {
+  width: 100%;
+  min-height: 210px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--k-border-strong);
+  border-radius: 14px;
+  outline: 0;
+  color: var(--k-text);
+  background: var(--k-surface);
+  font: 600 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.admin-shopify-modal textarea:focus {
+  border-color: rgba(35, 164, 95, 0.62);
+  box-shadow: 0 0 0 3px rgba(35, 164, 95, 0.1);
+}
+
+.admin-shopify-modal form > small {
+  color: var(--k-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.admin-shopify-modal-error {
+  padding: 10px 12px;
+  border: 1px solid rgba(240, 91, 79, 0.28);
+  border-radius: 12px;
+  color: #d9473e;
+  background: rgba(240, 91, 79, 0.08);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.admin-shopify-modal-actions {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 9px;
+}
+
+.admin-shopify-modal-actions button {
+  min-height: 46px;
+  padding: 8px 10px;
+  border: 1px solid var(--k-border-strong);
+  border-radius: 14px;
+  color: var(--k-text);
+  background: var(--k-surface);
+  font: 900 12px "DM Sans", system-ui, sans-serif;
+}
+
+.admin-shopify-modal-actions button.primary {
+  border-color: #23a45f;
+  color: white;
+  background: #23a45f;
+  box-shadow: 0 0 18px rgba(35, 164, 95, 0.24);
+}
+
 @media (max-width: 350px) {
   .admin-product-editor {
     padding-inline: 16px;
