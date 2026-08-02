@@ -8,6 +8,7 @@ import {
   STOREFRONT_PRODUCTS_CHANGED_EVENT,
   STOREFRONT_PRODUCTS_KEY,
   writeStorefrontHomeConfig,
+  writeStorefrontProducts,
 } from "../../services/storefrontAdminStore";
 import { deleteImage, loadImage, saveImage } from "../../services/mediaStore";
 import AdminLayout from "./AdminLayout";
@@ -43,6 +44,19 @@ const customCategoriesFrom = (raw) => (
         color: category.color || "#30c7c9",
         icon: category.icon || CATEGORY_ICONS[index % CATEGORY_ICONS.length],
         custom: true,
+      }))
+    : []
+);
+
+const taxonomyItemsFrom = (raw, key) => (
+  Array.isArray(raw?.[key])
+    ? raw[key]
+      .filter((item) => item?.id && item?.label)
+      .map((item) => ({
+        id: String(item.id),
+        label: String(item.label),
+        color: item.color || (key === "collections" ? "#e84b94" : "#30c7c9"),
+        ...(key === "subcategories" ? { categoryId: String(item.categoryId || "") } : {}),
       }))
     : []
 );
@@ -84,11 +98,14 @@ const cleanConfig = (raw) => {
   return {
     categories: hasExplicitCategories ? selected : categories.map((category) => category.id),
     customCategories: customCategoriesFrom(raw),
+    subcategories: taxonomyItemsFrom(raw, "subcategories"),
+    collections: taxonomyItemsFrom(raw, "collections"),
     categoryColors: raw?.categoryColors || {},
     categoryPhotos: raw?.categoryPhotos || {},
     featuredProductIds: Array.isArray(raw?.featuredProductIds)
       ? raw.featuredProductIds.map(String)
       : [],
+    shopify: raw?.shopify && typeof raw.shopify === "object" ? raw.shopify : null,
   };
 };
 
@@ -302,6 +319,86 @@ function Modal({ children, className = "", onClose }) {
         {children}
       </section>
     </div>
+  );
+}
+
+function TaxonomyModal({ categories, item, type, onClose, onSave }) {
+  const isSubcategory = type === "subcategory";
+  const [label, setLabel] = useState(item?.label || "");
+  const [color, setColor] = useState(item?.color || (isSubcategory ? "#30c7c9" : "#e84b94"));
+  const [categoryId, setCategoryId] = useState(item?.categoryId || categories[0]?.id || "");
+
+  return (
+    <Modal className="admin-storefront-taxonomy-modal" onClose={onClose}>
+      <span>{isSubcategory ? "Sous-catégorie" : "Collection"}</span>
+      <h2>{item ? "Modifier" : "Ajouter"} {isSubcategory ? "une sous-catégorie" : "une collection"}</h2>
+      <form onSubmit={(event) => {
+        event.preventDefault();
+        if (!label.trim() || (isSubcategory && !categoryId)) return;
+        onSave({
+          id: item?.id || slugify(label),
+          label: label.trim(),
+          color,
+          ...(isSubcategory ? { categoryId } : {}),
+        });
+      }}>
+        <label>
+          <span>Nom</span>
+          <input
+            autoFocus
+            type="text"
+            value={label}
+            placeholder={isSubcategory ? "Ex: Animaux" : "Ex: Noël"}
+            onChange={(event) => setLabel(event.target.value)}
+          />
+        </label>
+        {isSubcategory && (
+          <label>
+            <span>Catégorie principale</span>
+            <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.label}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label className="admin-storefront-taxonomy-color">
+          <span>Couleur</span>
+          <input type="color" value={color} onChange={(event) => setColor(event.target.value)} />
+        </label>
+        <button type="submit">Enregistrer</button>
+      </form>
+    </Modal>
+  );
+}
+
+function TaxonomySection({ items, categories, title, description, onAdd, onEdit, onRemove }) {
+  const categoryMap = new Map(categories.map((category) => [String(category.id), category.label]));
+  return (
+    <section className="admin-storefront-section admin-storefront-taxonomy-section">
+      <header>
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </header>
+      <div className="admin-storefront-taxonomy-list">
+        {items.map((item) => (
+          <article key={item.id} style={{ "--taxonomy-color": item.color }}>
+            <button type="button" onClick={() => onEdit(item)}>
+              <i aria-hidden="true" />
+              <span>
+                <strong>{item.label}</strong>
+                {item.categoryId && <small>{categoryMap.get(String(item.categoryId)) || "Catégorie retirée"}</small>}
+              </span>
+            </button>
+            <button type="button" onClick={() => onRemove(item)} aria-label={`Retirer ${item.label}`}>×</button>
+          </article>
+        ))}
+        <button className="admin-storefront-taxonomy-add" type="button" onClick={onAdd}>
+          <span>+</span>
+          <strong>Ajouter</strong>
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -553,6 +650,7 @@ export default function AdminStorefrontScreen({ navigation }) {
   const [photoCategoryId, setPhotoCategoryId] = useState(null);
   const [productPicker, setProductPicker] = useState(false);
   const [newCategory, setNewCategory] = useState({ label: "", color: "#30c7c9" });
+  const [taxonomyModal, setTaxonomyModal] = useState(null);
 
   useEffect(() => {
     const refreshProducts = () => setProducts(readStorefrontProducts());
@@ -637,12 +735,50 @@ export default function AdminStorefrontScreen({ navigation }) {
     saveConfig({
       ...config,
       categories: config.categories.filter((id) => id !== category.id),
+      subcategories: category.custom
+        ? config.subcategories.filter((item) => item.categoryId !== category.id)
+        : config.subcategories,
       categoryPhotos: category.custom ? nextPhotos : config.categoryPhotos,
       customCategories: category.custom
         ? config.customCategories.filter((item) => item.id !== category.id)
         : config.customCategories,
     });
     setOpenActions(null);
+  };
+
+  const saveTaxonomyItem = (type, item) => {
+    const key = type === "subcategory" ? "subcategories" : "collections";
+    const currentItems = config[key] || [];
+    const isExisting = currentItems.some((entry) => entry.id === item.id);
+    const existingIds = new Set(currentItems.map((entry) => entry.id));
+    let id = item.id;
+    let suffix = 2;
+    while (!isExisting && existingIds.has(id)) {
+      id = `${item.id}-${suffix}`;
+      suffix += 1;
+    }
+    saveConfig({
+      ...config,
+      [key]: isExisting
+        ? currentItems.map((entry) => (entry.id === item.id ? { ...item, id } : entry))
+        : [...currentItems, { ...item, id }],
+    });
+    setTaxonomyModal(null);
+  };
+
+  const removeTaxonomyItem = (type, item) => {
+    if (!window.confirm(`Retirer « ${item.label} » ?`)) return;
+    const key = type === "subcategory" ? "subcategories" : "collections";
+    saveConfig({
+      ...config,
+      [key]: (config[key] || []).filter((entry) => entry.id !== item.id),
+    });
+    const productKey = type === "subcategory" ? "subcategoryIds" : "collectionIds";
+    const nextProducts = products.map((product) => ({
+      ...product,
+      [productKey]: (product[productKey] || []).filter((id) => String(id) !== String(item.id)),
+    }));
+    setProducts(writeStorefrontProducts(nextProducts));
   };
 
   return (
@@ -695,6 +831,26 @@ export default function AdminStorefrontScreen({ navigation }) {
             </button>
           </div>
         </section>
+
+        <TaxonomySection
+          title="Sous-catégories"
+          description="Préciser les produits à l’intérieur de chaque catégorie"
+          items={config.subcategories}
+          categories={categories}
+          onAdd={() => setTaxonomyModal({ type: "subcategory", item: null })}
+          onEdit={(item) => setTaxonomyModal({ type: "subcategory", item })}
+          onRemove={(item) => removeTaxonomyItem("subcategory", item)}
+        />
+
+        <TaxonomySection
+          title="Collections"
+          description="Créer des regroupements saisonniers ou thématiques"
+          items={config.collections}
+          categories={categories}
+          onAdd={() => setTaxonomyModal({ type: "collection", item: null })}
+          onEdit={(item) => setTaxonomyModal({ type: "collection", item })}
+          onRemove={(item) => removeTaxonomyItem("collection", item)}
+        />
 
         <section className="admin-storefront-section">
           <header>
@@ -755,6 +911,16 @@ export default function AdminStorefrontScreen({ navigation }) {
             <button type="submit">Ajouter</button>
           </form>
         </Modal>
+      )}
+
+      {taxonomyModal && (
+        <TaxonomyModal
+          categories={categories}
+          item={taxonomyModal.item}
+          type={taxonomyModal.type}
+          onClose={() => setTaxonomyModal(null)}
+          onSave={(item) => saveTaxonomyItem(taxonomyModal.type, item)}
+        />
       )}
 
       {activePhotoCategory && (

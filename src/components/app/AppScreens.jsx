@@ -219,6 +219,7 @@ export default function AppScreens({
         currentView={currentView}
         navigateToHub={navigateToHub}
         activeScreenInteractiveStyle={activeScreenInteractiveStyle}
+        patrons={database.patrons || []}
       />
 
       <ClientModal

@@ -19,6 +19,8 @@ const productGrid = document.querySelector(".product-grid");
 const catalogView = document.querySelector("[data-catalog-view]");
 const catalogGrid = document.querySelector("[data-catalog-grid]");
 const catalogFilters = document.querySelector("[data-catalog-filters]");
+const catalogSubcategoryFilters = document.querySelector("[data-catalog-subcategory-filters]");
+const catalogCollectionFilters = document.querySelector("[data-catalog-collection-filters]");
 const catalogSearch = document.querySelector("[data-catalog-search]");
 const catalogEmpty = document.querySelector("[data-catalog-empty]");
 const catalogResultTitle = document.querySelector("[data-catalog-result-title]");
@@ -36,6 +38,8 @@ let storefrontProducts = [];
 let productReturnView = "home";
 let storefrontHomeConfig = null;
 let catalogCategoryId = "";
+let catalogSubcategoryId = "";
+let catalogCollectionId = "";
 let catalogSearchTerm = "";
 
 const defaultCategories = [
@@ -195,6 +199,12 @@ const cleanHomeConfig = (rawConfig) => {
   return {
     categories: hasExplicitCategories ? selectedCategories : allCategories.map((category) => category.id),
     customCategories: customCategoriesFrom(rawConfig),
+    subcategories: Array.isArray(rawConfig?.subcategories)
+      ? rawConfig.subcategories.filter((item) => item?.id && item?.label && item?.categoryId)
+      : [],
+    collections: Array.isArray(rawConfig?.collections)
+      ? rawConfig.collections.filter((item) => item?.id && item?.label)
+      : [],
     categoryColors: rawConfig?.categoryColors || {},
     categoryPhotos: rawConfig?.categoryPhotos || {},
     featuredProductIds: Array.isArray(rawConfig?.featuredProductIds)
@@ -744,11 +754,41 @@ const productBelongsToCategory = (product, category) => {
     || productCategory === normalizeCatalogText(category.label);
 };
 
+const productHasTaxonomyId = (product, key, id) => (
+  !id || (Array.isArray(product?.[key]) && product[key].map(String).includes(String(id)))
+);
+
 const renderCatalog = () => {
-  if (!catalogGrid || !catalogFilters || !catalogEmpty) return;
+  if (!catalogGrid || !catalogFilters || !catalogEmpty || !storefrontHomeConfig) return;
   const categories = catalogCategories();
   const selectedCategory = categories.find((category) => category.id === catalogCategoryId) || null;
   if (catalogCategoryId && !selectedCategory) catalogCategoryId = "";
+  const catalogProducts = storefrontProducts.filter(isProductInCatalog);
+  const categoryProducts = catalogProducts.filter((product) => productBelongsToCategory(product, selectedCategory));
+  const categoryProductSubcategories = new Set(
+    categoryProducts.flatMap((product) => (product.subcategoryIds || []).map(String)),
+  );
+  const availableSubcategories = selectedCategory
+    ? storefrontHomeConfig.subcategories.filter((item) => (
+      String(item.categoryId) === String(selectedCategory.id)
+      && categoryProductSubcategories.has(String(item.id))
+    ))
+    : [];
+  if (!availableSubcategories.some((item) => String(item.id) === String(catalogSubcategoryId))) {
+    catalogSubcategoryId = "";
+  }
+  const subcategoryProducts = categoryProducts.filter((product) => (
+    productHasTaxonomyId(product, "subcategoryIds", catalogSubcategoryId)
+  ));
+  const productCollectionIds = new Set(
+    subcategoryProducts.flatMap((product) => (product.collectionIds || []).map(String)),
+  );
+  const availableCollections = storefrontHomeConfig.collections.filter((item) => (
+    productCollectionIds.has(String(item.id))
+  ));
+  if (!availableCollections.some((item) => String(item.id) === String(catalogCollectionId))) {
+    catalogCollectionId = "";
+  }
 
   catalogFilters.innerHTML = categories.map((category) => `
     <button
@@ -765,20 +805,69 @@ const renderCatalog = () => {
       catalogCategoryId = catalogCategoryId === button.dataset.catalogCategory
         ? ""
         : button.dataset.catalogCategory;
+      catalogSubcategoryId = "";
+      catalogCollectionId = "";
       renderCatalog();
     });
   });
 
+  if (catalogSubcategoryFilters) {
+    catalogSubcategoryFilters.hidden = availableSubcategories.length === 0;
+    catalogSubcategoryFilters.innerHTML = availableSubcategories.map((item) => `
+      <button
+        type="button"
+        class="${String(item.id) === String(catalogSubcategoryId) ? "is-selected" : ""}"
+        style="--filter-accent:${escapeHtml(item.color || selectedCategory?.color || "#30c7c9")}"
+        data-catalog-subcategory="${escapeHtml(item.id)}"
+        aria-pressed="${String(item.id) === String(catalogSubcategoryId)}"
+      >${escapeHtml(item.label)}</button>
+    `).join("");
+    catalogSubcategoryFilters.querySelectorAll("[data-catalog-subcategory]").forEach((button) => {
+      button.addEventListener("click", () => {
+        catalogSubcategoryId = catalogSubcategoryId === button.dataset.catalogSubcategory
+          ? ""
+          : button.dataset.catalogSubcategory;
+        catalogCollectionId = "";
+        renderCatalog();
+      });
+    });
+  }
+
+  if (catalogCollectionFilters) {
+    catalogCollectionFilters.hidden = availableCollections.length === 0;
+    catalogCollectionFilters.innerHTML = availableCollections.map((item) => `
+      <button
+        type="button"
+        class="${String(item.id) === String(catalogCollectionId) ? "is-selected" : ""}"
+        style="--filter-accent:${escapeHtml(item.color || "#e84b94")}"
+        data-catalog-collection="${escapeHtml(item.id)}"
+        aria-pressed="${String(item.id) === String(catalogCollectionId)}"
+      >${escapeHtml(item.label)}</button>
+    `).join("");
+    catalogCollectionFilters.querySelectorAll("[data-catalog-collection]").forEach((button) => {
+      button.addEventListener("click", () => {
+        catalogCollectionId = catalogCollectionId === button.dataset.catalogCollection
+          ? ""
+          : button.dataset.catalogCollection;
+        renderCatalog();
+      });
+    });
+  }
+
   const search = normalizeCatalogText(catalogSearchTerm);
-  const products = storefrontProducts
-    .filter(isProductInCatalog)
-    .filter((product) => productBelongsToCategory(product, selectedCategory))
+  const subcategoryLabels = new Map(storefrontHomeConfig.subcategories.map((item) => [String(item.id), item.label]));
+  const collectionLabels = new Map(storefrontHomeConfig.collections.map((item) => [String(item.id), item.label]));
+  const products = categoryProducts
+    .filter((product) => productHasTaxonomyId(product, "subcategoryIds", catalogSubcategoryId))
+    .filter((product) => productHasTaxonomyId(product, "collectionIds", catalogCollectionId))
     .filter((product) => {
       if (!search) return true;
       return normalizeCatalogText([
         product.name,
         product.description,
         product.category,
+        ...(product.subcategoryIds || []).map((id) => subcategoryLabels.get(String(id)) || ""),
+        ...(product.collectionIds || []).map((id) => collectionLabels.get(String(id)) || ""),
       ].join(" ")).includes(search);
     });
 
@@ -834,6 +923,8 @@ const showCatalog = (categoryId = "", { preserveSearch = false } = {}) => {
   closeMenu();
   catalogCategoryId = categoryId || "";
   if (!preserveSearch) {
+    catalogSubcategoryId = "";
+    catalogCollectionId = "";
     catalogSearchTerm = "";
     if (catalogSearch) catalogSearch.value = "";
   }

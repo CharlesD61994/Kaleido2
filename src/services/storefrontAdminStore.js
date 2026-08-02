@@ -18,6 +18,8 @@ const HYDRATION_TTL_MS = 15_000;
 const DEFAULT_HOME_CONFIG = {
   categories: ["vetements", "peluches", "pantoufles", "porte-cles", "couvertures"],
   customCategories: [],
+  subcategories: [],
+  collections: [],
   categoryColors: {},
   categoryPhotos: {},
   featuredProductIds: [],
@@ -130,13 +132,18 @@ const compactCategoryPhotoForCloud = (photo) => {
   };
 };
 
-const normalizeHomeConfigForLocal = (config) => ({
-  ...validHomeConfig(config),
-  categoryPhotos: Object.fromEntries(
-    Object.entries(validHomeConfig(config).categoryPhotos || {})
-      .map(([id, photo]) => [id, normalizeCategoryPhotoForLocal(photo)]),
-  ),
-});
+const normalizeHomeConfigForLocal = (config) => {
+  const validConfig = validHomeConfig(config);
+  return {
+    ...validConfig,
+    subcategories: Array.isArray(validConfig.subcategories) ? validConfig.subcategories : [],
+    collections: Array.isArray(validConfig.collections) ? validConfig.collections : [],
+    categoryPhotos: Object.fromEntries(
+      Object.entries(validConfig.categoryPhotos || {})
+        .map(([id, photo]) => [id, normalizeCategoryPhotoForLocal(photo)]),
+    ),
+  };
+};
 
 const compactHomeConfigForCloud = (config) => ({
   ...validHomeConfig(config),

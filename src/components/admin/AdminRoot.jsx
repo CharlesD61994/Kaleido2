@@ -11,6 +11,7 @@ import AdminStorefrontScreen from "./AdminStorefrontScreen";
 export default function AdminRoot({
   isActive,
   onExit,
+  patrons = [],
 }) {
   const navigation = useAdminNavigation(ADMIN_ROUTES.HOME);
   const rootRef = useRef(null);
@@ -201,6 +202,7 @@ export default function AdminRoot({
         <AdminProductEditorScreen
           navigation={navigation}
           productId={route.params.productId || null}
+          patrons={patrons}
         />
       );
     }

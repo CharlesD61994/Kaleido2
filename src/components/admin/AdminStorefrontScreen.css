@@ -325,6 +325,163 @@
   font-size: 15px;
 }
 
+.admin-storefront-taxonomy-section {
+  gap: 13px;
+}
+
+.admin-storefront-taxonomy-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.admin-storefront-taxonomy-list article,
+.admin-storefront-taxonomy-add {
+  min-width: 0;
+  min-height: 72px;
+  border: 1px solid color-mix(in srgb, var(--taxonomy-color, #30c7c9) 34%, var(--k-border));
+  border-radius: 17px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--k-surface) 92%, transparent), color-mix(in srgb, var(--k-surface-2) 78%, transparent)),
+    radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--taxonomy-color, #30c7c9) 13%, transparent), transparent 45%);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--taxonomy-color, #30c7c9) 12%, transparent);
+}
+
+.admin-storefront-taxonomy-list article {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  align-items: center;
+  padding: 8px 7px 8px 11px;
+}
+
+.admin-storefront-taxonomy-list article > button:first-child {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: var(--k-text);
+  background: transparent;
+  text-align: left;
+}
+
+.admin-storefront-taxonomy-list article > button:first-child i {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--k-surface);
+  border-radius: 50%;
+  background: var(--taxonomy-color);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--taxonomy-color) 48%, transparent);
+}
+
+.admin-storefront-taxonomy-list article strong,
+.admin-storefront-taxonomy-list article small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-storefront-taxonomy-list article strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-storefront-taxonomy-list article small {
+  margin-top: 3px;
+  color: var(--k-text-soft);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.admin-storefront-taxonomy-list article > button:last-child {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0 0 2px;
+  border: 0;
+  border-radius: 50%;
+  color: #d34a3e;
+  background: rgba(240, 91, 79, 0.1);
+  font-size: 17px;
+}
+
+.admin-storefront-taxonomy-add {
+  display: grid;
+  grid-template-columns: 24px auto;
+  gap: 7px;
+  place-content: center;
+  align-items: center;
+  padding: 10px;
+  border-style: dashed;
+  color: #188f91;
+  font-family: inherit;
+}
+
+.admin-storefront-taxonomy-add span {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.admin-storefront-taxonomy-add strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-storefront-taxonomy-modal form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 66px;
+  gap: 11px;
+}
+
+.admin-storefront-taxonomy-modal form label {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-storefront-taxonomy-modal form label:not(.admin-storefront-taxonomy-color) {
+  grid-column: 1 / -1;
+}
+
+.admin-storefront-taxonomy-modal form label span {
+  color: var(--k-text);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-storefront-taxonomy-modal form input,
+.admin-storefront-taxonomy-modal form select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--k-border);
+  border-radius: 14px;
+  outline: 0;
+  color: var(--k-text);
+  background: var(--k-surface-2);
+  font: 800 16px "DM Sans", system-ui, sans-serif;
+}
+
+.admin-storefront-taxonomy-modal form input[type="color"] {
+  padding: 4px;
+}
+
+.admin-storefront-taxonomy-modal form > button {
+  align-self: end;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #30c7c9, #7c3aed);
+  font: 900 12px "DM Sans", system-ui, sans-serif;
+}
+
 .admin-storefront-product-card {
   --product-color: #30c7c9;
   --product-accent: #e84b94;

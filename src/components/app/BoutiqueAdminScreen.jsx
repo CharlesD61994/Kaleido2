@@ -6,6 +6,7 @@ export default function BoutiqueAdminScreen({
   currentView,
   navigateToHub,
   activeScreenInteractiveStyle,
+  patrons = [],
 }) {
   const isActive = currentView === VIEWS.BOUTIQUE_ADMIN;
 
@@ -27,6 +28,7 @@ export default function BoutiqueAdminScreen({
       <AdminRoot
         isActive={isActive}
         onExit={navigateToHub}
+        patrons={patrons}
       />
     </section>
   );

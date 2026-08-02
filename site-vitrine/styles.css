@@ -1151,6 +1151,70 @@ html.product-preview-pending .storefront {
   display: none;
 }
 
+.catalog-secondary-filters,
+.catalog-collection-filters {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  padding: 3px 2px 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.catalog-secondary-filters[hidden],
+.catalog-collection-filters[hidden] {
+  display: none;
+}
+
+.catalog-secondary-filters::-webkit-scrollbar,
+.catalog-collection-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.catalog-secondary-filters::before,
+.catalog-collection-filters::before {
+  align-self: center;
+  flex: 0 0 auto;
+  margin-right: 2px;
+  color: var(--k-muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.catalog-secondary-filters::before {
+  content: "Types";
+}
+
+.catalog-collection-filters::before {
+  content: "Collections";
+}
+
+.catalog-secondary-filters button,
+.catalog-collection-filters button {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--filter-accent) 34%, rgba(16, 39, 68, 0.18));
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--filter-accent) 68%, var(--k-ink));
+  background: color-mix(in srgb, var(--filter-accent) 6%, white);
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.catalog-secondary-filters button.is-selected,
+.catalog-collection-filters button.is-selected {
+  color: #fff;
+  border-color: var(--filter-accent);
+  background: var(--filter-accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--filter-accent) 32%, transparent);
+}
+
 .catalog-category-filters button {
   flex: 0 0 auto;
   min-height: 38px;

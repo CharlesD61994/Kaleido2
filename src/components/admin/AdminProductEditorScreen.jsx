@@ -75,13 +75,46 @@ const COLOR_SECTIONS = {
   accentColor: { key: "accent", storeKey: "accentColors", title: "Couleur secondaire" },
 };
 
-const CATEGORIES = [
-  "Vêtements",
-  "Peluches crochetées",
-  "Pantoufles",
-  "Porte-clés",
-  "Couvertures",
+const DEFAULT_PRODUCT_CATEGORIES = [
+  { id: "vetements", label: "Vêtements" },
+  { id: "peluches", label: "Peluches crochetées" },
+  { id: "pantoufles", label: "Pantoufles" },
+  { id: "porte-cles", label: "Porte-clés" },
+  { id: "couvertures", label: "Couvertures" },
 ];
+
+const storefrontTaxonomy = (config = {}) => {
+  const customCategories = Array.isArray(config.customCategories) ? config.customCategories : [];
+  const categories = [...DEFAULT_PRODUCT_CATEGORIES, ...customCategories]
+    .filter((category, index, all) => (
+      category?.id
+      && category?.label
+      && all.findIndex((item) => String(item.id) === String(category.id)) === index
+    ));
+  return {
+    categories,
+    subcategories: Array.isArray(config.subcategories) ? config.subcategories : [],
+    collections: Array.isArray(config.collections) ? config.collections : [],
+  };
+};
+
+const categoryIdentity = (category) => String(category || "")
+  .normalize("NFD")
+  .replace(/\p{Diacritic}/gu, "")
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "");
+
+const patternTitle = (patron) => patron?.titre || patron?.title || patron?.nom || patron?.name || "Patron sans nom";
+const patternType = (patron) => (
+  patron?.projectType === "pdf" || patron?.type === "pdf" || patron?.pdfData || patron?.pdfUrl
+    ? "PDF"
+    : "Personnalisé"
+);
+const patternImage = (patron) => {
+  const source = patron?.image || patron?.photo || patron?.imageUrl || patron?.cover;
+  return typeof source === "string" ? source : source?.url || source?.preview || "";
+};
 
 const newId = () => window.crypto?.randomUUID?.() || `item-${Date.now()}-${Math.random()}`;
 
@@ -207,7 +240,11 @@ const productColorsForSection = (product, optionId) => {
 const createEmptyProduct = () => ({
   id: null,
   name: "",
-  category: CATEGORIES[0],
+  category: DEFAULT_PRODUCT_CATEGORIES[0].label,
+  patternId: "",
+  patternSnapshot: null,
+  subcategoryIds: [],
+  collectionIds: [],
   price: "",
   description: "",
   shopify: null,
@@ -244,6 +281,8 @@ const createEditorState = (product) => {
       ? true
       : Boolean(source.shoeSizeDefaultsInitialized),
     productPhotos: (source.productPhotos || []).map(normalizePhoto),
+    subcategoryIds: Array.isArray(source.subcategoryIds) ? [...source.subcategoryIds] : [],
+    collectionIds: Array.isArray(source.collectionIds) ? [...source.collectionIds] : [],
     colorGroups: {
       mainColor: productColorsForSection(source, "mainColor"),
       accentColor: productColorsForSection(source, "accentColor"),
@@ -438,6 +477,83 @@ function ShoeSizeSection({ selected, onChange, audiences }) {
         </p>
       )}
     </fieldset>
+  );
+}
+
+function TaxonomyChoices({ emptyText, items, selected, onChange }) {
+  if (!items.length) return <p className="admin-editor-taxonomy-empty">{emptyText}</p>;
+  return (
+    <div className="admin-editor-taxonomy-choices">
+      {items.map((item) => (
+        <button
+          className={selected.includes(String(item.id)) ? "is-selected" : ""}
+          key={item.id}
+          type="button"
+          style={{ "--taxonomy-color": item.color || "#30c7c9" }}
+          onClick={() => onChange(
+            selected.includes(String(item.id))
+              ? selected.filter((id) => id !== String(item.id))
+              : [...selected, String(item.id)],
+          )}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function PatternPicker({ patrons, selectedId, onClose, onSelect }) {
+  const [search, setSearch] = useState("");
+  const normalizedSearch = categoryIdentity(search);
+  const filtered = patrons.filter((patron) => (
+    !normalizedSearch || categoryIdentity(patternTitle(patron)).includes(normalizedSearch)
+  ));
+
+  return (
+    <div className="admin-pattern-picker-backdrop" onClick={onClose}>
+      <section
+        aria-labelledby="admin-pattern-picker-title"
+        aria-modal="true"
+        className="admin-pattern-picker"
+        role="dialog"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button className="admin-pattern-picker-close" type="button" onClick={onClose} aria-label="Fermer">×</button>
+        <span>Bibliothèque</span>
+        <h2 id="admin-pattern-picker-title">Choisir un patron</h2>
+        <label className="admin-pattern-picker-search">
+          <span aria-hidden="true" />
+          <input
+            autoFocus
+            type="search"
+            value={search}
+            placeholder="Rechercher un patron"
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </label>
+        <div className="admin-pattern-picker-list">
+          {filtered.map((patron) => (
+            <button
+              className={String(patron.id) === String(selectedId) ? "is-selected" : ""}
+              key={patron.id}
+              type="button"
+              onClick={() => onSelect(patron)}
+            >
+              <span>{patternImage(patron) ? <img src={patternImage(patron)} alt="" /> : "◇"}</span>
+              <span>
+                <strong>{patternTitle(patron)}</strong>
+                <small>{patternType(patron)}</small>
+              </span>
+              <i aria-hidden="true">›</i>
+            </button>
+          ))}
+          {!filtered.length && (
+            <p>Aucun patron ne correspond à cette recherche.</p>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -977,7 +1093,7 @@ function ShopifyConnectionModal({ code, error, onCodeChange, onClose, onConnect 
   );
 }
 
-export default function AdminProductEditorScreen({ navigation, productId }) {
+export default function AdminProductEditorScreen({ navigation, productId, patrons = [] }) {
   const existingProduct = useMemo(
     () => readStorefrontProducts().find((product) => String(product.id) === String(productId)),
     [productId],
@@ -992,7 +1108,19 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
   const [shopifyModalOpen, setShopifyModalOpen] = useState(false);
   const [shopifyCode, setShopifyCode] = useState("");
   const [shopifyError, setShopifyError] = useState("");
+  const [patternPickerOpen, setPatternPickerOpen] = useState(false);
+  const [reorderingPhotos, setReorderingPhotos] = useState(false);
+  const [draggingPhotoId, setDraggingPhotoId] = useState(null);
   const productPhotoInput = useRef(null);
+  const homeConfig = useMemo(() => readStorefrontHomeConfig(), []);
+  const taxonomy = useMemo(() => storefrontTaxonomy(homeConfig), [homeConfig]);
+  const selectedCategory = taxonomy.categories.find((category) => (
+    String(category.id) === String(editor.category)
+    || categoryIdentity(category.label) === categoryIdentity(editor.category)
+  )) || taxonomy.categories[0];
+  const availableSubcategories = taxonomy.subcategories.filter((subcategory) => (
+    String(subcategory.categoryId) === String(selectedCategory?.id)
+  ));
 
   const update = (patch) => setEditor((current) => ({ ...current, ...patch }));
 
@@ -1044,6 +1172,19 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
       ...current,
       productPhotos: [...current.productPhotos, ...photos],
     }));
+  };
+
+  const moveProductPhoto = (sourceId, targetId) => {
+    if (!sourceId || !targetId || sourceId === targetId) return;
+    setEditor((current) => {
+      const sourceIndex = current.productPhotos.findIndex((photo) => photo.id === sourceId);
+      const targetIndex = current.productPhotos.findIndex((photo) => photo.id === targetId);
+      if (sourceIndex < 0 || targetIndex < 0) return current;
+      const productPhotos = [...current.productPhotos];
+      const [photo] = productPhotos.splice(sourceIndex, 1);
+      productPhotos.splice(targetIndex, 0, photo);
+      return { ...current, productPhotos };
+    });
   };
 
   const openShopifyModal = () => {
@@ -1163,8 +1304,22 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
             <div className="admin-editor-two-columns">
               <label>
                 Catégorie
-                <select value={editor.category} onChange={(event) => update({ category: event.target.value })}>
-                  {CATEGORIES.map((category) => <option key={category}>{category}</option>)}
+                <select
+                  value={selectedCategory?.label || editor.category}
+                  onChange={(event) => {
+                    const nextCategory = taxonomy.categories.find((category) => category.label === event.target.value);
+                    update({
+                      category: event.target.value,
+                      subcategoryIds: editor.subcategoryIds.filter((id) => (
+                        taxonomy.subcategories.some((subcategory) => (
+                          String(subcategory.id) === String(id)
+                          && String(subcategory.categoryId) === String(nextCategory?.id)
+                        ))
+                      )),
+                    });
+                  }}
+                >
+                  {taxonomy.categories.map((category) => <option key={category.id}>{category.label}</option>)}
                 </select>
               </label>
               <label>
@@ -1190,8 +1345,75 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
             </label>
           </section>
 
+          <fieldset className="admin-editor-section admin-editor-pattern-section">
+            <legend>Patron associé</legend>
+            {editor.patternId ? (
+              <article className="admin-editor-pattern-card">
+                <span aria-hidden="true">◇</span>
+                <div>
+                  <strong>{editor.patternSnapshot?.title || "Patron associé"}</strong>
+                  <small>{editor.patternSnapshot?.type || "Bibliothèque Kaleido"}</small>
+                </div>
+                <button type="button" onClick={() => setPatternPickerOpen(true)}>Changer</button>
+                <button
+                  className="danger"
+                  type="button"
+                  onClick={() => update({ patternId: "", patternSnapshot: null })}
+                >
+                  Dissocier
+                </button>
+              </article>
+            ) : (
+              <button
+                className="admin-editor-pattern-empty"
+                type="button"
+                onClick={() => setPatternPickerOpen(true)}
+              >
+                <span aria-hidden="true">+</span>
+                <span>
+                  <strong>Choisir un patron</strong>
+                  <small>Relie ce produit à un patron de ta Bibliothèque.</small>
+                </span>
+              </button>
+            )}
+          </fieldset>
+
+          <fieldset className="admin-editor-section admin-editor-taxonomy-section">
+            <legend>Sous-catégories</legend>
+            <TaxonomyChoices
+              items={availableSubcategories}
+              selected={editor.subcategoryIds}
+              onChange={(subcategoryIds) => update({ subcategoryIds })}
+              emptyText="Aucune sous-catégorie n’a encore été créée pour cette catégorie."
+            />
+          </fieldset>
+
+          <fieldset className="admin-editor-section admin-editor-taxonomy-section">
+            <legend>Collections</legend>
+            <TaxonomyChoices
+              items={taxonomy.collections}
+              selected={editor.collectionIds}
+              onChange={(collectionIds) => update({ collectionIds })}
+              emptyText="Aucune collection n’a encore été créée dans Accueil boutique."
+            />
+          </fieldset>
+
           <fieldset className="admin-editor-section">
-            <legend>Photos du produit</legend>
+            <div className="admin-editor-section-heading">
+              <strong>Photos du produit</strong>
+              {editor.productPhotos.length > 1 && (
+                <button
+                  className={reorderingPhotos ? "is-active" : ""}
+                  type="button"
+                  onClick={() => {
+                    setReorderingPhotos((current) => !current);
+                    setDraggingPhotoId(null);
+                  }}
+                >
+                  {reorderingPhotos ? "Terminer" : "Réorganiser"}
+                </button>
+              )}
+            </div>
             <input
               hidden
               ref={productPhotoInput}
@@ -1212,20 +1434,40 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
               <strong>Ajouter les photos du produit</strong>
               <small>Les photos de la création terminée seront affichées dans la fiche.</small>
             </button>
-            <div className="admin-editor-product-photos">
-              {editor.productPhotos.map((photo) => (
-                <article key={photo.id}>
+            <div className={`admin-editor-product-photos${reorderingPhotos ? " is-reordering" : ""}`}>
+              {editor.productPhotos.map((photo, index) => (
+                <article
+                  className={draggingPhotoId === photo.id ? "is-dragging" : ""}
+                  data-product-photo-id={photo.id}
+                  key={photo.id}
+                  onPointerDown={(event) => {
+                    if (!reorderingPhotos) return;
+                    event.currentTarget.setPointerCapture?.(event.pointerId);
+                    setDraggingPhotoId(photo.id);
+                  }}
+                  onPointerMove={(event) => {
+                    if (!reorderingPhotos || draggingPhotoId !== photo.id) return;
+                    const target = document.elementFromPoint(event.clientX, event.clientY)
+                      ?.closest?.("[data-product-photo-id]");
+                    moveProductPhoto(photo.id, target?.dataset.productPhotoId);
+                  }}
+                  onPointerUp={() => setDraggingPhotoId(null)}
+                  onPointerCancel={() => setDraggingPhotoId(null)}
+                >
                   {photo.url ? <img src={photo.url} alt={photo.name} /> : <i>Photo</i>}
+                  <b>{index === 0 ? "Photo principale" : index + 1}</b>
                   <span>{photo.name}</span>
-                  <button
-                    type="button"
-                    aria-label={`Supprimer ${photo.name}`}
-                    onClick={() => update({
-                      productPhotos: editor.productPhotos.filter((item) => item.id !== photo.id),
-                    })}
-                  >
-                    ×
-                  </button>
+                  {!reorderingPhotos && (
+                    <button
+                      type="button"
+                      aria-label={`Supprimer ${photo.name}`}
+                      onClick={() => update({
+                        productPhotos: editor.productPhotos.filter((item) => item.id !== photo.id),
+                      })}
+                    >
+                      ×
+                    </button>
+                  )}
                 </article>
               ))}
             </div>
@@ -1403,6 +1645,23 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
           </div>
         </form>
       </div>
+      {patternPickerOpen && (
+        <PatternPicker
+          patrons={patrons}
+          selectedId={editor.patternId}
+          onClose={() => setPatternPickerOpen(false)}
+          onSelect={(patron) => {
+            update({
+              patternId: String(patron.id),
+              patternSnapshot: {
+                title: patternTitle(patron),
+                type: patternType(patron),
+              },
+            });
+            setPatternPickerOpen(false);
+          }}
+        />
+      )}
       {shopifyModalOpen && (
         <ShopifyConnectionModal
           code={shopifyCode}
