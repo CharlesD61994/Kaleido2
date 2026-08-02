@@ -279,7 +279,9 @@ const productOptionGroups = (product) => {
       photos: (product.colorPhotos || []).filter((color) => product.colors.accent.includes(color.value)),
     });
   }
-  const recipientValues = product.optionChoices?.recipient || [];
+  const recipientValues = Array.isArray(product.optionChoices?.recipient)
+    ? product.optionChoices.recipient
+    : [];
   if (activeOptions.has("recipient") && recipientValues.length) {
     groups.push({
       key: "recipient",

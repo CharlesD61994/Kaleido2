@@ -43,14 +43,31 @@ const emptyShoeSizeChoices = () => Object.fromEntries(
   Object.keys(SHOE_SIZE_GROUPS).map((audience) => [audience, []]),
 );
 
+const selectAllShoeSizes = (current = {}, audiences = Object.keys(SHOE_SIZE_GROUPS)) => ({
+  ...emptyShoeSizeChoices(),
+  ...current,
+  ...Object.fromEntries(
+    audiences
+      .filter((audience) => SHOE_SIZE_GROUPS[audience])
+      .map((audience) => [audience, [...SHOE_SIZE_GROUPS[audience]]]),
+  ),
+});
+
 const normalizeShoeSizeChoices = (source = {}) => {
   const stored = source.shoeSizeChoices || {};
-  return Object.fromEntries(
+  const normalized = Object.fromEntries(
     Object.keys(SHOE_SIZE_GROUPS).map((audience) => [
       audience,
       Array.isArray(stored[audience]) ? [...stored[audience]] : [],
     ]),
   );
+  if (!source.options?.includes("shoeSize") || source.shoeSizeDefaultsInitialized) {
+    return normalized;
+  }
+  const selectedAudiences = source.options.includes("recipient")
+    ? (Array.isArray(source.optionChoices?.recipient) ? source.optionChoices.recipient : [])
+    : Object.keys(SHOE_SIZE_GROUPS);
+  return selectAllShoeSizes(normalized, selectedAudiences);
 };
 
 const COLOR_SECTIONS = {
@@ -197,6 +214,7 @@ const createEmptyProduct = () => ({
   options: [],
   optionChoices: {},
   shoeSizeChoices: emptyShoeSizeChoices(),
+  shoeSizeDefaultsInitialized: false,
   optionPrices: { keychain: "" },
   productPhotos: [],
   colorPhotos: [],
@@ -216,9 +234,15 @@ const createEditorState = (product) => {
       keychain: String(source.optionPrices?.keychain || ""),
     },
     optionChoices: Object.fromEntries(
-      Object.entries(source.optionChoices || {}).map(([key, values]) => [key, [...values]]),
+      Object.entries(source.optionChoices || {}).map(([key, values]) => [
+        key,
+        Array.isArray(values) ? [...values] : [],
+      ]),
     ),
     shoeSizeChoices: normalizeShoeSizeChoices(source),
+    shoeSizeDefaultsInitialized: source.options?.includes("shoeSize")
+      ? true
+      : Boolean(source.shoeSizeDefaultsInitialized),
     productPhotos: (source.productPhotos || []).map(normalizePhoto),
     colorGroups: {
       mainColor: productColorsForSection(source, "mainColor"),
@@ -570,7 +594,7 @@ function ProductPreviewPage({ editor, onBack }) {
   const [expandedColorGroups, setExpandedColorGroups] = useState({});
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const simpleOptions = editor.options.filter((id) => (
-    !COLOR_SECTIONS[id] && !CHOICE_OPTIONS[id] && id !== "keychain"
+    !COLOR_SECTIONS[id] && !CHOICE_OPTIONS[id] && id !== "keychain" && id !== "shoeSize"
   ));
   const previewDescription = editor.description || "Ajoute une description pour présenter cette création.";
   const hasLongDescription = previewDescription.length > 180;
@@ -900,12 +924,44 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
   const update = (patch) => setEditor((current) => ({ ...current, ...patch }));
 
   const toggleOption = (optionId) => {
-    setEditor((current) => ({
-      ...current,
-      options: current.options.includes(optionId)
-        ? current.options.filter((id) => id !== optionId)
-        : [...current.options, optionId],
-    }));
+    setEditor((current) => {
+      const isActive = current.options.includes(optionId);
+      const next = {
+        ...current,
+        options: isActive
+          ? current.options.filter((id) => id !== optionId)
+          : [...current.options, optionId],
+      };
+      if (optionId !== "shoeSize" || isActive) return next;
+
+      const selectedAudiences = current.options.includes("recipient")
+        ? (current.optionChoices.recipient || []).filter((audience) => SHOE_SIZE_GROUPS[audience])
+        : Object.keys(SHOE_SIZE_GROUPS);
+      return {
+        ...next,
+        shoeSizeChoices: selectAllShoeSizes(current.shoeSizeChoices, selectedAudiences),
+        shoeSizeDefaultsInitialized: true,
+      };
+    });
+  };
+
+  const updateRecipientChoices = (values) => {
+    setEditor((current) => {
+      const previous = current.optionChoices.recipient || [];
+      const addedAudiences = values.filter(
+        (audience) => !previous.includes(audience) && SHOE_SIZE_GROUPS[audience],
+      );
+      return {
+        ...current,
+        optionChoices: { ...current.optionChoices, recipient: values },
+        ...(current.options.includes("shoeSize") && addedAudiences.length
+          ? {
+            shoeSizeChoices: selectAllShoeSizes(current.shoeSizeChoices, addedAudiences),
+            shoeSizeDefaultsInitialized: true,
+          }
+          : {}),
+      };
+    });
   };
 
   const addProductPhotos = async (files) => {
@@ -1179,9 +1235,15 @@ export default function AdminProductEditorScreen({ navigation, productId }) {
                 key={optionId}
                 config={config}
                 selected={editor.optionChoices[optionId] || []}
-                onChange={(values) => update({
-                  optionChoices: { ...editor.optionChoices, [optionId]: values },
-                })}
+                onChange={(values) => {
+                  if (optionId === "recipient") {
+                    updateRecipientChoices(values);
+                    return;
+                  }
+                  update({
+                    optionChoices: { ...editor.optionChoices, [optionId]: values },
+                  });
+                }}
               />
             )
           ))}
