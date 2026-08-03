@@ -1189,7 +1189,7 @@ html.product-preview-pending .storefront {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 3px;
   min-width: 0;
   margin-top: 2px;
 }
@@ -1221,6 +1221,8 @@ html.product-preview-pending .storefront {
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9px, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 9px, #000 100%);
 }
 
 .catalog-category-filters::-webkit-scrollbar {
@@ -1237,6 +1239,8 @@ html.product-preview-pending .storefront {
   overflow-y: hidden;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 100%);
 }
 
 .catalog-secondary-filters::-webkit-scrollbar,
