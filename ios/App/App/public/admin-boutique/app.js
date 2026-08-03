@@ -21,6 +21,8 @@ const catalogGrid = document.querySelector("[data-catalog-grid]");
 const catalogFilters = document.querySelector("[data-catalog-filters]");
 const catalogSubcategoryFilters = document.querySelector("[data-catalog-subcategory-filters]");
 const catalogCollectionFilters = document.querySelector("[data-catalog-collection-filters]");
+const catalogSubcategoryRow = document.querySelector("[data-catalog-subcategory-row]");
+const catalogCollectionRow = document.querySelector("[data-catalog-collection-row]");
 const catalogSearch = document.querySelector("[data-catalog-search]");
 const catalogEmpty = document.querySelector("[data-catalog-empty]");
 const catalogResultTitle = document.querySelector("[data-catalog-result-title]");
@@ -894,7 +896,7 @@ const renderCatalog = () => {
   });
 
   if (catalogSubcategoryFilters) {
-    catalogSubcategoryFilters.hidden = availableSubcategories.length === 0;
+    if (catalogSubcategoryRow) catalogSubcategoryRow.hidden = availableSubcategories.length === 0;
     catalogSubcategoryFilters.innerHTML = availableSubcategories.map((item) => `
       <button
         type="button"
@@ -916,7 +918,7 @@ const renderCatalog = () => {
   }
 
   if (catalogCollectionFilters) {
-    catalogCollectionFilters.hidden = availableCollections.length === 0;
+    if (catalogCollectionRow) catalogCollectionRow.hidden = availableCollections.length === 0;
     catalogCollectionFilters.innerHTML = availableCollections.map((item) => `
       <button
         type="button"

@@ -8,7 +8,7 @@
       name="description"
       content="Atelier Kaleido propose des projets de tricot et crochet faits main, sur commande, avec suivi client."
     />
-    <link rel="stylesheet" href="./styles.css?v=20260802-13" />
+    <link rel="stylesheet" href="./styles.css?v=20260802-14" />
   </head>
   <body>
     <main class="phone-shell" aria-label="Maquette mobile Atelier Kaleido">
@@ -182,9 +182,18 @@
             />
           </label>
 
-          <div class="catalog-category-filters" data-catalog-filters aria-label="Filtrer par catégorie"></div>
-          <div class="catalog-secondary-filters" data-catalog-subcategory-filters aria-label="Filtrer par sous-catégorie" hidden></div>
-          <div class="catalog-collection-filters" data-catalog-collection-filters aria-label="Filtrer par collection" hidden></div>
+          <div class="catalog-filter-row catalog-filter-row--category">
+            <span class="catalog-filter-label">Catégorie :</span>
+            <div class="catalog-category-filters" data-catalog-filters aria-label="Filtrer par catégorie"></div>
+          </div>
+          <div class="catalog-filter-row" data-catalog-subcategory-row hidden>
+            <span class="catalog-filter-label">Sous-catégorie :</span>
+            <div class="catalog-secondary-filters" data-catalog-subcategory-filters aria-label="Filtrer par sous-catégorie"></div>
+          </div>
+          <div class="catalog-filter-row" data-catalog-collection-row hidden>
+            <span class="catalog-filter-label">Collection :</span>
+            <div class="catalog-collection-filters" data-catalog-collection-filters aria-label="Filtrer par collection"></div>
+          </div>
 
           <div class="catalog-results-heading">
             <strong data-catalog-result-title>Tous les produits</strong>
@@ -303,6 +312,6 @@
 
     <script src="./storefront-config.js"></script>
     <script src="./storefront-cloud.js"></script>
-    <script src="./app.js?v=20260802-12"></script>
+    <script src="./app.js?v=20260802-13"></script>
   </body>
 </html>
