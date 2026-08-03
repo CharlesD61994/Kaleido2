@@ -576,7 +576,7 @@ export default function AdminStorefrontScreen({ navigation }) {
   const activePhotoCategory = categories.find((category) => category.id === photoCategoryId);
 
   return (
-    <AdminLayout onBack={navigation.goBack} title="Boutique">
+    <AdminLayout onBack={navigation.goBack} title="Accueil">
       <div className="admin-storefront-content">
         <section className="admin-storefront-section">
           <header>

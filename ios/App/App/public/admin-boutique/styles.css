@@ -1226,15 +1226,24 @@ html.product-preview-pending .storefront {
 .catalog-category-filters::before,
 .catalog-secondary-filters::before,
 .catalog-collection-filters::before {
+  position: sticky;
+  left: 0;
+  z-index: 2;
   align-self: center;
   flex: 0 0 auto;
-  margin-right: 2px;
+  margin-left: 0;
+  margin-right: 1px;
+  padding: 5px 8px 5px 2px;
   color: var(--k-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   white-space: nowrap;
+  background: color-mix(in srgb, var(--k-paper) 94%, transparent);
+  box-shadow: 8px 0 10px -10px rgba(16, 39, 68, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .catalog-category-filters::before {
