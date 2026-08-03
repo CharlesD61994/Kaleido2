@@ -36,7 +36,7 @@ const modules = [
     route: ADMIN_ROUTES.CATALOG,
   },
   {
-    title: "Accueil boutique",
+    title: "Boutique",
     description: "Choisir les catégories et les produits affichés sur la page d'accueil.",
     color: "#E84B94",
     icon: "storefront",

@@ -83,6 +83,22 @@
   transform: translateY(-50%);
 }
 
+.admin-editor-header-save {
+  min-width: 82px;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid rgba(48, 199, 201, 0.48);
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #30c7c9, #7c3aed);
+  box-shadow: 0 0 14px rgba(48, 199, 201, 0.18);
+  font: 900 11px "DM Sans", system-ui, sans-serif;
+}
+
+.admin-editor-header-save:disabled {
+  opacity: 0.62;
+}
+
 .admin-product-editor textarea {
   min-height: 112px;
   resize: vertical;

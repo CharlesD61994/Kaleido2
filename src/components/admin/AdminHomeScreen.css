@@ -21,7 +21,8 @@
   position: sticky;
   top: 0;
   z-index: 30;
-  display: flex;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
   min-height: calc(env(safe-area-inset-top, 0px) + 64px);
@@ -54,7 +55,8 @@
 
 .admin-react-brand {
   min-width: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   margin-left: -3px;
@@ -84,21 +86,27 @@
 
 .admin-react-brand strong {
   min-width: 0;
+  display: -webkit-box;
   overflow: hidden;
   color: var(--k-text);
-  font-family: "Syne", sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 0.88;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.02;
+  text-align: center;
+  overflow-wrap: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .admin-react-header-action {
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  margin-left: auto;
+}
+
+.admin-react-header-action:empty {
+  display: none;
 }
 
 .admin-react-main {
@@ -357,13 +365,27 @@
 }
 
 .admin-react-module-icon[data-icon="catalog"]::before {
-  width: 30px;
-  height: 30px;
+  top: 13px;
+  left: 10px;
+  width: 17px;
+  height: 28px;
   border: 3px solid #fff;
-  border-radius: 7px;
-  background:
-    linear-gradient(#fff, #fff) 50% 0 / 3px 100% no-repeat,
-    linear-gradient(#fff, #fff) 0 50% / 100% 3px no-repeat;
+  border-right-width: 2px;
+  border-radius: 7px 2px 3px 7px;
+  background: rgba(255, 255, 255, 0.12);
+  transform: skewY(4deg);
+}
+
+.admin-react-module-icon[data-icon="catalog"]::after {
+  top: 13px;
+  right: 10px;
+  width: 17px;
+  height: 28px;
+  border: 3px solid #fff;
+  border-left-width: 2px;
+  border-radius: 2px 7px 7px 3px;
+  background: rgba(255, 255, 255, 0.12);
+  transform: skewY(-4deg);
 }
 
 .admin-react-module-icon[data-icon="storefront"]::before {
@@ -455,7 +477,7 @@
   }
 
   .admin-react-brand strong {
-    font-size: 17px;
+    font-size: 15px;
   }
 
   .admin-react-publish {

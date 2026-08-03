@@ -1355,6 +1355,16 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
 
   return (
     <AdminLayout
+      action={(
+        <button
+          className="admin-editor-header-save"
+          type="button"
+          disabled={saving}
+          onClick={saveProduct}
+        >
+          {saving ? "En cours..." : "Enregistrer"}
+        </button>
+      )}
       onBack={navigation.goBack}
       title={existingProduct ? "Modifier le produit" : "Créer un produit"}
     >
@@ -1503,7 +1513,7 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
               items={taxonomy.collections}
               selected={editor.collectionIds}
               onChange={(collectionIds) => update({ collectionIds })}
-              emptyText="Aucune collection n’a encore été créée dans Accueil boutique."
+              emptyText="Aucune collection n’a encore été créée dans Boutique."
             />
           </fieldset>
 
@@ -1759,9 +1769,6 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
 
           {saveError && <p className="admin-editor-save-error" role="alert">{saveError}</p>}
           <div className="admin-editor-save-actions">
-            <button className="primary" type="submit" disabled={saving}>
-              {saving ? "Enregistrement..." : "Enregistrer le produit"}
-            </button>
             <button
               type="button"
               onClick={() => {
