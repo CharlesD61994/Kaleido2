@@ -1972,6 +1972,8 @@ html.product-preview-pending .storefront {
 
 .bottom-nav {
   position: fixed;
+  z-index: 50;
+  isolation: isolate;
   left: 50%;
   bottom: 0;
   transform: translateX(-50%);
@@ -1981,9 +1983,9 @@ html.product-preview-pending .storefront {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  background: rgba(255, 253, 250, 0.92);
+  background: var(--k-paper);
   border-top: 1px solid rgba(16, 39, 68, 0.08);
-  backdrop-filter: blur(18px);
+  box-shadow: 0 -8px 24px rgba(16, 39, 68, 0.06);
 }
 
 .bottom-nav a {
