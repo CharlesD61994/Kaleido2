@@ -410,6 +410,11 @@ const compressPhoto = (file) => new Promise((resolve) => {
 
 const optionById = (id) => PRODUCT_OPTIONS.find((option) => option.id === id);
 
+const formatPrice = (value) => {
+  const price = String(value || "").replace(/\s*\$\s*$/u, "").trim();
+  return price ? `${price} $` : "à définir";
+};
+
 function ProductCardPreview({ editor, onOpen }) {
   const colors = [
     ...(editor.options.includes("mainColor") ? editor.colorGroups.mainColor || [] : []),
@@ -424,7 +429,7 @@ function ProductCardPreview({ editor, onOpen }) {
       </span>
       <span className="admin-editor-preview-copy">
         <strong>{editor.name.trim() || "Nom du produit"}</strong>
-        <small>À partir de <b>{editor.price.trim() || "prix à définir"}</b></small>
+        <small>Prix : <b>{formatPrice(editor.price)}</b></small>
         {!!colors.length && (
           <span>
             {colors.slice(0, 5).map((color, index) => (
@@ -1388,14 +1393,17 @@ export default function AdminProductEditorScreen({ navigation, productId, patron
                 </select>
               </label>
               <label>
-                Prix à partir de
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={editor.price}
-                  placeholder="42,00 $"
-                  onChange={(event) => update({ price: event.target.value })}
-                />
+                Prix
+                <span className="admin-editor-price-input">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={editor.price.replace(/\s*\$\s*$/u, "")}
+                    placeholder="42,00"
+                    onChange={(event) => update({ price: event.target.value.replace(/\s*\$\s*$/u, "") })}
+                  />
+                  <b aria-hidden="true">$</b>
+                </span>
               </label>
             </div>
 

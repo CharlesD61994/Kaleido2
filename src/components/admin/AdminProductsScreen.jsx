@@ -34,6 +34,11 @@ const normalizeProductPhoto = (photo) => (
   typeof photo === "string" ? { id: "", name: photo, url: "" } : photo
 );
 
+const formatPrice = (value) => {
+  const price = String(value || "").replace(/\s*\$\s*$/u, "").trim();
+  return price ? `${price} $` : "à définir";
+};
+
 const productColors = (product) => [
   ...new Set([
     ...(product.options?.includes("mainColor") ? product.colors?.main || [] : []),
@@ -47,6 +52,65 @@ const productOptions = (product) => (product.options || [])
 
 const isProductReady = (product) => product.status === "ready";
 const isProductInCatalog = (product) => isProductReady(product) && product.inCatalog !== false;
+
+function ProductPhotoCarousel({ photos, productName }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const pointerStart = useRef(null);
+
+  useEffect(() => {
+    setActiveIndex((current) => Math.min(current, Math.max(photos.length - 1, 0)));
+  }, [photos.length]);
+
+  const finishSwipe = (event) => {
+    if (!pointerStart.current || photos.length < 2) return;
+    const deltaX = event.clientX - pointerStart.current.x;
+    const deltaY = event.clientY - pointerStart.current.y;
+    if (Math.abs(deltaX) >= 28 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      setActiveIndex((current) => (
+        deltaX < 0
+          ? Math.min(current + 1, photos.length - 1)
+          : Math.max(current - 1, 0)
+      ));
+    }
+    pointerStart.current = null;
+  };
+
+  return (
+    <span
+      className="admin-react-product-carousel"
+      onPointerDown={(event) => { pointerStart.current = { x: event.clientX, y: event.clientY }; }}
+      onPointerUp={finishSwipe}
+      onPointerCancel={() => { pointerStart.current = null; }}
+    >
+      <span
+        className="admin-react-product-carousel-track"
+        style={{ transform: `translate3d(-${activeIndex * 100}%, 0, 0)` }}
+      >
+        {photos.map((photo, index) => (
+          <span className="admin-react-product-carousel-slide" key={photo.id || `${photo.url}-${index}`}>
+            <img src={photo.url} alt={photo.name || productName || `Photo ${index + 1}`} draggable="false" />
+          </span>
+        ))}
+      </span>
+      {photos.length > 1 && (
+        <span className="admin-react-product-carousel-dots" aria-label="Photos du produit">
+          {photos.map((photo, index) => (
+            <button
+              type="button"
+              className={index === activeIndex ? "is-active" : ""}
+              key={photo.id || `${photo.url}-${index}`}
+              aria-label={`Afficher la photo ${index + 1}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                setActiveIndex(index);
+              }}
+            />
+          ))}
+        </span>
+      )}
+    </span>
+  );
+}
 
 const categoryIcon = (category) => {
   const normalized = normalizeText(category);
@@ -127,8 +191,10 @@ function ProductCard({
   const colors = productColors(product);
   const options = productOptions(product);
   const choiceCount = Object.values(product.optionChoices || {}).flat().length;
-  const photos = (product.productPhotos || []).map(normalizeProductPhoto);
-  const coverPhoto = photos.find((photo) => photo?.url);
+  const photos = (product.productPhotos || []).map(normalizeProductPhoto).filter((photo) => photo?.url);
+  const coverPhoto = photos[0];
+  const cardPointerStart = useRef(null);
+  const cardWasDragged = useRef(false);
   const colorPhotoCount = (product.colorPhotos || []).reduce(
     (total, color) => total + (color.photos || []).length,
     0,
@@ -144,15 +210,39 @@ function ProductCard({
       className={`admin-react-product-card ${menuOpen ? "is-menu-open" : ""} ${isProductReady(product) ? "is-ready" : "is-draft"}`}
       style={{ "--product-color": primaryColor, "--product-accent": accentColor }}
     >
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex="0"
         className={`admin-react-product-card-link ${coverPhoto ? "has-product-photo" : ""}`}
-        onClick={() => onEdit(product)}
+        onPointerDown={(event) => {
+          cardPointerStart.current = { x: event.clientX, y: event.clientY };
+          cardWasDragged.current = false;
+        }}
+        onPointerUp={(event) => {
+          if (!cardPointerStart.current) return;
+          const deltaX = event.clientX - cardPointerStart.current.x;
+          const deltaY = event.clientY - cardPointerStart.current.y;
+          cardWasDragged.current = Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8;
+          cardPointerStart.current = null;
+        }}
+        onClick={() => {
+          if (cardWasDragged.current) {
+            cardWasDragged.current = false;
+            return;
+          }
+          onEdit(product);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onEdit(product);
+          }
+        }}
         aria-label={`Modifier ${product.name || "Produit sans nom"}`}
       >
         <span className="admin-react-product-image">
           {coverPhoto ? (
-            <img src={coverPhoto.url} alt={coverPhoto.name || product.name || "Produit"} />
+            <ProductPhotoCarousel photos={photos} productName={product.name} />
           ) : (
             <span className="admin-react-product-icon" aria-hidden="true">{categoryIcon(product.category)}</span>
           )}
@@ -160,7 +250,7 @@ function ProductCard({
         </span>
         <span className="admin-react-product-body">
           <strong className="admin-react-product-name">{product.name || "Produit sans nom"}</strong>
-          <span className="admin-react-product-price">À partir de <b>{product.price || "prix à définir"}</b></span>
+          <span className="admin-react-product-price">Prix : <b>{formatPrice(product.price)}</b></span>
           {!!visibleColors.length && (
             <span className="admin-react-product-swatches" aria-label="Couleurs">
               {visibleColors.map((color) => (
@@ -176,7 +266,7 @@ function ProductCard({
             <i>{colorPhotoCount} laine</i>
           </span>
         </span>
-      </button>
+      </div>
 
       <button
         className="admin-react-product-menu-button"
