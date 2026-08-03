@@ -299,7 +299,8 @@ const renderCategories = (homeConfig) => {
 };
 
 const renderProductCard = (product, index) => {
-  const cover = productCover(product);
+  const photos = productPhotos(product);
+  const cover = photos[0] || productCover(product);
   const colors = productColors(product);
   const visibleColors = colors.slice(0, 4);
   const remainingColors = Math.max(0, colors.length - visibleColors.length);
@@ -309,23 +310,106 @@ const renderProductCard = (product, index) => {
   return `
     <article class="product-card ${glow}" data-product-open="${escapeHtml(product.id)}" role="button" tabindex="0">
       <button class="heart-button" type="button" data-favorite-product="${escapeHtml(product.id)}" aria-label="Ajouter aux favoris"></button>
-      <div class="product-image ${cover?.url ? "has-dynamic-product-image" : fallbackClass}">
-        ${cover?.url ? `<img src="${cover.url}" alt="${escapeHtml(cover.name || product.name || "Produit")}" />` : ""}
+      <div class="product-image ${cover?.url ? "has-dynamic-product-image product-card-carousel" : fallbackClass}"${photos.length > 1 ? " data-product-card-carousel" : ""}>
+        ${cover?.url ? `
+          <div class="product-card-carousel-track">
+            ${photos.map((photo, photoIndex) => `
+              <div class="product-card-carousel-slide" aria-hidden="${photoIndex === 0 ? "false" : "true"}">
+                <img src="${escapeHtml(photo.url)}" alt="${escapeHtml(photo.name || `${product.name || "Produit"} - photo ${photoIndex + 1}`)}" />
+              </div>
+            `).join("")}
+          </div>
+          ${photos.length > 1 ? `
+            <div class="product-card-carousel-dots" aria-label="Photos du produit">
+              ${photos.map((_, photoIndex) => `
+                <button
+                  type="button"
+                  class="${photoIndex === 0 ? "is-active" : ""}"
+                  data-product-card-slide="${photoIndex}"
+                  aria-label="Afficher la photo ${photoIndex + 1}"
+                  aria-pressed="${photoIndex === 0 ? "true" : "false"}"
+                ></button>
+              `).join("")}
+            </div>
+          ` : ""}
+        ` : ""}
       </div>
       <div class="product-info">
         <h3>${escapeHtml(product.name || "Produit sans nom")}</h3>
         <p><strong>${escapeHtml(formatCalculatedPrice(product.price))}</strong></p>
-        <div class="swatches" aria-label="Couleurs disponibles">
-          ${
-            visibleColors.length
-              ? visibleColors.map((color) => `<span style="--swatch:${color}"></span>`).join("")
-              : '<span style="--swatch:#f05b4f"></span><span style="--swatch:#30c7c9"></span>'
-          }
-          ${remainingColors ? `<button type="button" aria-label="Voir plus de couleurs">+${remainingColors}</button>` : ""}
-        </div>
+        ${visibleColors.length ? `
+          <div class="swatches" aria-label="Couleurs disponibles">
+            ${visibleColors.map((color) => `<span style="--swatch:${color}"></span>`).join("")}
+            ${remainingColors ? `<button type="button" aria-label="Voir plus de couleurs">+${remainingColors}</button>` : ""}
+          </div>
+        ` : ""}
       </div>
     </article>
   `;
+};
+
+const bindProductCardCarousels = (root = document) => {
+  root.querySelectorAll("[data-product-card-carousel]").forEach((carousel) => {
+    if (carousel.dataset.carouselBound === "true") return;
+    carousel.dataset.carouselBound = "true";
+    const track = carousel.querySelector(".product-card-carousel-track");
+    const slides = [...carousel.querySelectorAll(".product-card-carousel-slide")];
+    const dots = [...carousel.querySelectorAll("[data-product-card-slide]")];
+    if (!track || slides.length < 2) return;
+
+    let activeIndex = 0;
+    let pointerStartX = null;
+    let pointerStartY = null;
+    let suppressOpen = false;
+
+    const showSlide = (nextIndex) => {
+      activeIndex = Math.max(0, Math.min(slides.length - 1, nextIndex));
+      track.style.transform = `translate3d(${-activeIndex * 100}%, 0, 0)`;
+      slides.forEach((slide, slideIndex) => {
+        slide.setAttribute("aria-hidden", String(slideIndex !== activeIndex));
+      });
+      dots.forEach((dot, dotIndex) => {
+        const isActive = dotIndex === activeIndex;
+        dot.classList.toggle("is-active", isActive);
+        dot.setAttribute("aria-pressed", String(isActive));
+      });
+    };
+
+    dots.forEach((dot) => {
+      dot.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        showSlide(Number(dot.dataset.productCardSlide) || 0);
+      });
+    });
+
+    carousel.addEventListener("pointerdown", (event) => {
+      pointerStartX = event.clientX;
+      pointerStartY = event.clientY;
+      suppressOpen = false;
+    });
+    carousel.addEventListener("pointerup", (event) => {
+      if (pointerStartX === null || pointerStartY === null) return;
+      const deltaX = event.clientX - pointerStartX;
+      const deltaY = event.clientY - pointerStartY;
+      if (Math.abs(deltaX) > 28 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        suppressOpen = true;
+        showSlide(activeIndex + (deltaX < 0 ? 1 : -1));
+      }
+      pointerStartX = null;
+      pointerStartY = null;
+    });
+    carousel.addEventListener("pointercancel", () => {
+      pointerStartX = null;
+      pointerStartY = null;
+    });
+    carousel.addEventListener("click", (event) => {
+      if (!suppressOpen) return;
+      event.preventDefault();
+      event.stopPropagation();
+      suppressOpen = false;
+    });
+  });
 };
 
 const productOptionGroups = (product) => {
@@ -737,6 +821,7 @@ const renderProducts = (products, homeConfig) => {
   }
   productGrid.innerHTML = productsToRender.map(renderProductCard).join("");
   bindProductCards(productsToRender, productGrid);
+  bindProductCardCarousels(productGrid);
 };
 
 const catalogCategories = () => {
@@ -883,6 +968,7 @@ const renderCatalog = () => {
   catalogEmpty.hidden = products.length > 0;
   if (products.length) {
     bindProductCards(products, catalogGrid, "catalog");
+    bindProductCardCarousels(catalogGrid);
     bindPressables();
     bindHeartButtons();
   }
@@ -905,6 +991,7 @@ const renderFavorites = () => {
   favoritesEmpty.hidden = products.length > 0;
   if (products.length) {
     bindProductCards(products, favoritesGrid, "favorites");
+    bindProductCardCarousels(favoritesGrid);
     bindPressables();
   }
   bindHeartButtons();

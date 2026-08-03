@@ -509,6 +509,10 @@ export default function AdminStorefrontScreen({ navigation }) {
       .map((id) => catalog.find((product) => String(product.id) === String(id)))
       .filter(Boolean)
   ), [catalog, config.featuredProductIds]);
+  const selectedProductIds = useMemo(
+    () => selected.map((product) => String(product.id)),
+    [selected],
+  );
   const selectedIds = new Set(selected.map((product) => String(product.id)));
   const available = catalog.filter((product) => !selectedIds.has(String(product.id)));
   const activePhotoCategory = categories.find((category) => category.id === photoCategoryId);
@@ -564,11 +568,11 @@ export default function AdminStorefrontScreen({ navigation }) {
                 total={selected.length}
                 onMove={(direction) => saveConfig({
                   ...config,
-                  featuredProductIds: moveItem(config.featuredProductIds, index, direction),
+                  featuredProductIds: moveItem(selectedProductIds, index, direction),
                 })}
                 onRemove={() => saveConfig({
                   ...config,
-                  featuredProductIds: config.featuredProductIds.filter((id) => id !== String(product.id)),
+                  featuredProductIds: selectedProductIds.filter((id) => id !== String(product.id)),
                 })}
               />
             ))}
