@@ -1223,24 +1223,30 @@ html.product-preview-pending .storefront {
   display: none;
 }
 
+.catalog-category-filters::before,
 .catalog-secondary-filters::before,
 .catalog-collection-filters::before {
   align-self: center;
   flex: 0 0 auto;
   margin-right: 2px;
   color: var(--k-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.catalog-category-filters::before {
+  content: "Catégorie :";
 }
 
 .catalog-secondary-filters::before {
-  content: "Sous-catégories";
+  content: "Sous-catégorie :";
 }
 
 .catalog-collection-filters::before {
-  content: "Collections";
+  content: "Collection :";
 }
 
 .catalog-secondary-filters button,

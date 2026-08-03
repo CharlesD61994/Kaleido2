@@ -58,7 +58,7 @@
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   margin-left: -3px;
 }
 
@@ -93,7 +93,7 @@
   font-size: 17px;
   font-weight: 900;
   line-height: 1.02;
-  text-align: center;
+  text-align: left;
   overflow-wrap: normal;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
