@@ -1232,7 +1232,7 @@ html.product-preview-pending .storefront {
   display: flex;
   gap: 8px;
   min-width: 0;
-  padding: 11px 12px;
+  padding: 11px 12px 11px 13px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -1285,9 +1285,7 @@ html.product-preview-pending .storefront {
   color: white;
   background: var(--category-accent);
   border-color: var(--category-accent);
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.82) inset,
-    0 0 11px color-mix(in srgb, var(--category-accent), transparent 48%);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.82) inset;
 }
 
 .catalog-results-heading {
