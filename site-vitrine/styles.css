@@ -1189,13 +1189,12 @@ html.product-preview-pending .storefront {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   min-width: 0;
   margin-top: 2px;
 }
 
 .catalog-filter-row--category {
-  column-gap: 7px;
   margin-top: 9px;
 }
 
@@ -1222,8 +1221,6 @@ html.product-preview-pending .storefront {
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9px, #000 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 9px, #000 100%);
 }
 
 .catalog-category-filters::-webkit-scrollbar {
@@ -1235,13 +1232,11 @@ html.product-preview-pending .storefront {
   display: flex;
   gap: 8px;
   min-width: 0;
-  padding: 7px 9px 9px;
+  padding: 11px 12px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 100%);
 }
 
 .catalog-secondary-filters::-webkit-scrollbar,
