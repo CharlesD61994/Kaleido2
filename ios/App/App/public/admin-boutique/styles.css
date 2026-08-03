@@ -1195,7 +1195,7 @@ html.product-preview-pending .storefront {
 }
 
 .catalog-filter-row--category {
-  margin-top: 13px;
+  margin-top: 9px;
 }
 
 .catalog-filter-row[hidden] {
@@ -1215,7 +1215,7 @@ html.product-preview-pending .storefront {
   display: flex;
   gap: 9px;
   min-width: 0;
-  padding: 9px 10px 11px;
+  padding: 14px 13px;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x proximity;
@@ -1287,7 +1287,7 @@ html.product-preview-pending .storefront {
   border-color: var(--category-accent);
   box-shadow:
     0 0 0 2px rgba(255, 255, 255, 0.82) inset,
-    0 0 13px color-mix(in srgb, var(--category-accent), transparent 52%);
+    0 0 11px color-mix(in srgb, var(--category-accent), transparent 48%);
 }
 
 .catalog-results-heading {
@@ -1295,7 +1295,7 @@ html.product-preview-pending .storefront {
   align-items: end;
   justify-content: space-between;
   gap: 14px;
-  margin: 14px 0 15px;
+  margin: 10px 0 15px;
   padding-bottom: 10px;
   border-bottom: 2px solid rgba(232, 75, 148, 0.20);
 }
