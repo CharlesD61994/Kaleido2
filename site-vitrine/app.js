@@ -150,7 +150,10 @@ const setActiveNavigation = (name) => {
 const normalizePhoto = (photo) => (typeof photo === "string" ? { name: photo, url: "" } : photo || null);
 const productCover = (product) => (product.productPhotos || []).map(normalizePhoto).find((photo) => photo?.url);
 const productPhotos = (product) => (product.productPhotos || []).map(normalizePhoto).filter((photo) => photo?.url);
-const productColors = (product) => [...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])])];
+const productColors = (product) => [...new Set([
+  ...(product.options?.includes("mainColor") ? product.colors?.main || [] : []),
+  ...(product.options?.includes("accentColor") ? product.colors?.accent || [] : []),
+])];
 const shopifyProductId = (product) => (
   product?.shopify && typeof product.shopify === "object"
     ? String(product.shopify.productId || product.shopify.id || "")
@@ -415,7 +418,7 @@ const bindProductCardCarousels = (root = document) => {
 const productOptionGroups = (product) => {
   const groups = [];
   const activeOptions = new Set(product.options || []);
-  if ((product.colors?.main || []).length) {
+  if (activeOptions.has("mainColor") && (product.colors?.main || []).length) {
     groups.push({
       key: "mainColor",
       title: "Couleur principale",
@@ -425,7 +428,7 @@ const productOptionGroups = (product) => {
       photos: (product.colorPhotos || []).filter((color) => product.colors.main.includes(color.value)),
     });
   }
-  if ((product.colors?.accent || []).length) {
+  if (activeOptions.has("accentColor") && (product.colors?.accent || []).length) {
     groups.push({
       key: "accentColor",
       title: "Couleur secondaire",

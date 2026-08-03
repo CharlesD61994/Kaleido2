@@ -35,7 +35,10 @@ const normalizeProductPhoto = (photo) => (
 );
 
 const productColors = (product) => [
-  ...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])]),
+  ...new Set([
+    ...(product.options?.includes("mainColor") ? product.colors?.main || [] : []),
+    ...(product.options?.includes("accentColor") ? product.colors?.accent || [] : []),
+  ]),
 ];
 
 const productOptions = (product) => (product.options || [])
@@ -158,12 +161,14 @@ function ProductCard({
         <span className="admin-react-product-body">
           <strong className="admin-react-product-name">{product.name || "Produit sans nom"}</strong>
           <span className="admin-react-product-price">À partir de <b>{product.price || "prix à définir"}</b></span>
-          <span className="admin-react-product-swatches" aria-label="Couleurs">
-            {(visibleColors.length ? visibleColors : ["#f05b4f", "#30c7c9"]).map((color) => (
-              <i key={color} style={{ "--swatch": color }} />
-            ))}
-            {remainingColors > 0 && <em>+{remainingColors}</em>}
-          </span>
+          {!!visibleColors.length && (
+            <span className="admin-react-product-swatches" aria-label="Couleurs">
+              {visibleColors.map((color) => (
+                <i key={color} style={{ "--swatch": color }} />
+              ))}
+              {remainingColors > 0 && <em>+{remainingColors}</em>}
+            </span>
+          )}
           <span className="admin-react-product-meta">
             <i>{product.category || "Catalogue"}</i>
             <i>{options.length} option(s)</i>

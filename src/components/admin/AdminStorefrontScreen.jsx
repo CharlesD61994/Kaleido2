@@ -101,7 +101,10 @@ const productCover = (product) => (
   (product.productPhotos || []).map(normalizeProductPhoto).find((photo) => photo?.url)
 );
 const productColors = (product) => (
-  [...new Set([...(product.colors?.main || []), ...(product.colors?.accent || [])])]
+  [...new Set([
+    ...(product.options?.includes("mainColor") ? product.colors?.main || [] : []),
+    ...(product.options?.includes("accentColor") ? product.colors?.accent || [] : []),
+  ])]
 );
 const isCatalogProduct = (product) => product.status === "ready" && product.inCatalog !== false;
 
@@ -137,19 +140,50 @@ function ProductCard({ index, onAdd, onMove, onRemove, product, total }) {
         <small>{isSelected ? `#${index + 1}` : "CATALOGUE"}</small>
         <strong>{product.name || "Produit sans nom"}</strong>
         <p>À partir de <b>{product.price || "prix à définir"}</b></p>
-        <div className="admin-storefront-swatches" aria-label="Couleurs offertes">
-          {(visibleColors.length ? visibleColors : ["#f05b4f", "#30c7c9"]).map((color) => (
-            <i key={color} style={{ "--swatch": color }} />
-          ))}
-          {colors.length > 4 && <em>+{colors.length - 4}</em>}
-        </div>
+        {!!visibleColors.length && (
+          <div className="admin-storefront-swatches" aria-label="Couleurs offertes">
+            {visibleColors.map((color) => (
+              <i key={color} style={{ "--swatch": color }} />
+            ))}
+            {colors.length > 4 && <em>+{colors.length - 4}</em>}
+          </div>
+        )}
       </div>
       <div className="admin-storefront-product-actions">
         {isSelected ? (
           <>
-            <button type="button" onClick={() => onMove(-1)} disabled={index === 0} aria-label="Monter">↑</button>
-            <button type="button" onClick={() => onMove(1)} disabled={index === total - 1} aria-label="Descendre">↓</button>
-            <button type="button" className="danger" onClick={onRemove}>Retirer</button>
+            <button
+              type="button"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onMove(-1);
+              }}
+              disabled={index === 0}
+              aria-label="Monter"
+            >↑</button>
+            <button
+              type="button"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onMove(1);
+              }}
+              disabled={index === total - 1}
+              aria-label="Descendre"
+            >↓</button>
+            <button
+              type="button"
+              className="danger"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onRemove();
+              }}
+            >Retirer</button>
           </>
         ) : (
           <button type="button" className="primary" onClick={onAdd}>Ajouter</button>
@@ -494,6 +528,34 @@ export default function AdminStorefrontScreen({ navigation }) {
     return persisted;
   };
 
+  const moveFeaturedProduct = (productId, direction) => {
+    const latestConfig = cleanConfig(readStorefrontHomeConfig());
+    const currentCatalogIds = new Set(
+      readStorefrontProducts().filter(isCatalogProduct).map((product) => String(product.id)),
+    );
+    const seen = new Set();
+    const orderedIds = latestConfig.featuredProductIds.filter((id) => {
+      const normalizedId = String(id);
+      if (!currentCatalogIds.has(normalizedId) || seen.has(normalizedId)) return false;
+      seen.add(normalizedId);
+      return true;
+    });
+    const currentIndex = orderedIds.indexOf(String(productId));
+    const nextIds = moveItem(orderedIds, currentIndex, direction);
+    if (nextIds === orderedIds) return;
+    saveConfig({ ...latestConfig, featuredProductIds: nextIds });
+  };
+
+  const removeFeaturedProduct = (productId) => {
+    const latestConfig = cleanConfig(readStorefrontHomeConfig());
+    saveConfig({
+      ...latestConfig,
+      featuredProductIds: latestConfig.featuredProductIds
+        .map(String)
+        .filter((id) => id !== String(productId)),
+    });
+  };
+
   const categories = useMemo(() => {
     const all = allCategoriesFrom(config);
     const orderedIds = [
@@ -509,10 +571,6 @@ export default function AdminStorefrontScreen({ navigation }) {
       .map((id) => catalog.find((product) => String(product.id) === String(id)))
       .filter(Boolean)
   ), [catalog, config.featuredProductIds]);
-  const selectedProductIds = useMemo(
-    () => selected.map((product) => String(product.id)),
-    [selected],
-  );
   const selectedIds = new Set(selected.map((product) => String(product.id)));
   const available = catalog.filter((product) => !selectedIds.has(String(product.id)));
   const activePhotoCategory = categories.find((category) => category.id === photoCategoryId);
@@ -566,14 +624,8 @@ export default function AdminStorefrontScreen({ navigation }) {
                 product={product}
                 index={index}
                 total={selected.length}
-                onMove={(direction) => saveConfig({
-                  ...config,
-                  featuredProductIds: moveItem(selectedProductIds, index, direction),
-                })}
-                onRemove={() => saveConfig({
-                  ...config,
-                  featuredProductIds: selectedProductIds.filter((id) => id !== String(product.id)),
-                })}
+                onMove={(direction) => moveFeaturedProduct(product.id, direction)}
+                onRemove={() => removeFeaturedProduct(product.id)}
               />
             ))}
           </div>

@@ -412,8 +412,8 @@ const optionById = (id) => PRODUCT_OPTIONS.find((option) => option.id === id);
 
 function ProductCardPreview({ editor, onOpen }) {
   const colors = [
-    ...(editor.colorGroups.mainColor || []),
-    ...(editor.colorGroups.accentColor || []),
+    ...(editor.options.includes("mainColor") ? editor.colorGroups.mainColor || [] : []),
+    ...(editor.options.includes("accentColor") ? editor.colorGroups.accentColor || [] : []),
   ];
   const cover = editor.productPhotos.find((photo) => photo.url);
 
@@ -425,13 +425,13 @@ function ProductCardPreview({ editor, onOpen }) {
       <span className="admin-editor-preview-copy">
         <strong>{editor.name.trim() || "Nom du produit"}</strong>
         <small>À partir de <b>{editor.price.trim() || "prix à définir"}</b></small>
-        <span>
-          {(colors.length ? colors : [{ value: "#f05b4f" }, { value: "#30c7c9" }])
-            .slice(0, 5)
-            .map((color, index) => (
+        {!!colors.length && (
+          <span>
+            {colors.slice(0, 5).map((color, index) => (
               <i key={`${color.value}-${index}`} style={{ "--swatch": color.value }} />
             ))}
-        </span>
+          </span>
+        )}
       </span>
     </button>
   );
