@@ -1236,7 +1236,7 @@ html.product-preview-pending .storefront {
 }
 
 .catalog-secondary-filters::before {
-  content: "Types";
+  content: "Sous-catégories";
 }
 
 .catalog-collection-filters::before {

@@ -850,15 +850,9 @@ const renderCatalog = () => {
   if (catalogCategoryId && !selectedCategory) catalogCategoryId = "";
   const catalogProducts = storefrontProducts.filter(isProductInCatalog);
   const categoryProducts = catalogProducts.filter((product) => productBelongsToCategory(product, selectedCategory));
-  const categoryProductSubcategories = new Set(
-    categoryProducts.flatMap((product) => (product.subcategoryIds || []).map(String)),
-  );
-  const availableSubcategories = selectedCategory
-    ? storefrontHomeConfig.subcategories.filter((item) => (
-      String(item.categoryId) === String(selectedCategory.id)
-      && categoryProductSubcategories.has(String(item.id))
-    ))
-    : [];
+  const availableSubcategories = storefrontHomeConfig.subcategories.filter((item) => (
+    !selectedCategory || String(item.categoryId) === String(selectedCategory.id)
+  ));
   if (!availableSubcategories.some((item) => String(item.id) === String(catalogSubcategoryId))) {
     catalogSubcategoryId = "";
   }
